@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">DownloadManager</string>
+    <string name="download">下载</string>
+    <string name="pause">暂停</string>
+    <string name="open">打开</string>
+    <string name="fail">失败</string>
+    <string name="continue_download">继续</string>
+    <string name="title">标题</string>
+    <string name="delete_task">删除任务？</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="settings">设置</string>
+
+</resources>
