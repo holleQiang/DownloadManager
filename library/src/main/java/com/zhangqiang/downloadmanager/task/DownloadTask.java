@@ -23,7 +23,7 @@ public abstract class DownloadTask {
     public static final int STATE_COMPLETE = 4;
     private final List<DownloadListener> downloadListeners = new ArrayList<>();
     private final TaskEntity taskEntity;
-    private final ProgressUpdateHelper progressUpdateHelper = new ProgressUpdateHelper(){
+    private final ProgressUpdateHelper progressUpdateHelper = new ProgressUpdateHelper() {
         @Override
         protected void doUpdate() {
             DBManager.getInstance().getTaskDao().update(taskEntity);
@@ -34,6 +34,7 @@ public abstract class DownloadTask {
         taskEntity = new TaskEntity()
                 .setUrl(url)
                 .setSaveDir(saveDir)
+                .setCreateTime(System.currentTimeMillis())
                 .setFileName(getFileName(url));
         DBManager.getInstance().getTaskDao().resume(taskEntity);
     }
@@ -222,4 +223,7 @@ public abstract class DownloadTask {
         return taskEntity.getContentType();
     }
 
+    public long getCreateTime() {
+        return taskEntity.getCreateTime();
+    }
 }

@@ -23,6 +23,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
     private static final String COLUMN_E_TAG = "e_tag";
     private static final String COLUMN_LAST_MODIFIED = "last_modified";
     private static final String COLUMN_CONTENT_TYPE = "content_type";
+    private static final String COLUMN_CREATE_TIME = "create_time";
 
     public TaskDao(@NonNull SQLiteOpenHelper sqLiteOpenHelper) {
         super(sqLiteOpenHelper);
@@ -65,7 +66,9 @@ public class TaskDao extends BaseDao<TaskEntity> {
         columnEntries.add(new ColumnEntry()
                 .setName(COLUMN_CONTENT_TYPE)
                 .setType("text"));
-
+        columnEntries.add(new ColumnEntry()
+                .setName(COLUMN_CREATE_TIME)
+                .setType("integer"));
         return columnEntries;
     }
 
@@ -82,6 +85,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         contentValues.put(COLUMN_E_TAG,entity.getETag());
         contentValues.put(COLUMN_LAST_MODIFIED,entity.getLastModified());
         contentValues.put(COLUMN_CONTENT_TYPE,entity.getContentType());
+        contentValues.put(COLUMN_CREATE_TIME,entity.getCreateTime());
         return contentValues;
     }
 
@@ -98,6 +102,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         taskEntity.setETag(cursor.getString(cursor.getColumnIndex(COLUMN_E_TAG)));
         taskEntity.setLastModified(cursor.getString(cursor.getColumnIndex(COLUMN_LAST_MODIFIED)));
         taskEntity.setContentType(cursor.getString(cursor.getColumnIndex(COLUMN_CONTENT_TYPE)));
+        taskEntity.setCreateTime(cursor.getLong(cursor.getColumnIndex(COLUMN_CREATE_TIME)));
         return taskEntity;
     }
 
@@ -116,6 +121,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         taskEntity.setETag(dbEntity.getETag());
         taskEntity.setLastModified(dbEntity.getLastModified());
         taskEntity.setContentType(dbEntity.getContentType());
+        taskEntity.setCreateTime(dbEntity.getCreateTime());
     }
 
 

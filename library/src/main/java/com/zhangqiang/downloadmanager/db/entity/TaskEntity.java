@@ -15,6 +15,7 @@ public class TaskEntity implements DBEntity {
     private String eTag;
     private String lastModified;
     private String contentType;
+    private long createTime;
 
     @NonNull
     @Override
@@ -103,4 +104,12 @@ public class TaskEntity implements DBEntity {
         return this;
     }
 
+    public long getCreateTime() {
+        return createTime;
+    }
+
+    public TaskEntity setCreateTime(long createTime) {
+        this.createTime = createTime;
+        return this;
+    }
 }
