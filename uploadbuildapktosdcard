@@ -1,0 +1,3 @@
+#!/bin/bash
+./gradlew build 
+adb push app/build/outputs/apk/debug/app-debug.apk /mnt/sdcard
