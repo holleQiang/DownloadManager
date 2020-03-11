@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.part.PartTask;
 import com.zhangqiang.downloadmanager.task.part.PartTaskSync;
@@ -35,11 +36,19 @@ public class OkHttpDownloadTask extends DownloadTask {
         super(url, saveDir);
         this.partCount = partCount;
         this.context = context;
+        init();
+    }
+
+    public OkHttpDownloadTask(TaskEntity taskEntity, int partCount, Context context) {
+        super(taskEntity);
+        this.partCount = partCount;
+        this.context = context;
+        init();
     }
 
     @Override
     protected void onStart() {
-        partTasks.clear();
+
         final Request.Builder builder = new Request.Builder()
                 .get()
                 .url(getUrl());
@@ -58,13 +67,13 @@ public class OkHttpDownloadTask extends DownloadTask {
             @Override
             public void onResponse(@NonNull Call call, @NonNull final Response response) {
                 try {
-                    processResponse(new OkHttpResponse(response),call);
+                    processResponse(new OkHttpResponse(response), call);
                 } catch (Throwable e) {
                     if (!call.isCanceled()) {
                         notifyFail(e);
                         e.printStackTrace();
                     }
-                }finally {
+                } finally {
                     response.close();
                 }
             }
@@ -96,14 +105,15 @@ public class OkHttpDownloadTask extends DownloadTask {
         if (!dir.exists() && !dir.mkdirs()) {
             throw new RuntimeException("cannot create dir : " + dir.getAbsolutePath());
         }
-        final File file = new File(dir, getFileName());
-
 
         int responseCode = response.getResponseCode();
         if (responseCode == 200) {
             LogUtils.i(TAG, "单线程下载===========");
             long total = response.getContentLength();
             setTotalLength(total);
+            String fileName1 = FileUtils.getDistinctFileName(getSaveDir(), getFileName());
+            setFileName(fileName1);
+            final File file = new File(dir, fileName1);
             FileUtils.writeToFileFrom(response.getInputStream(), file, 0, new FileUtils.WriteFileListener() {
 
                 long current = getCurrentLength();
@@ -127,12 +137,12 @@ public class OkHttpDownloadTask extends DownloadTask {
             if (call.isCanceled()) {
                 return;
             }
+
             List<Part> parts = splitParts(total, partCount);
             for (int i = 0; i < parts.size(); i++) {
                 Part part = parts.get(i);
-                partTasks.add(createPartTask(i, part.start, part.end));
+                partTasks.get(i).setRange(part.start, part.end);
             }
-
             new PartTaskSync(partTasks) {
 
                 @Override
@@ -147,10 +157,18 @@ public class OkHttpDownloadTask extends DownloadTask {
 
                 @Override
                 protected void onComplete() throws IOException {
+                    String fileName = FileUtils.getDistinctFileName(getSaveDir(), getFileName());
+                    setFileName(fileName);
+                    final File file = new File(getSaveDir(), fileName);
+                    List<File> tempFiles = new ArrayList<>();
                     for (PartTask partTask : partTasks) {
                         File tempFile = new File(partTask.getSavePath());
+                        tempFiles.add(tempFile);
                         LogUtils.i(TAG, "==========tempFile===" + tempFile.length());
                         FileUtils.writeToFileFrom(new FileInputStream(tempFile), file, partTask.getStart(), null);
+                    }
+                    for (File tempFile : tempFiles) {
+                        tempFile.delete();
                     }
                     LogUtils.i(TAG, "=========file====" + file.length() + "======getTotalLength====" + getTotalLength());
                     notifyComplete();
@@ -162,6 +180,7 @@ public class OkHttpDownloadTask extends DownloadTask {
             throw new IllegalArgumentException("response code error : " + responseCode);
         }
     }
+
 
     @Override
     protected void onPause() {
@@ -182,14 +201,19 @@ public class OkHttpDownloadTask extends DownloadTask {
         }
     }
 
+    private void init() {
+        for (int i = 0; i < partCount; i++) {
+            partTasks.add(createPartTask(i));
+        }
+    }
 
     private void setRangeParams(Request.Builder builder) {
         HttpUtils.setRangeParams(new OkHttpRequestPropertySetter(builder), 0);
     }
 
-    private PartTask createPartTask(int index, long start, long end) {
-        String savePath = getSaveDir() + "/" + getFileName() + ".part" + partCount + "_" + index;
-        return new OkHttpPartTask(getUrl(), savePath, start, end, context);
+    private PartTask createPartTask(int index) {
+        String savePath = getSaveDir() + "/task" + getId() + ".part" + partCount + "_" + index;
+        return new OkHttpPartTask(getUrl(), savePath, context);
     }
 
 
@@ -234,4 +258,6 @@ public class OkHttpDownloadTask extends DownloadTask {
             this.end = end;
         }
     }
+
+
 }

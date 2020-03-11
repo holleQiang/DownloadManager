@@ -24,8 +24,8 @@ public class OkHttpPartTask extends PartTask {
     private Context context;
     private Call call;
 
-    public OkHttpPartTask(String url, String savePath, long start, long end, Context context) {
-        super(url, savePath, start, end);
+    public OkHttpPartTask(String url, String savePath, Context context) {
+        super(url, savePath);
         this.context = context;
     }
 

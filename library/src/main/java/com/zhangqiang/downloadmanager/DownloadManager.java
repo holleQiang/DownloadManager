@@ -10,15 +10,17 @@ import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.OkHttpDownloadTask;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DownloadManager {
 
     private static volatile DownloadManager instance;
-    private final List<DownloadTask> downloadTasks = new ArrayList<>();
+    private final Map<Long, DownloadTask> downloadTasks = new HashMap<>();
     private Context mContext;
     private int partSize = 1;
-
+    private int maxRunningTaskCount = 2;
 
 
     public static DownloadManager getInstance() {
@@ -46,10 +48,11 @@ public class DownloadManager {
         }
         for (int i = 0; i < taskEntities.size(); i++) {
             TaskEntity taskEntity = taskEntities.get(i);
-            downloadTasks.add(createDownloadTask(taskEntity.getUrl(), taskEntity.getSaveDir()));
+            DownloadTask downloadTask = createDownloadTask(taskEntity);
+            downloadTasks.put(downloadTask.getId(), downloadTask);
         }
-        for (int i = 0; i < downloadTasks.size(); i++) {
-            DownloadTask downloadTask = downloadTasks.get(i);
+        for (Map.Entry<Long, DownloadTask> entry : downloadTasks.entrySet()) {
+            DownloadTask downloadTask = entry.getValue();
             if (downloadTask.getState() == DownloadTask.STATE_DOWNLOADING) {
                 downloadTask.pause();
             }
@@ -59,25 +62,22 @@ public class DownloadManager {
     public DownloadTask download(final String url, final String saveDir) {
 
         final DownloadTask downloadTask = createDownloadTask(url, saveDir);
-        for (int i = 0; i < downloadTasks.size(); i++) {
-            DownloadTask task = downloadTasks.get(i);
-            if (task.equals(downloadTask)) {
-                task.start();
-                return task;
-            }
-        }
         downloadTask.start();
-        downloadTasks.add(downloadTask);
+        downloadTasks.put(downloadTask.getId(), downloadTask);
         return downloadTask;
     }
 
     public List<DownloadTask> getAllTask() {
-        return downloadTasks;
+        List<DownloadTask> downloadTaskList = new ArrayList<>();
+        for (Map.Entry<Long, DownloadTask> entry : downloadTasks.entrySet()) {
+            downloadTaskList.add(entry.getValue());
+        }
+        return downloadTaskList;
     }
 
     public void deleteTask(DownloadTask downloadTask) {
         downloadTask.delete();
-        downloadTasks.remove(downloadTask);
+        downloadTasks.remove(downloadTask.getId());
     }
 
     private DownloadTask createDownloadTask(final String url, String saveDir) {
@@ -97,6 +97,16 @@ public class DownloadManager {
 
             }
         };
+    }
+
+    private DownloadTask createDownloadTask(TaskEntity taskEntity) {
+        String url = taskEntity.getUrl();
+        Uri uri = Uri.parse(url);
+        String scheme = uri.getScheme();
+        if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+            return new OkHttpDownloadTask(taskEntity, partSize, mContext);
+        }
+        throw new IllegalArgumentException("cannot create task for url : " + url);
     }
 
     public int getPartSize() {

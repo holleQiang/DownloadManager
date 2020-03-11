@@ -63,7 +63,7 @@ public abstract class BaseDao<E extends DBEntity> {
         if (exists(entity)) {
             return update(entity);
         } else {
-            return insert(entity);
+            return insert(entity) != -1;
         }
     }
 
@@ -85,43 +85,44 @@ public abstract class BaseDao<E extends DBEntity> {
 
         String uniqueId = checkUniqueId(entity);
 
+        return update(entity,COLUMN_UNIQUE_ID + "=?", new String[]{uniqueId}) > 0;
+    }
+
+    public int update(E entity, String whereClause, String[] args) {
+
         SQLiteDatabase database = getWriteDatabase();
         if (database == null) {
-            return false;
+            return 0;
         }
 
         ContentValues contentValues = toContentValuesInternal(entity);
 
         String tableName = getTableName();
 
-        int effectRows = database.update(tableName, contentValues, COLUMN_UNIQUE_ID + "=?", new String[]{uniqueId});
-        return effectRows > 0;
+        return database.update(tableName, contentValues, whereClause, args);
     }
 
     @NonNull
     private ContentValues toContentValuesInternal(E entity) {
 
         ContentValues contentValues = toContentValues(entity);
-        contentValues.put(COLUMN_UNIQUE_ID,entity.getUniqueId());
+        contentValues.put(COLUMN_UNIQUE_ID, entity.getUniqueId());
         return contentValues;
     }
 
 
-    public boolean insert(E entity) {
-
-        checkUniqueId(entity);
+    public long insert(E entity) {
 
         SQLiteDatabase database = getWriteDatabase();
         if (database == null) {
-            return false;
+            return -1;
         }
 
         String tableName = getTableName();
 
         ContentValues contentValues = toContentValuesInternal(entity);
 
-        long rowId = database.insert(tableName, null, contentValues);
-        return rowId != -1;
+        return database.insert(tableName, null, contentValues);
     }
 
     public E queryByUniqueId(String uniqueId) {
@@ -244,9 +245,9 @@ public abstract class BaseDao<E extends DBEntity> {
                     .append(entry.getType()).append(" ");
             if (entry.isPrimaryKey()) {
                 sqlBuilder.append("primary key ");
-            }else if(entry.isUnique()){
+            } else if (entry.isUnique()) {
                 sqlBuilder.append("unique ");
-            }else if(entry.isIndex()){
+            } else if (entry.isIndex()) {
                 sqlBuilder.append("index ");
             }
             if (entry.isAutoIncrement()) {
@@ -274,5 +275,18 @@ public abstract class BaseDao<E extends DBEntity> {
         return columnEntries;
     }
 
+    public E queryByRowId(long rowId) {
+
+        List<E> list = query(null,
+                "rowid = ?", new String[]{rowId + ""},
+                null,
+                null,
+                null,
+                null);
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        return list.get(0);
+    }
 
 }

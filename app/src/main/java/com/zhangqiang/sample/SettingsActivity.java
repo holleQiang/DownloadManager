@@ -1,11 +1,19 @@
 package com.zhangqiang.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
+
+import com.zhangqiang.activitystart.ActivityStartHelper;
+import com.zhangqiang.keystore.OnValueChangedListener;
 
 public class SettingsActivity extends BaseActivity {
+
+    private TextView tvCurrentPath;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,7 +43,40 @@ public class SettingsActivity extends BaseActivity {
         if (Configs.threadNum.get() == 3) {
             radioButton3.setChecked(true);
         }
+
+        tvCurrentPath = findViewById(R.id.tv_current_path);
+        tvCurrentPath.setText(Configs.saveDir.get());
+        View.OnClickListener chooseDirListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Intent intent = new Intent(v.getContext(), ChooseSaveDirActivity.class);
+                ActivityStartHelper.startActivityForResult(SettingsActivity.this, intent, new ActivityStartHelper.Callback() {
+                    @Override
+                    public void onActivityResult(int resultCode, Intent data) {
+                        if (resultCode == RESULT_OK) {
+                            String path = data.getStringExtra("path");
+                            Configs.saveDir.set(path);
+                        }
+                    }
+                });
+            }
+        };
+        tvCurrentPath.setOnClickListener(chooseDirListener);
+        findViewById(R.id.tv_current_path_title).setOnClickListener(chooseDirListener);
+        Configs.saveDir.addOnValueChangedListener(saveDirChangeListener);
     }
 
+    OnValueChangedListener saveDirChangeListener = new OnValueChangedListener() {
+        @Override
+        public void onValueChanged() {
+            tvCurrentPath.setText(Configs.saveDir.get());
+        }
+    };
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Configs.saveDir.removeOnValueChangedListener(saveDirChangeListener);
+    }
 }

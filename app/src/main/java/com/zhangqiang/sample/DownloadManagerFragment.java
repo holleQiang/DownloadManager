@@ -1,5 +1,8 @@
 package com.zhangqiang.sample;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -72,6 +75,7 @@ public class DownloadManagerFragment extends BaseFragment {
         return new MultiCell<>(R.layout.item_download, downloadTask, new ViewHolderBinder<DownloadTask>() {
 
             void updateState(DownloadTask downloadTask, ViewHolder viewHolder) {
+                viewHolder.setText(R.id.tv_file_name, downloadTask.getFileName());
                 int status = downloadTask.getState();
                 if (status == DownloadTask.STATE_IDLE) {
                     viewHolder.setText(R.id.bt_state, R.string.download);
@@ -96,8 +100,8 @@ public class DownloadManagerFragment extends BaseFragment {
 
             @Override
             public void onBind(final ViewHolder viewHolder, final DownloadTask downloadTask) {
-                viewHolder.setText(R.id.tv_file_name, downloadTask.getFileName());
                 updateState(downloadTask, viewHolder);
+                updateProgress(downloadTask, viewHolder);
                 viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -157,7 +161,6 @@ public class DownloadManagerFragment extends BaseFragment {
                     @Override
                     public void onViewAttachedToWindow(View v) {
                         downloadTask.addDownloadListener(downloadListener);
-                        downloadListener.startSpeedCalculator();
                     }
 
                     @Override
@@ -170,9 +173,20 @@ public class DownloadManagerFragment extends BaseFragment {
                 viewHolder.getView().setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
+                        CharSequence[] longClickChoices = new CharSequence[]{
+                                getResources().getString(R.string.copy_download_link)
+                        };
                         new AlertDialog.Builder(v.getContext())
                                 .setTitle(R.string.title)
                                 .setMessage(R.string.delete_task)
+                                .setItems(longClickChoices, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if (which == 0) {
+                                            copy(downloadTask.getUrl());
+                                        }
+                                    }
+                                })
                                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
@@ -193,5 +207,18 @@ public class DownloadManagerFragment extends BaseFragment {
                 });
             }
         });
+    }
+
+    private void copy(String url) {
+        Context context = getContext();
+        if (context == null) {
+            return;
+        }
+        ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboardManager == null) {
+            return;
+        }
+        ClipData clipData = ClipData.newPlainText(url, url);
+        clipboardManager.setPrimaryClip(clipData);
     }
 }

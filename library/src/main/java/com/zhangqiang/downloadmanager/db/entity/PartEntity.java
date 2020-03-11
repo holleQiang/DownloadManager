@@ -1,7 +1,5 @@
 package com.zhangqiang.downloadmanager.db.entity;
 
-import android.support.annotation.NonNull;
-
 import com.zhangqiang.db.entity.DBEntity;
 
 public class PartEntity implements DBEntity {
@@ -13,10 +11,9 @@ public class PartEntity implements DBEntity {
     private long end;
     private int status;
 
-    @NonNull
     @Override
     public String getUniqueId() {
-        return url + savePath + start + end;
+        return savePath;
     }
 
     public String getUrl() {

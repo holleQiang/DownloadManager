@@ -10,5 +10,10 @@
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
     <string name="settings">设置</string>
+    <string name="current_path">当前路径</string>
+    <string name="file_save_path">文件保存目录</string>
+    <string name="download_notification_channel_id">download_notification_channel_id</string>
+    <string name="download_notification_channel_name">下载通知</string>
+    <string name="copy_download_link">复制下载链接</string>
 
 </resources>

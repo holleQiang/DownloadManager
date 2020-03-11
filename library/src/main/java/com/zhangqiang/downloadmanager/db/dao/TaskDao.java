@@ -14,6 +14,7 @@ import java.util.List;
 
 public class TaskDao extends BaseDao<TaskEntity> {
 
+    private static final String COLUMN_ID = "id";
     private static final String COLUMN_URL = "url";
     private static final String COLUMN_SAVE_DIR = "save_dir";
     private static final String COLUMN_FILE_NAME = "file_name";
@@ -39,6 +40,11 @@ public class TaskDao extends BaseDao<TaskEntity> {
     @Override
     protected List<ColumnEntry> getColumnEntries() {
         ArrayList<ColumnEntry> columnEntries = new ArrayList<>();
+        columnEntries.add(new ColumnEntry()
+                .setName(COLUMN_ID)
+                .setType("integer")
+                .setPrimaryKey(true)
+                .setAutoIncrement(true));
         columnEntries.add(new ColumnEntry()
                 .setName(COLUMN_URL)
                 .setType("text"));
@@ -76,16 +82,17 @@ public class TaskDao extends BaseDao<TaskEntity> {
     @Override
     protected ContentValues toContentValues(TaskEntity entity) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(COLUMN_URL,entity.getUrl());
-        contentValues.put(COLUMN_CURRENT_LENGTH,entity.getCurrentLength());
-        contentValues.put(COLUMN_SAVE_DIR,entity.getSaveDir());
-        contentValues.put(COLUMN_FILE_NAME,entity.getFileName());
-        contentValues.put(COLUMN_TOTAL_LENGTH,entity.getTotalLength());
-        contentValues.put(COLUMN_STATE,entity.getState());
-        contentValues.put(COLUMN_E_TAG,entity.getETag());
-        contentValues.put(COLUMN_LAST_MODIFIED,entity.getLastModified());
-        contentValues.put(COLUMN_CONTENT_TYPE,entity.getContentType());
-        contentValues.put(COLUMN_CREATE_TIME,entity.getCreateTime());
+        contentValues.put(COLUMN_ID, entity.getId());
+        contentValues.put(COLUMN_URL, entity.getUrl());
+        contentValues.put(COLUMN_CURRENT_LENGTH, entity.getCurrentLength());
+        contentValues.put(COLUMN_SAVE_DIR, entity.getSaveDir());
+        contentValues.put(COLUMN_FILE_NAME, entity.getFileName());
+        contentValues.put(COLUMN_TOTAL_LENGTH, entity.getTotalLength());
+        contentValues.put(COLUMN_STATE, entity.getState());
+        contentValues.put(COLUMN_E_TAG, entity.getETag());
+        contentValues.put(COLUMN_LAST_MODIFIED, entity.getLastModified());
+        contentValues.put(COLUMN_CONTENT_TYPE, entity.getContentType());
+        contentValues.put(COLUMN_CREATE_TIME, entity.getCreateTime());
         return contentValues;
     }
 
@@ -93,6 +100,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
     @Override
     protected TaskEntity toDBEntity(Cursor cursor) {
         TaskEntity taskEntity = new TaskEntity();
+        taskEntity.setId(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)));
         taskEntity.setUrl(cursor.getString(cursor.getColumnIndex(COLUMN_URL)));
         taskEntity.setSaveDir(cursor.getString(cursor.getColumnIndex(COLUMN_SAVE_DIR)));
         taskEntity.setFileName(cursor.getString(cursor.getColumnIndex(COLUMN_FILE_NAME)));
@@ -106,12 +114,14 @@ public class TaskDao extends BaseDao<TaskEntity> {
         return taskEntity;
     }
 
-    public void resume(TaskEntity taskEntity){
-        TaskEntity dbEntity = queryByUniqueId(taskEntity.getUniqueId());
+    public void addNewTask(TaskEntity taskEntity) {
+
+        long rowId = insert(taskEntity);
+        TaskEntity dbEntity = queryByRowId(rowId);
         if (dbEntity == null) {
-            insert(taskEntity);
             return;
         }
+        taskEntity.setId(dbEntity.getId());
         taskEntity.setUrl(dbEntity.getUrl());
         taskEntity.setTotalLength(dbEntity.getTotalLength());
         taskEntity.setCurrentLength(dbEntity.getCurrentLength());
@@ -122,7 +132,18 @@ public class TaskDao extends BaseDao<TaskEntity> {
         taskEntity.setLastModified(dbEntity.getLastModified());
         taskEntity.setContentType(dbEntity.getContentType());
         taskEntity.setCreateTime(dbEntity.getCreateTime());
+        update(taskEntity, COLUMN_ID + " = ?", new String[]{taskEntity.getId() + ""});
     }
 
 
+    public boolean isFileExists(String saveDir, String fileName) {
+        List<TaskEntity> list = query(new String[]{COLUMN_ID},
+                COLUMN_SAVE_DIR + " = ? and " + COLUMN_FILE_NAME + " = ?",
+                new String[]{saveDir, fileName},
+                null,
+                null,
+                null,
+                null);
+        return list != null && list.size() > 0;
+    }
 }

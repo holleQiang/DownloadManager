@@ -33,6 +33,7 @@ public class UIDownloadListener implements DownloadListener {
                     break;
                 case MSG_ON_PROGRESS:
 
+                    startSpeedCalculator();
                     Progress progress = (Progress) msg.obj;
                     processProgress(progress);
                     progressUpdating = false;
@@ -163,7 +164,7 @@ public class UIDownloadListener implements DownloadListener {
     }
 
 
-    public void startSpeedCalculator() {
+    private void startSpeedCalculator() {
         if (speedCalculatorRunning) {
             return;
         }

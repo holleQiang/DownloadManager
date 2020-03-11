@@ -34,9 +34,13 @@ public abstract class DownloadTask {
         taskEntity = new TaskEntity()
                 .setUrl(url)
                 .setSaveDir(saveDir)
-                .setCreateTime(System.currentTimeMillis())
-                .setFileName(getFileName(url));
-        DBManager.getInstance().getTaskDao().resume(taskEntity);
+                .setFileName(getFileName(url))
+                .setCreateTime(System.currentTimeMillis());
+        DBManager.getInstance().getTaskDao().addNewTask(taskEntity);
+    }
+
+    public DownloadTask(TaskEntity taskEntity) {
+        this.taskEntity = taskEntity;
     }
 
     protected abstract void onStart();
@@ -49,11 +53,11 @@ public abstract class DownloadTask {
         if (state == STATE_COMPLETE || state == STATE_DOWNLOADING) {
             return;
         }
-        onStart();
         setState(STATE_DOWNLOADING);
         for (int i = downloadListeners.size() - 1; i >= 0; i--) {
             downloadListeners.get(i).onStart();
         }
+        onStart();
     }
 
     public final void pause() {
@@ -62,11 +66,11 @@ public abstract class DownloadTask {
         if (state != STATE_DOWNLOADING) {
             return;
         }
-        onPause();
         setState(STATE_PAUSE);
         for (int i = downloadListeners.size() - 1; i >= 0; i--) {
             downloadListeners.get(i).onPause();
         }
+        onPause();
     }
 
 
@@ -97,7 +101,6 @@ public abstract class DownloadTask {
     protected void notifyProgress(long current) {
         taskEntity.setCurrentLength(current);
         progressUpdateHelper.update();
-//        DBManager.getInstance().getTaskDao().update(taskEntity);
         for (int i = downloadListeners.size() - 1; i >= 0; i--) {
             downloadListeners.get(i).onProgress(current, getTotalLength());
         }
@@ -127,6 +130,7 @@ public abstract class DownloadTask {
     }
 
     protected void setFileName(String fileName) {
+
         taskEntity.setFileName(fileName);
         DBManager.getInstance().getTaskDao().update(taskEntity);
     }
@@ -225,5 +229,9 @@ public abstract class DownloadTask {
 
     public long getCreateTime() {
         return taskEntity.getCreateTime();
+    }
+
+    public long getId() {
+        return taskEntity.getId();
     }
 }

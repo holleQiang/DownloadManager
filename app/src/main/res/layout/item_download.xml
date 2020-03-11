@@ -21,8 +21,9 @@
         android:paddingBottom="3dp"
         android:textColor="#ffffff"
         android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_progress"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBaseline_toBaselineOf="@id/tv_file_name"
+        app:layout_constraintTop_toTopOf="@+id/tv_file_name"
         tools:text="下载中..." />
 
     <TextView
@@ -31,14 +32,14 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:layout_marginRight="10dp"
-        android:ellipsize="end"
-        android:maxLines="1"
+        android:ellipsize="middle"
         android:textColor="#333333"
         android:textSize="16sp"
         app:layout_constraintEnd_toStartOf="@+id/bt_state"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="文件名文件名文件名文件名文件名文件名文件名" />
+        tools:text="文件名文件名文件名文件名文件名文件名文件名"
+        android:singleLine="true" />
 
     <TextView
         android:id="@+id/tv_error"
@@ -84,7 +85,7 @@
         android:layout_height="wrap_content"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/pb_download_progress"
         app:layout_constraintTop_toTopOf="@id/tv_speed"
         tools:text="30kb/1M" />
 

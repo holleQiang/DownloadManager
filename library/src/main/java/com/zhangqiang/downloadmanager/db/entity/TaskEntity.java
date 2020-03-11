@@ -1,11 +1,10 @@
 package com.zhangqiang.downloadmanager.db.entity;
 
-import android.support.annotation.NonNull;
-
 import com.zhangqiang.db.entity.DBEntity;
 
 public class TaskEntity implements DBEntity {
 
+    private Long id;
     private String url;
     private String saveDir;
     private String fileName;
@@ -17,10 +16,9 @@ public class TaskEntity implements DBEntity {
     private String contentType;
     private long createTime;
 
-    @NonNull
     @Override
     public String getUniqueId() {
-        return url;
+        return id == null ? null : id+"";
     }
 
     public String getUrl() {
@@ -110,6 +108,15 @@ public class TaskEntity implements DBEntity {
 
     public TaskEntity setCreateTime(long createTime) {
         this.createTime = createTime;
+        return this;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public TaskEntity setId(Long id) {
+        this.id = id;
         return this;
     }
 }

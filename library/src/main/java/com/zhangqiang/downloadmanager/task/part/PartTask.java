@@ -23,15 +23,19 @@ public abstract class PartTask {
         }
     };
 
-    public PartTask(String url, String savePath, long start, long end) {
+    public PartTask(String url, String savePath) {
 
         partEntity = new PartEntity()
                 .setUrl(url)
                 .setSavePath(savePath)
-                .setStart(start)
-                .setEnd(end)
                 .setStatus(STATUS_IDLE);
         DBManager.getInstance().getPartDao().resume(partEntity);
+    }
+
+    public void setRange(long start, long end) {
+        partEntity.setStart(start);
+        partEntity.setEnd(end);
+        DBManager.getInstance().getPartDao().update(partEntity);
     }
 
     public void setCurrent(long current) {
@@ -74,7 +78,6 @@ public abstract class PartTask {
     protected void notifyProgress(long current) {
         partEntity.setCurrent(current);
         progressUpdateHelper.update();
-//        DBManager.getInstance().getPartDao().update(partEntity);
         if (callback != null) {
             callback.onProgress(current, getStart(), getEnd());
         }

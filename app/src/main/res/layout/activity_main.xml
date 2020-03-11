@@ -10,9 +10,12 @@
         android:id="@+id/et_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:ellipsize="middle"
+        android:gravity="start|top"
         android:hint="输入下载地址"
+        android:imeActionLabel="@string/download"
         android:imeOptions="actionDone"
-        android:inputType="text"
+        android:inputType="textUri"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
