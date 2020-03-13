@@ -9,7 +9,10 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.zhangqiang.activitystart.ActivityStartHelper;
-import com.zhangqiang.keystore.OnValueChangedListener;
+import com.zhangqiang.sample.base.BaseActivity;
+import com.zhangqiang.sample.config.Configs;
+import com.zhangqiang.sample.impl.BaseObserver;
+import com.zhangqiang.sample.utils.RxJavaUtils;
 
 public class SettingsActivity extends BaseActivity {
 
@@ -44,8 +47,16 @@ public class SettingsActivity extends BaseActivity {
             radioButton3.setChecked(true);
         }
 
+        Configs.saveDir.toObservable()
+                .compose(RxJavaUtils.<String>bindLifecycle(this))
+                .subscribe(new BaseObserver<String>() {
+                    @Override
+                    public void onNext(String value) {
+                        super.onNext(value);
+                        tvCurrentPath.setText(value);
+                    }
+                });
         tvCurrentPath = findViewById(R.id.tv_current_path);
-        tvCurrentPath.setText(Configs.saveDir.get());
         View.OnClickListener chooseDirListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -64,19 +75,11 @@ public class SettingsActivity extends BaseActivity {
         };
         tvCurrentPath.setOnClickListener(chooseDirListener);
         findViewById(R.id.tv_current_path_title).setOnClickListener(chooseDirListener);
-        Configs.saveDir.addOnValueChangedListener(saveDirChangeListener);
     }
 
-    OnValueChangedListener saveDirChangeListener = new OnValueChangedListener() {
-        @Override
-        public void onValueChanged() {
-            tvCurrentPath.setText(Configs.saveDir.get());
-        }
-    };
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Configs.saveDir.removeOnValueChangedListener(saveDirChangeListener);
     }
 }

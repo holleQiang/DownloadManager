@@ -6,6 +6,11 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Cancellable;
+
 public abstract class Option<V> {
 
     private final String key;
@@ -56,5 +61,29 @@ public abstract class Option<V> {
             return;
         }
         onValueChangedListeners.remove(listener);
+    }
+
+    public Observable<V> toObservable() {
+        return Observable.create(new ObservableOnSubscribe<V>() {
+            @Override
+            public void subscribe(ObservableEmitter<V> e) throws Exception {
+
+                V v = get();
+                e.onNext(v);
+                final OnValueChangedListener listener = new OnValueChangedListener() {
+                    @Override
+                    public void onValueChanged() {
+
+                    }
+                };
+                addOnValueChangedListener(listener);
+                e.setCancellable(new Cancellable() {
+                    @Override
+                    public void cancel() throws Exception {
+                        removeOnValueChangedListener(listener);
+                    }
+                });
+            }
+        });
     }
 }

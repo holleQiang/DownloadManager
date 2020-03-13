@@ -1,4 +1,4 @@
-package com.zhangqiang.sample;
+package com.zhangqiang.sample.config;
 
 public class Constants {
 

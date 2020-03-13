@@ -7,6 +7,7 @@ import android.view.KeyEvent;
 import android.view.View;
 
 import com.zhangqiang.filechooser.FileChooserFragment;
+import com.zhangqiang.sample.base.BaseActivity;
 
 public class ChooseSaveDirActivity extends BaseActivity {
 

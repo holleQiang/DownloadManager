@@ -1,6 +1,7 @@
 package com.zhangqiang.filechooser;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.keystore.OnValueChangedListener;
 import com.zhangqiang.keystore.Option;
 import com.zhangqiang.keystore.Options;
+import com.zhangqiang.keystore.store.shared.SharedValueStore;
 import com.zhangqiang.permissionrequest.PermissionRequestHelper;
 
 import java.io.File;
@@ -35,10 +37,19 @@ import java.util.List;
 public class FileChooserFragment extends Fragment {
 
 
-    private final Option<String> currentPathOption = Options.ofString("last_string", null);
+    private Option<String> currentPathOption;
     private RecyclerView recyclerView;
     private TextView tvTitle;
     private CellRVAdapter mAdapter;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Context context = getContext();
+        if (context != null) {
+            currentPathOption = Options.ofString("last_string", null,new SharedValueStore(context,"download_config"));
+        }
+    }
 
     @Nullable
     @Override

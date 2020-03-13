@@ -24,11 +24,13 @@ import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.UIDownloadListener;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
+import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class DownloadManagerFragment extends BaseFragment {
 
@@ -129,6 +131,12 @@ public class DownloadManagerFragment extends BaseFragment {
                         protected void onDownloadProgress(long current, long total) {
                             super.onDownloadProgress(current, total);
                             updateProgress(downloadTask, viewHolder);
+
+                            Map<Thread, StackTraceElement[]> allStackTraces = Thread.getAllStackTraces();
+                            for (Map.Entry<Thread, StackTraceElement[]> entry : allStackTraces.entrySet()) {
+                                Thread thread = entry.getKey();
+                                LogUtils.i(TAG,"======thread=======" + thread.getName());
+                            }
                         }
 
                         @Override

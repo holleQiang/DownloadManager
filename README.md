@@ -1,2 +1,0 @@
-# DownloadManager
-android download manager

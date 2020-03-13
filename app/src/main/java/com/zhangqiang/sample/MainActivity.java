@@ -4,23 +4,21 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.db.DBManager;
-import com.zhangqiang.downloadmanager.task.DownloadListener;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
-import com.zhangqiang.downloadmanager.utils.StringUtils;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
+import com.zhangqiang.sample.config.Configs;
 
 import java.io.File;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 inputMethodManager.showSoftInput(etUrl,InputMethodManager.SHOW_IMPLICIT);
             }
         }
+
     }
 
     @Override
