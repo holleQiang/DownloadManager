@@ -22,10 +22,10 @@ import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.vh.ViewHolder;
-import com.zhangqiang.keystore.OnValueChangedListener;
-import com.zhangqiang.keystore.Option;
-import com.zhangqiang.keystore.Options;
-import com.zhangqiang.keystore.store.shared.SharedValueStore;
+import com.zhangqiang.options.OnValueChangedListener;
+import com.zhangqiang.options.Option;
+import com.zhangqiang.options.Options;
+import com.zhangqiang.options.store.shared.SharedValueStore;
 import com.zhangqiang.permissionrequest.PermissionRequestHelper;
 
 import java.io.File;
