@@ -6,7 +6,7 @@
     <string name="fail">失败</string>
     <string name="continue_download">继续</string>
     <string name="title">标题</string>
-    <string name="delete_task">删除任务？</string>
+    <string name="is_delete_task">删除任务？</string>
     <string name="cancel">取消</string>
     <string name="confirm">确定</string>
     <string name="settings">设置</string>
@@ -15,5 +15,11 @@
     <string name="download_notification_channel_id">download_notification_channel_id</string>
     <string name="download_notification_channel_name">下载通知</string>
     <string name="copy_download_link">复制下载链接</string>
+    <string name="remind">提示</string>
+    <string name="is_delete_file">删除文件</string>
+    <string name="choose_save_dir">选择保存目录</string>
+    <string name="delete_task">删除任务</string>
+    <string name="delete_file">删除文件</string>
+    <string name="copy_success">复制成功</string>
 
 </resources>

@@ -9,6 +9,7 @@ import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.helper.ProgressUpdateHelper;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -114,7 +115,7 @@ public abstract class DownloadTask {
     }
 
     protected void notifyFail(Throwable e) {
-        setState(STATE_FAIL);
+        setStateFail(e.getMessage());
         for (int i = downloadListeners.size() - 1; i >= 0; i--) {
             downloadListeners.get(i).onFail(e);
         }
@@ -178,17 +179,31 @@ public abstract class DownloadTask {
     }
 
     private void setState(@State int state) {
+        if (state != STATE_FAIL) {
+            taskEntity.setErrorMsg(null);
+        }
         taskEntity.setState(state);
         DBManager.getInstance().getTaskDao().update(taskEntity);
     }
 
-    public void delete() {
-        pause();
-        DBManager.getInstance().getTaskDao().delete(taskEntity);
-        onDelete();
+    private void setStateFail(String errorMsg) {
+        taskEntity.setErrorMsg(errorMsg);
+        setState(STATE_FAIL);
     }
 
-    protected void onDelete() {
+    public void delete(boolean deleteFile) {
+        pause();
+        DBManager.getInstance().getTaskDao().delete(taskEntity);
+        if (deleteFile) {
+            File file = new File(taskEntity.getSaveDir(), taskEntity.getFileName());
+            if (!file.delete()) {
+                //ignore
+            }
+        }
+        onDelete(deleteFile);
+    }
+
+    protected void onDelete(boolean deleteFile) {
 
     }
 
@@ -233,5 +248,9 @@ public abstract class DownloadTask {
 
     public long getId() {
         return taskEntity.getId();
+    }
+
+    public String getErrorMsg() {
+        return taskEntity.getErrorMsg();
     }
 }

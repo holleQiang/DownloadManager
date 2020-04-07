@@ -75,8 +75,8 @@ public class DownloadManager {
         return downloadTaskList;
     }
 
-    public void deleteTask(DownloadTask downloadTask) {
-        downloadTask.delete();
+    public void deleteTask(DownloadTask downloadTask, boolean deleteFile) {
+        downloadTask.delete(deleteFile);
         downloadTasks.remove(downloadTask.getId());
     }
 
@@ -99,14 +99,24 @@ public class DownloadManager {
         };
     }
 
-    private DownloadTask createDownloadTask(TaskEntity taskEntity) {
+    private DownloadTask createDownloadTask(final TaskEntity taskEntity) {
         String url = taskEntity.getUrl();
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
             return new OkHttpDownloadTask(taskEntity, partSize, mContext);
         }
-        throw new IllegalArgumentException("cannot create task for url : " + url);
+        return new DownloadTask(taskEntity) {
+            @Override
+            protected void onStart() {
+                notifyFail(new RuntimeException("unSupport url : " + taskEntity.getUrl()));
+            }
+
+            @Override
+            protected void onPause() {
+
+            }
+        };
     }
 
     public int getPartSize() {

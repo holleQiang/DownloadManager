@@ -15,6 +15,7 @@ public class TaskEntity implements DBEntity {
     private String lastModified;
     private String contentType;
     private long createTime;
+    private String errorMsg;
 
     @Override
     public String getUniqueId() {
@@ -117,6 +118,15 @@ public class TaskEntity implements DBEntity {
 
     public TaskEntity setId(Long id) {
         this.id = id;
+        return this;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public TaskEntity setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
         return this;
     }
 }

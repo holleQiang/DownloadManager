@@ -1,19 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="56dp"
     android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:layout_height="50dp">
+    android:paddingRight="16dp">
 
-    <TextView
-        android:id="@+id/tv_title"
+
+    <ImageView
+        android:id="@+id/iv_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#333333"
-        android:textSize="16sp"
+        android:src="@mipmap/file_chooser_icon_file"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:textColor="#333333"
+        android:textSize="16sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/iv_image"
+        app:layout_constraintStart_toEndOf="@id/iv_image"
+        app:layout_constraintTop_toTopOf="@id/iv_image"
+        tools:text="目录名称目录名称目录名称目录名称目录名称目录名称" />
 
 </android.support.constraint.ConstraintLayout>

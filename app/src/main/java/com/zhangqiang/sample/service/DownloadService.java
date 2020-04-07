@@ -15,7 +15,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
 import com.zhangqiang.downloadmanager.utils.LogUtils;
-import com.zhangqiang.sample.MainActivity;
+import com.zhangqiang.sample.ui.MainActivity;
 import com.zhangqiang.sample.R;
 
 public class DownloadService extends Service {

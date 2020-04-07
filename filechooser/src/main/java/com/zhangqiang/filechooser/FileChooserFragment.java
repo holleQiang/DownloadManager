@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 public class FileChooserFragment extends Fragment {
 
@@ -47,7 +48,7 @@ public class FileChooserFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Context context = getContext();
         if (context != null) {
-            currentPathOption = Options.ofString("last_string", null,new SharedValueStore(context,"download_config"));
+            currentPathOption = Options.ofString("last_string", null, new SharedValueStore(context, "download_config"));
         }
     }
 
@@ -96,7 +97,7 @@ public class FileChooserFragment extends Fragment {
 
     private void updateCurrentPathView() {
 
-        tvTitle.setText("当前路径:" + currentPathOption.get());
+        tvTitle.setText(String.format(Locale.getDefault(),getResources().getString(R.string.current_path_is),currentPathOption.get()));
     }
 
     OnValueChangedListener currentPathChangedListener = new OnValueChangedListener() {
@@ -127,12 +128,7 @@ public class FileChooserFragment extends Fragment {
             }
         });
         for (int i = 0; i < fileList.size(); i++) {
-            File child = fileList.get(i);
-            if (child.isDirectory()) {
-                cellList.add(makeDirectoryCell(child.getAbsolutePath()));
-            } else if (child.isFile()) {
-                cellList.add(makeFileCell(child.getAbsolutePath()));
-            }
+            cellList.add(makeFileCell(fileList.get(i)));
         }
         return cellList;
     }
@@ -151,31 +147,23 @@ public class FileChooserFragment extends Fragment {
         });
     }
 
-    private Cell makeFileCell(String path) {
-        return new MultiCell<>(R.layout.item_file, path, new ViewHolderBinder<String>() {
+    private Cell makeFileCell(File file) {
+        return new MultiCell<>(R.layout.item_file, file, new ViewHolderBinder<File>() {
             @Override
-            public void onBind(ViewHolder viewHolder, final String s) {
-                Uri uri = Uri.fromFile(new File(s));
+            public void onBind(ViewHolder viewHolder, final File file) {
+                if (file.isFile()) {
+                    viewHolder.setImageResource(R.id.iv_image, R.mipmap.file_chooser_icon_file);
+                } else if (file.isDirectory()) {
+                    viewHolder.setImageResource(R.id.iv_image, R.drawable.file_chooser_icon_dir);
+                }
+                Uri uri = Uri.fromFile(file);
                 viewHolder.setText(R.id.tv_title, uri.getLastPathSegment());
                 viewHolder.getView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                    }
-                });
-            }
-        });
-    }
-
-    private Cell makeDirectoryCell(String directory) {
-        return new MultiCell<>(R.layout.item_directory, directory, new ViewHolderBinder<String>() {
-            @Override
-            public void onBind(ViewHolder viewHolder, final String s) {
-                Uri uri = Uri.fromFile(new File(s));
-                viewHolder.setText(R.id.tv_title, uri.getLastPathSegment());
-                viewHolder.getView().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        forward(s);
+                        if (file.isDirectory()) {
+                            forward(file.getAbsolutePath());
+                        }
                     }
                 });
             }

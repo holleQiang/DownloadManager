@@ -1,4 +1,4 @@
-package com.zhangqiang.sample;
+package com.zhangqiang.sample.ui;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -14,11 +14,10 @@ import android.widget.TextView;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
-import com.zhangqiang.downloadmanager.utils.LogUtils;
+import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.config.Configs;
 
 import java.io.File;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 

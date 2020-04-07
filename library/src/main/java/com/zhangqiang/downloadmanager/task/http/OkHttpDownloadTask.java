@@ -194,10 +194,10 @@ public class OkHttpDownloadTask extends DownloadTask {
     }
 
     @Override
-    protected void onDelete() {
-        super.onDelete();
+    protected void onDelete(boolean deleteFile) {
+        super.onDelete(deleteFile);
         for (int i = 0; i < partTasks.size(); i++) {
-            partTasks.get(i).delete();
+            partTasks.get(i).delete(deleteFile);
         }
     }
 

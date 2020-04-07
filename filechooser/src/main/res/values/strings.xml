@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">My Library</string>
+    <string name="current_path_is">当前路径：%s</string>
 </resources>

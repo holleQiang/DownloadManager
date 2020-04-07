@@ -11,7 +11,7 @@ import com.zhangqiang.downloadmanager.db.dao.TaskDao;
 public class DBManager {
 
     private static final String DB_NAME = "download_manager.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
     private final DBOpenHelper dbOpenHelper;
     private static volatile DBManager instance;
 

@@ -6,6 +6,8 @@ import com.zhangqiang.downloadmanager.db.DBManager;
 import com.zhangqiang.downloadmanager.db.entity.PartEntity;
 import com.zhangqiang.downloadmanager.helper.ProgressUpdateHelper;
 
+import java.io.File;
+
 public abstract class PartTask {
 
     public static final int STATUS_IDLE = 0;
@@ -35,11 +37,6 @@ public abstract class PartTask {
     public void setRange(long start, long end) {
         partEntity.setStart(start);
         partEntity.setEnd(end);
-        DBManager.getInstance().getPartDao().update(partEntity);
-    }
-
-    public void setCurrent(long current) {
-        partEntity.setCurrent(current);
         DBManager.getInstance().getPartDao().update(partEntity);
     }
 
@@ -105,9 +102,8 @@ public abstract class PartTask {
         }
     }
 
-    public PartTask setCallback(Callback callback) {
+    public void setCallback(Callback callback) {
         this.callback = callback;
-        return this;
     }
 
     public void setStatus(int status) {
@@ -135,9 +131,20 @@ public abstract class PartTask {
         return super.equals(obj);
     }
 
-    public void delete() {
+    public void delete(boolean deleteFile) {
         pause();
         DBManager.getInstance().getPartDao().delete(partEntity);
+        if (deleteFile) {
+            File file = new File(partEntity.getSavePath());
+            if (file.delete()) {
+                //ignore
+            }
+        }
+        onDelete(deleteFile);
+    }
+
+    private void onDelete(boolean deleteFile) {
+
     }
 
 

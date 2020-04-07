@@ -25,6 +25,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
     private static final String COLUMN_LAST_MODIFIED = "last_modified";
     private static final String COLUMN_CONTENT_TYPE = "content_type";
     private static final String COLUMN_CREATE_TIME = "create_time";
+    private static final String COLUMN_ERROR_MSG = "error_msg";
 
     public TaskDao(@NonNull SQLiteOpenHelper sqLiteOpenHelper) {
         super(sqLiteOpenHelper);
@@ -75,6 +76,9 @@ public class TaskDao extends BaseDao<TaskEntity> {
         columnEntries.add(new ColumnEntry()
                 .setName(COLUMN_CREATE_TIME)
                 .setType("integer"));
+        columnEntries.add(new ColumnEntry()
+                .setName(COLUMN_ERROR_MSG)
+                .setType("text"));
         return columnEntries;
     }
 
@@ -93,6 +97,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         contentValues.put(COLUMN_LAST_MODIFIED, entity.getLastModified());
         contentValues.put(COLUMN_CONTENT_TYPE, entity.getContentType());
         contentValues.put(COLUMN_CREATE_TIME, entity.getCreateTime());
+        contentValues.put(COLUMN_ERROR_MSG, entity.getErrorMsg());
         return contentValues;
     }
 
@@ -111,6 +116,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         taskEntity.setLastModified(cursor.getString(cursor.getColumnIndex(COLUMN_LAST_MODIFIED)));
         taskEntity.setContentType(cursor.getString(cursor.getColumnIndex(COLUMN_CONTENT_TYPE)));
         taskEntity.setCreateTime(cursor.getLong(cursor.getColumnIndex(COLUMN_CREATE_TIME)));
+        taskEntity.setErrorMsg(cursor.getString(cursor.getColumnIndex(COLUMN_ERROR_MSG)));
         return taskEntity;
     }
 
@@ -132,6 +138,7 @@ public class TaskDao extends BaseDao<TaskEntity> {
         taskEntity.setLastModified(dbEntity.getLastModified());
         taskEntity.setContentType(dbEntity.getContentType());
         taskEntity.setCreateTime(dbEntity.getCreateTime());
+        taskEntity.setErrorMsg(dbEntity.getErrorMsg());
         update(taskEntity, COLUMN_ID + " = ?", new String[]{taskEntity.getId() + ""});
     }
 

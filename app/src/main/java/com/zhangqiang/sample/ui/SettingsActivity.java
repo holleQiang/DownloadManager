@@ -1,4 +1,4 @@
-package com.zhangqiang.sample;
+package com.zhangqiang.sample.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.zhangqiang.activitystart.ActivityStartHelper;
+import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.config.Configs;
 import com.zhangqiang.sample.impl.BaseObserver;
@@ -21,6 +22,7 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTitle(R.string.settings);
         setContentView(R.layout.activity_settings);
         RadioGroup radioGroup = findViewById(R.id.rg_thread_num);
         radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -47,6 +49,7 @@ public class SettingsActivity extends BaseActivity {
             radioButton3.setChecked(true);
         }
 
+        tvCurrentPath = findViewById(R.id.tv_current_path);
         Configs.saveDir.toObservable()
                 .compose(RxJavaUtils.<String>bindLifecycle(this))
                 .subscribe(new BaseObserver<String>() {
@@ -56,7 +59,6 @@ public class SettingsActivity extends BaseActivity {
                         tvCurrentPath.setText(value);
                     }
                 });
-        tvCurrentPath = findViewById(R.id.tv_current_path);
         View.OnClickListener chooseDirListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
