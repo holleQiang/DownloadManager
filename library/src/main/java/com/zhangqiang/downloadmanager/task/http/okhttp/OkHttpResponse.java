@@ -1,4 +1,6 @@
-package com.zhangqiang.downloadmanager.task.http;
+package com.zhangqiang.downloadmanager.task.http.okhttp;
+
+import com.zhangqiang.downloadmanager.task.http.HttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,7 +11,7 @@ import okhttp3.ResponseBody;
 
 public class OkHttpResponse implements HttpResponse {
 
-    private Response response;
+    private final Response response;
 
     public OkHttpResponse(Response response) {
         this.response = response;
@@ -52,7 +54,7 @@ public class OkHttpResponse implements HttpResponse {
     }
 
     @Override
-    public String getHeaderField(String key) {
+    public String getField(String key) {
         return response.header(key);
     }
 

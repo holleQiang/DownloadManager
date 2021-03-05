@@ -18,8 +18,7 @@ public class DMApplication extends Application {
     public void onCreate() {
         application = this;
         super.onCreate();
-        DownloadManager.getInstance().init(this);
-        Intent intent = new Intent(this, DownloadService.class);
-        startService(intent);
+//        Intent intent = new Intent(this, DownloadService.class);
+//        startService(intent);
     }
 }

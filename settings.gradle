@@ -1,1 +1,1 @@
-include ':app', ':library', ':dblibrary', ':filechooser'
+include ':app', ':library', ':filechooser'

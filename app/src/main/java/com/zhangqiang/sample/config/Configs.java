@@ -22,7 +22,7 @@ public class Configs {
             @Override
             public void onNext(Integer value) {
                 super.onNext(value);
-                DownloadManager.getInstance().setPartSize(value);
+//                DownloadManager.getInstance().setPartSize(value);
             }
         });
     }

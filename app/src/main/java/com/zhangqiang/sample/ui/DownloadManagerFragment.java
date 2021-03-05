@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.downloadmanager.DownloadManager;
+import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
@@ -40,7 +41,7 @@ public class DownloadManagerFragment extends BaseFragment {
     public void refresh() {
 
         List<Cell> cellList = new ArrayList<>();
-        List<DownloadTask> allTask = DownloadManager.getInstance().getAllTask();
+        List<TaskEntity> allTask = DownloadManager.getInstance(getContext()).getTaskList();
         if (allTask != null && !allTask.isEmpty()) {
             for (int i = 0; i < allTask.size(); i++) {
                 cellList.add(makeCell(allTask.get(i)));
@@ -60,7 +61,7 @@ public class DownloadManagerFragment extends BaseFragment {
         super.onDestroyView();
     }
 
-    private Cell makeCell(DownloadTask downloadTask) {
+    private Cell makeCell(TaskEntity downloadTask) {
 
         return new DownloadTaskCell(downloadTask, getChildFragmentManager());
     }

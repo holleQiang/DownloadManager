@@ -5,8 +5,6 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebSettings;
 
-import com.zhangqiang.downloadmanager.task.http.OkHttpDownloadTask;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +20,7 @@ public class OkHttpUtils {
     public static OkHttpClient getOkHttpClient(final Context context) {
 
         if (okHttpClient == null) {
-            synchronized (OkHttpDownloadTask.class) {
+            synchronized (OkHttpUtils.class) {
                 if (okHttpClient == null) {
                     okHttpClient = new OkHttpClient.Builder()
                             .connectTimeout(5, TimeUnit.SECONDS)

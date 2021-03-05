@@ -4,49 +4,40 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.Nullable;
 
-import com.zhangqiang.db.DBOpenHelper;
-import com.zhangqiang.downloadmanager.db.dao.PartDao;
-import com.zhangqiang.downloadmanager.db.dao.TaskDao;
+import com.zhangqiang.downloadmanager.db.dao.DaoMaster;
+import com.zhangqiang.downloadmanager.db.dao.DaoSession;
 
 public class DBManager {
 
     private static final String DB_NAME = "download_manager.db";
-    private static final int DB_VERSION = 5;
-    private final DBOpenHelper dbOpenHelper;
     private static volatile DBManager instance;
+    private final ThreadLocal<DaoSession> mDaoSessionRef = new ThreadLocal<DaoSession>(){
+        @Nullable
+        @Override
+        protected DaoSession initialValue() {
+            return mDaoMaster.newSession();
+        }
+    };
+    private final DaoMaster mDaoMaster;
 
-    public static DBManager getInstance() {
+    public static DBManager getInstance(Context context) {
         if (instance == null) {
-            throw new RuntimeException("init method must be called");
+            synchronized (DBManager.class){
+                if (instance == null) {
+                    instance = new DBManager(context.getApplicationContext());
+                }
+            }
         }
         return instance;
     }
 
-    private DBManager(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
-        dbOpenHelper = new DBOpenHelper(context, name, factory, version);
-        dbOpenHelper.registerDao(TaskDao.class);
-        dbOpenHelper.registerDao(PartDao.class);
+    private DBManager(@Nullable Context context) {
+        DaoMaster.DevOpenHelper openHelper = new DaoMaster.DevOpenHelper(context, DB_NAME, null);
+        SQLiteDatabase database = openHelper.getWritableDatabase();
+        mDaoMaster = new DaoMaster(database);
     }
 
-    public static void init(Context context) {
-
-        if (instance != null) {
-            return;
-        }
-        synchronized (DBManager.class) {
-            if (instance == null) {
-                instance = new DBManager(context, DB_NAME, null, DB_VERSION);
-            }
-        }
+    public DaoSession getDaoSession(){
+        return mDaoSessionRef.get();
     }
-
-
-    public TaskDao getTaskDao() {
-        return dbOpenHelper.getDao(TaskDao.class);
-    }
-
-    public PartDao getPartDao() {
-        return dbOpenHelper.getDao(PartDao.class);
-    }
-
 }

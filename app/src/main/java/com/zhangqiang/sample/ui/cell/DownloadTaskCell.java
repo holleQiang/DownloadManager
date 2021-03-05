@@ -3,9 +3,7 @@ package com.zhangqiang.sample.ui.cell;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Toast;
 
@@ -14,6 +12,7 @@ import com.zhangqiang.celladapter.cell.CellParent;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
+import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.UIDownloadListener;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
@@ -25,12 +24,12 @@ import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
 
-public class DownloadTaskCell extends MultiCell<DownloadTask> {
+public class DownloadTaskCell extends MultiCell<TaskEntity> {
 
     private static final String TAG = "DownloadTaskCell";
     private FragmentManager fragmentManager;
 
-    public DownloadTaskCell(DownloadTask data, FragmentManager fragmentManager) {
+    public DownloadTaskCell(TaskEntity data, FragmentManager fragmentManager) {
         super(R.layout.item_download, data, null);
         this.fragmentManager = fragmentManager;
     }
@@ -39,78 +38,26 @@ public class DownloadTaskCell extends MultiCell<DownloadTask> {
     @Override
     protected void onBindViewHolder(final ViewHolder viewHolder) {
         super.onBindViewHolder(viewHolder);
+        final Context context = viewHolder.getView().getContext();
+        final TaskEntity entity = getData();
 
-        final DownloadTask downloadTask = getData();
-
-        updateState(downloadTask, viewHolder);
-        updateProgress(downloadTask, viewHolder);
+        updateState(entity, viewHolder);
+        updateProgress(entity, viewHolder);
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int status = downloadTask.getState();
-                if (status == DownloadTask.STATE_IDLE || status == DownloadTask.STATE_FAIL || status == DownloadTask.STATE_PAUSE) {
-                    downloadTask.start();
-                } else if (status == DownloadTask.STATE_DOWNLOADING) {
-                    downloadTask.pause();
-                } else if (status == DownloadTask.STATE_COMPLETE) {
-                    File file = new File(downloadTask.getSaveDir(), downloadTask.getFileName());
-                    IntentUtils.openFile(v.getContext(), file, downloadTask.getContentType());
+                int status = entity.getState();
+                if (status == DownloadManager.STATE_IDLE || status == DownloadManager.STATE_FAIL || status == DownloadManager.STATE_PAUSE) {
+                    DownloadManager.getInstance(context).start(entity.getId());
+                } else if (status == DownloadManager.STATE_DOWNLOADING) {
+                    DownloadManager.getInstance(context).pause(entity.getId());
+                } else if (status == DownloadManager.STATE_COMPLETE) {
+                    File file = new File(entity.getSaveDir(), entity.getFileName());
+                    IntentUtils.openFile(v.getContext(), file, entity.getContentType());
                 }
             }
         });
-        Cell.setOnAttachStateChangeListener(R.id.tag_key_attach_listener, viewHolder.getView(), new View.OnAttachStateChangeListener() {
-
-            UIDownloadListener downloadListener = new UIDownloadListener() {
-                @Override
-                protected void onDownloadStart() {
-                    super.onDownloadStart();
-                    updateState(downloadTask, viewHolder);
-                }
-
-                @Override
-                protected void onDownloadProgress(long current, long total) {
-                    super.onDownloadProgress(current, total);
-                    updateProgress(downloadTask, viewHolder);
-                }
-
-                @Override
-                protected void onDownloadComplete() {
-                    super.onDownloadComplete();
-                    updateState(downloadTask, viewHolder);
-                }
-
-                @Override
-                protected void onDownloadFail(Throwable e) {
-                    super.onDownloadFail(e);
-                    updateState(downloadTask, viewHolder);
-                }
-
-                @Override
-                protected void onDownloadPause() {
-                    super.onDownloadPause();
-                    updateState(downloadTask, viewHolder);
-                }
-
-                @Override
-                protected void onDownloadSpeed(long length, long timeMillions) {
-                    super.onDownloadSpeed(length, timeMillions);
-                    LogUtils.i(TAG, "=======onDownloadSpeed========");
-                    long speed = timeMillions > 0 ? length / timeMillions * 1000 : 0;
-                    viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(speed) + "/s");
-                }
-            };
-
-            @Override
-            public void onViewAttachedToWindow(View v) {
-                downloadTask.addDownloadListener(downloadListener);
-            }
-
-            @Override
-            public void onViewDetachedFromWindow(View v) {
-                downloadTask.removeDownloadListener(downloadListener);
-                downloadListener.stopSpeedCalculator();
-            }
-        });
+        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(100) + "/s");
 
         viewHolder.getView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -121,7 +68,7 @@ public class DownloadTaskCell extends MultiCell<DownloadTask> {
                     @Override
                     public void onCopyLinkClick() {
 
-                        copy(context, downloadTask.getUrl());
+                        copy(context, entity.getUrl());
                         Toast.makeText(context,R.string.copy_success,Toast.LENGTH_SHORT).show();
                     }
 
@@ -132,7 +79,7 @@ public class DownloadTaskCell extends MultiCell<DownloadTask> {
                         dialog.setListener(new TaskDeleteConfirmDialog.Listener() {
                             @Override
                             public void onConfirm(boolean deleteFile) {
-                                DownloadManager.getInstance().deleteTask(downloadTask, deleteFile);
+                                DownloadManager.getInstance(context).deleteTask(entity.getId(), deleteFile);
                                 CellParent parent = getParent();
                                 if (parent != null) {
                                     parent.removeData(DownloadTaskCell.this);
@@ -149,23 +96,23 @@ public class DownloadTaskCell extends MultiCell<DownloadTask> {
         });
     }
 
-    private void updateState(DownloadTask downloadTask, ViewHolder viewHolder) {
+    private void updateState(TaskEntity downloadTask, ViewHolder viewHolder) {
         viewHolder.setText(R.id.tv_file_name, downloadTask.getFileName());
         int status = downloadTask.getState();
-        if (status == DownloadTask.STATE_IDLE) {
+        if (status == DownloadManager.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.download);
             changeVisible(viewHolder, false);
-        } else if (status == DownloadTask.STATE_DOWNLOADING) {
+        } else if (status == DownloadManager.STATE_DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
             changeVisible(viewHolder, false);
-        } else if (status == DownloadTask.STATE_COMPLETE) {
+        } else if (status == DownloadManager.STATE_COMPLETE) {
             viewHolder.setText(R.id.bt_state, R.string.open);
             changeVisible(viewHolder, false);
-        } else if (status == DownloadTask.STATE_FAIL) {
+        } else if (status == DownloadManager.STATE_FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
             changeVisible(viewHolder, true);
             viewHolder.setText(R.id.tv_error, downloadTask.getErrorMsg());
-        } else if (status == DownloadTask.STATE_PAUSE) {
+        } else if (status == DownloadManager.STATE_PAUSE) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisible(viewHolder, false);
         }
@@ -179,7 +126,7 @@ public class DownloadTaskCell extends MultiCell<DownloadTask> {
         viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
     }
 
-    private void updateProgress(DownloadTask downloadTask, ViewHolder viewHolder) {
+    private void updateProgress(TaskEntity downloadTask, ViewHolder viewHolder) {
         long currentLength = downloadTask.getCurrentLength();
         long totalLength = downloadTask.getTotalLength();
         int progress = (int) ((float) currentLength / totalLength * 100);

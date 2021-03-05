@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.http.okhttp.OKHttpPartDownloadTask;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.config.Configs;
 
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
+        etUrl.setText("https://t7.baidu.com/it/u=2851687453,2321283050&fm=193&f=GIF");
         downloadManagerFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
                 .commit();
@@ -82,8 +83,7 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(saveDir)) {
             saveDir = new File(getFilesDir(), "download").getAbsolutePath();
         }
-        DownloadTask task = DownloadManager.getInstance().download(url, saveDir);
-
+        DownloadManager.getInstance(this).download(url);
         downloadManagerFragment.refresh();
     }
 }

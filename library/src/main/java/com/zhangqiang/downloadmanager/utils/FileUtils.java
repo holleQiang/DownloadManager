@@ -32,8 +32,12 @@ public class FileUtils {
                 }
             }
         } finally {
-            IOUtils.closeSilently(accessFile);
-            IOUtils.closeSilently(is);
+            if (accessFile != null) {
+                accessFile.close();
+            }
+            if (is != null) {
+                is.close();
+            }
         }
     }
 

@@ -1,72 +1,85 @@
 package com.zhangqiang.downloadmanager.db.entity;
 
-import com.zhangqiang.db.entity.DBEntity;
 
-public class PartEntity implements DBEntity {
+import org.greenrobot.greendao.annotation.Entity;
+import org.greenrobot.greendao.annotation.Id;
+import org.greenrobot.greendao.annotation.Generated;
 
-    private String url;
+@Entity
+public class PartEntity {
+
+    @Id(autoincrement = true)
+    private Long id;
+    private Long taskId;
     private String savePath;
     private long current;
     private long start;
     private long end;
-    private int status;
-
-    @Override
-    public String getUniqueId() {
-        return savePath;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public PartEntity setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    public String getSavePath() {
-        return savePath;
-    }
-
-    public PartEntity setSavePath(String savePath) {
+    private int threadIndex;
+    private int threadSize;
+    @Generated(hash = 438155101)
+    public PartEntity(Long id, Long taskId, String savePath, long current,
+            long start, long end, int threadIndex, int threadSize) {
+        this.id = id;
+        this.taskId = taskId;
         this.savePath = savePath;
-        return this;
-    }
-
-    public long getCurrent() {
-        return current;
-    }
-
-    public PartEntity setCurrent(long current) {
         this.current = current;
-        return this;
-    }
-
-    public long getStart() {
-        return start;
-    }
-
-    public PartEntity setStart(long start) {
         this.start = start;
-        return this;
-    }
-
-    public long getEnd() {
-        return end;
-    }
-
-    public PartEntity setEnd(long end) {
         this.end = end;
-        return this;
+        this.threadIndex = threadIndex;
+        this.threadSize = threadSize;
+    }
+    @Generated(hash = 711446309)
+    public PartEntity() {
+    }
+    public Long getId() {
+        return this.id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public Long getTaskId() {
+        return this.taskId;
+    }
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
+    public String getSavePath() {
+        return this.savePath;
+    }
+    public void setSavePath(String savePath) {
+        this.savePath = savePath;
+    }
+    public long getCurrent() {
+        return this.current;
+    }
+    public void setCurrent(long current) {
+        this.current = current;
+    }
+    public long getStart() {
+        return this.start;
+    }
+    public void setStart(long start) {
+        this.start = start;
+    }
+    public long getEnd() {
+        return this.end;
+    }
+    public void setEnd(long end) {
+        this.end = end;
+    }
+    public int getThreadIndex() {
+        return this.threadIndex;
+    }
+    public void setThreadIndex(int threadIndex) {
+        this.threadIndex = threadIndex;
+    }
+    public int getThreadSize() {
+        return this.threadSize;
+    }
+    public void setThreadSize(int threadSize) {
+        this.threadSize = threadSize;
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public PartEntity setStatus(int status) {
-        this.status = status;
-        return this;
-    }
+    
 }
