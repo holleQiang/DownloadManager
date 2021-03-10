@@ -21,5 +21,6 @@
     <string name="delete_task">删除任务</string>
     <string name="delete_file">删除文件</string>
     <string name="copy_success">复制成功</string>
+    <string name="waiting">等待中...</string>
 
 </resources>

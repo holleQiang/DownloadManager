@@ -21,7 +21,7 @@ public class TaskEntity{
     private String saveDir;
     private String fileName;
     private long currentLength;
-    private long totalLength;
+    private long contentLength;
     private int state;
     private String eTag;
     private String lastModified;
@@ -37,9 +37,9 @@ public class TaskEntity{
     /** Used for active entity operations. */
     @Generated(hash = 263689402)
     private transient TaskEntityDao myDao;
-    @Generated(hash = 1922765933)
+    @Generated(hash = 1884574042)
     public TaskEntity(Long id, String url, String saveDir, String fileName,
-            long currentLength, long totalLength, int state, String eTag,
+            long currentLength, long contentLength, int state, String eTag,
             String lastModified, String contentType, long createTime,
             String errorMsg, int threadSize) {
         this.id = id;
@@ -47,7 +47,7 @@ public class TaskEntity{
         this.saveDir = saveDir;
         this.fileName = fileName;
         this.currentLength = currentLength;
-        this.totalLength = totalLength;
+        this.contentLength = contentLength;
         this.state = state;
         this.eTag = eTag;
         this.lastModified = lastModified;
@@ -89,11 +89,11 @@ public class TaskEntity{
     public void setCurrentLength(long currentLength) {
         this.currentLength = currentLength;
     }
-    public long getTotalLength() {
-        return this.totalLength;
+    public long getContentLength() {
+        return this.contentLength;
     }
-    public void setTotalLength(long totalLength) {
-        this.totalLength = totalLength;
+    public void setContentLength(long contentLength) {
+        this.contentLength = contentLength;
     }
     public int getState() {
         return this.state;
@@ -202,6 +202,5 @@ public class TaskEntity{
         this.daoSession = daoSession;
         myDao = daoSession != null ? daoSession.getTaskEntityDao() : null;
     }
-    
-
+   
 }

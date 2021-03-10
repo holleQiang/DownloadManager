@@ -32,12 +32,16 @@ public abstract class DownloadTask {
 
     public abstract boolean isRunning();
 
+    public abstract long getCurrentLength();
+
     public final void start() {
         onStart();
     }
 
     public final void cancel() {
-        onCancel();
+        if (isRunning()) {
+            onCancel();
+        }
     }
 
     protected synchronized void notifyComplete() {

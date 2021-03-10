@@ -1,5 +1,7 @@
 package com.zhangqiang.downloadmanager.utils;
 
+import android.text.TextUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +64,10 @@ public class FileUtils {
         String targetFileName = fileName;
         for (int i = 1; i < Integer.MAX_VALUE; i++) {
 
-            targetFileName = firstName + "(" + i + ")." + lastName;
+            targetFileName = firstName + "(" + i + ")";
+            if (!TextUtils.isEmpty(lastName)) {
+                targetFileName += "." + lastName;
+            }
             File file = new File(dir, targetFileName);
             if (!file.exists()) {
                 break;

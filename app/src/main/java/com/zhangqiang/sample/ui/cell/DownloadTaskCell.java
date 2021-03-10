@@ -7,15 +7,12 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Toast;
 
-import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.celladapter.cell.CellParent;
 import com.zhangqiang.celladapter.cell.MultiCell;
+import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
-import com.zhangqiang.downloadmanager.task.DownloadTask;
-import com.zhangqiang.downloadmanager.task.UIDownloadListener;
-import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskDeleteConfirmDialog;
@@ -41,13 +38,14 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         final Context context = viewHolder.getView().getContext();
         final TaskEntity entity = getData();
 
-        updateState(entity, viewHolder);
-        updateProgress(entity, viewHolder);
+        updateState(viewHolder);
+        updateInfo(viewHolder);
+        updateProgress(viewHolder);
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int status = entity.getState();
-                if (status == DownloadManager.STATE_IDLE || status == DownloadManager.STATE_FAIL || status == DownloadManager.STATE_PAUSE) {
+                if (status == DownloadManager.STATE_FAIL || status == DownloadManager.STATE_PAUSE) {
                     DownloadManager.getInstance(context).start(entity.getId());
                 } else if (status == DownloadManager.STATE_DOWNLOADING) {
                     DownloadManager.getInstance(context).pause(entity.getId());
@@ -96,11 +94,12 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         });
     }
 
-    private void updateState(TaskEntity downloadTask, ViewHolder viewHolder) {
-        viewHolder.setText(R.id.tv_file_name, downloadTask.getFileName());
-        int status = downloadTask.getState();
+    private void updateState( ViewHolder viewHolder) {
+        TaskEntity data = getData();
+
+        int status = data.getState();
         if (status == DownloadManager.STATE_IDLE) {
-            viewHolder.setText(R.id.bt_state, R.string.download);
+            viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisible(viewHolder, false);
         } else if (status == DownloadManager.STATE_DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
@@ -111,11 +110,16 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         } else if (status == DownloadManager.STATE_FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
             changeVisible(viewHolder, true);
-            viewHolder.setText(R.id.tv_error, downloadTask.getErrorMsg());
+            viewHolder.setText(R.id.tv_error, data.getErrorMsg());
         } else if (status == DownloadManager.STATE_PAUSE) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisible(viewHolder, false);
         }
+    }
+
+    private void updateInfo(ViewHolder viewHolder){
+        TaskEntity data = getData();
+        viewHolder.setText(R.id.tv_file_name,data.getFileName());
     }
 
     private void changeVisible(ViewHolder viewHolder, boolean isError) {
@@ -126,9 +130,10 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
     }
 
-    private void updateProgress(TaskEntity downloadTask, ViewHolder viewHolder) {
-        long currentLength = downloadTask.getCurrentLength();
-        long totalLength = downloadTask.getTotalLength();
+    private void updateProgress(ViewHolder viewHolder) {
+        TaskEntity data = getData();
+        long currentLength = data.getCurrentLength();
+        long totalLength = data.getContentLength();
         int progress = (int) ((float) currentLength / totalLength * 100);
         viewHolder.setProgress(R.id.pb_download_progress, progress);
         viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
@@ -145,5 +150,32 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         }
         ClipData clipData = ClipData.newPlainText(url, url);
         clipboardManager.setPrimaryClip(clipData);
+    }
+
+    public void updateProgress() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateProgress(viewHolder);
+            }
+        });
+    }
+
+    public void updateInfo() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateInfo(viewHolder);
+            }
+        });
+    }
+
+    public void updateState() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateState(viewHolder);
+            }
+        });
     }
 }

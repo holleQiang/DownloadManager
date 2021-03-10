@@ -22,27 +22,29 @@ import okhttp3.Callback;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class OKHttpPartDownloadTask extends DownloadTask {
+public class OKHttpDownloadPartTask extends DownloadTask {
 
-    public static final String TAG = OKHttpPartDownloadTask.class.getSimpleName();
+    public static final String TAG = OKHttpDownloadPartTask.class.getSimpleName();
 
     private final Context context;
     private final String url;
     private final long fromPosition;
+    private final long initialCurrentPosition;
+    private volatile long currentPosition;
     private final long toPosition;
     private final String savePath;
     private Call call;
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
-    private OnProgressChangeListener onProgressChangeListener;
 
-    public OKHttpPartDownloadTask(Context context, String url, long fromPosition, long toPosition, String savePath) {
+    public OKHttpDownloadPartTask(Context context, String url, long fromPosition, long currentPosition, long toPosition, String savePath) {
         this.context = context;
         this.url = url;
         this.fromPosition = fromPosition;
+        this.currentPosition = this.initialCurrentPosition = currentPosition;
         this.toPosition = toPosition;
         this.savePath = savePath;
-        if(fromPosition < 0 || toPosition < 0){
-            throw new IllegalArgumentException("illegal param for position:from-" + fromPosition + ",to-"+toPosition);
+        if (fromPosition < 0 || toPosition < 0 || currentPosition < fromPosition) {
+            throw new IllegalArgumentException("illegal param for position:from-" + fromPosition + ",to-" + toPosition);
         }
     }
 
@@ -53,18 +55,17 @@ public class OKHttpPartDownloadTask extends DownloadTask {
             return;
         }
         notifyStart();
+        if (isFinished()) {
+            notifyComplete();
+            setStartFalse();
+            return;
+        }
         final Request.Builder builder = new Request.Builder()
                 .get()
                 .url(url);
-        if (fromPosition >=0) {
-            StringBuilder  sb = new StringBuilder("bytes=");
-            sb.append(fromPosition);
-            sb.append("-");
-            if (toPosition >= 0) {
-                sb.append(toPosition);
-            }
-            builder.header("Range", sb.toString());
-        }
+        builder.header("Range", "bytes=" + currentPosition +
+                "-" +
+                toPosition);
         Request request = builder.build();
         call = OkHttpUtils.getOkHttpClient(context).newCall(request);
         call.enqueue(new Callback() {
@@ -72,7 +73,7 @@ public class OKHttpPartDownloadTask extends DownloadTask {
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
                 setStartFalse();
                 if (!call.isCanceled()) {
-                    notifyFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL,e));
+                    notifyFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
                 }
             }
 
@@ -82,25 +83,30 @@ public class OKHttpPartDownloadTask extends DownloadTask {
                 HttpResponse httpResponse = null;
                 try {
 
-                     httpResponse = new OkHttpResponse(response);
+                    httpResponse = new OkHttpResponse(response);
 
                     int responseCode = httpResponse.getResponseCode();
                     if (responseCode == 206) {
                         doRangeWrite(httpResponse);
-                        LogUtils.i(TAG,"下载完成" + savePath);
+                        LogUtils.i(TAG, "下载完成" + savePath);
+                        setStartFalse();
                         notifyComplete();
-                    }else if(responseCode == 200){
-                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR,"try use range download to a not support resource:" + url));
-                    }else {
-                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR,"http response error:code:" + responseCode));
+                    } else if (responseCode == 200) {
+                        setStartFalse();
+                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "try use range download to a not support resource:" + url));
+                    } else {
+                        setStartFalse();
+                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
                     }
                 } catch (IOException e) {
                     if (!call.isCanceled()) {
-                        notifyFail(new DownloadException(DownloadException.WRITE_FILE_FAIL,e));
+                        setStartFalse();
+                        notifyFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
                     }
-                }finally {
-                    httpResponse.close();
-                    setStartFalse();
+                } finally {
+                    if (httpResponse != null) {
+                        httpResponse.close();
+                    }
                 }
             }
         });
@@ -110,22 +116,22 @@ public class OKHttpPartDownloadTask extends DownloadTask {
 
         RangePart rangePart = HttpUtils.parseRangePart(httpResponse);
         LogUtils.i(TAG, savePath + "============" + rangePart);
-        final long start;
-        final long end;
-        start = rangePart.getStart();
-        end = rangePart.getEnd();
+        final long start = rangePart.getStart();
+        final long end = rangePart.getEnd();
+        if (start != currentPosition && end != toPosition) {
+            notifyFail(new DownloadException(DownloadException.RANGE_CHANGED, "range has changed"));
+            return;
+        }
+        long fileSeek = initialCurrentPosition - fromPosition;
         InputStream inputStream = httpResponse.getInputStream();
-        FileUtils.writeToFileFrom(inputStream, new File(savePath),start, new FileUtils.WriteFileListener() {
-            long current = start;
+        FileUtils.writeToFileFrom(inputStream, new File(savePath), fileSeek, new FileUtils.WriteFileListener() {
+
             @Override
             public void onWriteFile(byte[] buffer, int offset, int len) {
-                current += len;
-                if (onProgressChangeListener != null) {
-                    onProgressChangeListener.onProgressChange(current,start,end);
-                }
+                currentPosition = currentPosition + len;
             }
         });
-
+        LogUtils.i(TAG,  "======write finished===start="+fromPosition+"=currentPosition=" + currentPosition + "==end=" +toPosition);
     }
 
     @Override
@@ -143,15 +149,28 @@ public class OKHttpPartDownloadTask extends DownloadTask {
         return mRunning.get();
     }
 
-    private void setStartFalse(){
+    private void setStartFalse() {
         mRunning.getAndSet(false);
     }
 
-    public interface OnProgressChangeListener{
-        void onProgressChange(long current,long from,long to);
+    @Override
+    public long getCurrentLength() {
+        return currentPosition;
     }
 
-    public void setOnProgressChangeListener(OnProgressChangeListener onProgressChangeListener) {
-        this.onProgressChangeListener = onProgressChangeListener;
+    public boolean isFinished() {
+        return currentPosition >= toPosition;
+    }
+
+    public long getFromPosition() {
+        return fromPosition;
+    }
+
+    public long getToPosition() {
+        return toPosition;
+    }
+
+    public String getSavePath() {
+        return savePath;
     }
 }

@@ -29,7 +29,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
         public final static Property SaveDir = new Property(2, String.class, "saveDir", false, "SAVE_DIR");
         public final static Property FileName = new Property(3, String.class, "fileName", false, "FILE_NAME");
         public final static Property CurrentLength = new Property(4, long.class, "currentLength", false, "CURRENT_LENGTH");
-        public final static Property TotalLength = new Property(5, long.class, "totalLength", false, "TOTAL_LENGTH");
+        public final static Property ContentLength = new Property(5, long.class, "contentLength", false, "CONTENT_LENGTH");
         public final static Property State = new Property(6, int.class, "state", false, "STATE");
         public final static Property ETag = new Property(7, String.class, "eTag", false, "E_TAG");
         public final static Property LastModified = new Property(8, String.class, "lastModified", false, "LAST_MODIFIED");
@@ -60,7 +60,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
                 "\"SAVE_DIR\" TEXT," + // 2: saveDir
                 "\"FILE_NAME\" TEXT," + // 3: fileName
                 "\"CURRENT_LENGTH\" INTEGER NOT NULL ," + // 4: currentLength
-                "\"TOTAL_LENGTH\" INTEGER NOT NULL ," + // 5: totalLength
+                "\"CONTENT_LENGTH\" INTEGER NOT NULL ," + // 5: contentLength
                 "\"STATE\" INTEGER NOT NULL ," + // 6: state
                 "\"E_TAG\" TEXT," + // 7: eTag
                 "\"LAST_MODIFIED\" TEXT," + // 8: lastModified
@@ -100,7 +100,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
             stmt.bindString(4, fileName);
         }
         stmt.bindLong(5, entity.getCurrentLength());
-        stmt.bindLong(6, entity.getTotalLength());
+        stmt.bindLong(6, entity.getContentLength());
         stmt.bindLong(7, entity.getState());
  
         String eTag = entity.getETag();
@@ -150,7 +150,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
             stmt.bindString(4, fileName);
         }
         stmt.bindLong(5, entity.getCurrentLength());
-        stmt.bindLong(6, entity.getTotalLength());
+        stmt.bindLong(6, entity.getContentLength());
         stmt.bindLong(7, entity.getState());
  
         String eTag = entity.getETag();
@@ -195,7 +195,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // saveDir
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // fileName
             cursor.getLong(offset + 4), // currentLength
-            cursor.getLong(offset + 5), // totalLength
+            cursor.getLong(offset + 5), // contentLength
             cursor.getInt(offset + 6), // state
             cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // eTag
             cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // lastModified
@@ -214,7 +214,7 @@ public class TaskEntityDao extends AbstractDao<TaskEntity, Long> {
         entity.setSaveDir(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setFileName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setCurrentLength(cursor.getLong(offset + 4));
-        entity.setTotalLength(cursor.getLong(offset + 5));
+        entity.setContentLength(cursor.getLong(offset + 5));
         entity.setState(cursor.getInt(offset + 6));
         entity.setETag(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
         entity.setLastModified(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));

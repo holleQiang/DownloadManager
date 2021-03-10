@@ -4,22 +4,25 @@ package com.zhangqiang.downloadmanager.db.entity;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.NotNull;
 
 @Entity
 public class PartEntity {
 
     @Id(autoincrement = true)
     private Long id;
+    @NotNull
     private Long taskId;
+    @NotNull
     private String savePath;
     private long current;
     private long start;
     private long end;
     private int threadIndex;
     private int threadSize;
-    @Generated(hash = 438155101)
-    public PartEntity(Long id, Long taskId, String savePath, long current,
-            long start, long end, int threadIndex, int threadSize) {
+    @Generated(hash = 675943319)
+    public PartEntity(Long id, @NotNull Long taskId, @NotNull String savePath,
+            long current, long start, long end, int threadIndex, int threadSize) {
         this.id = id;
         this.taskId = taskId;
         this.savePath = savePath;

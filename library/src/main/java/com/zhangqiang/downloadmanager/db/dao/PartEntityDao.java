@@ -52,8 +52,8 @@ public class PartEntityDao extends AbstractDao<PartEntity, Long> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"PART_ENTITY\" (" + //
                 "\"_id\" INTEGER PRIMARY KEY AUTOINCREMENT ," + // 0: id
-                "\"TASK_ID\" INTEGER," + // 1: taskId
-                "\"SAVE_PATH\" TEXT," + // 2: savePath
+                "\"TASK_ID\" INTEGER NOT NULL ," + // 1: taskId
+                "\"SAVE_PATH\" TEXT NOT NULL ," + // 2: savePath
                 "\"CURRENT\" INTEGER NOT NULL ," + // 3: current
                 "\"START\" INTEGER NOT NULL ," + // 4: start
                 "\"END\" INTEGER NOT NULL ," + // 5: end
@@ -75,16 +75,8 @@ public class PartEntityDao extends AbstractDao<PartEntity, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        Long taskId = entity.getTaskId();
-        if (taskId != null) {
-            stmt.bindLong(2, taskId);
-        }
- 
-        String savePath = entity.getSavePath();
-        if (savePath != null) {
-            stmt.bindString(3, savePath);
-        }
+        stmt.bindLong(2, entity.getTaskId());
+        stmt.bindString(3, entity.getSavePath());
         stmt.bindLong(4, entity.getCurrent());
         stmt.bindLong(5, entity.getStart());
         stmt.bindLong(6, entity.getEnd());
@@ -100,16 +92,8 @@ public class PartEntityDao extends AbstractDao<PartEntity, Long> {
         if (id != null) {
             stmt.bindLong(1, id);
         }
- 
-        Long taskId = entity.getTaskId();
-        if (taskId != null) {
-            stmt.bindLong(2, taskId);
-        }
- 
-        String savePath = entity.getSavePath();
-        if (savePath != null) {
-            stmt.bindString(3, savePath);
-        }
+        stmt.bindLong(2, entity.getTaskId());
+        stmt.bindString(3, entity.getSavePath());
         stmt.bindLong(4, entity.getCurrent());
         stmt.bindLong(5, entity.getStart());
         stmt.bindLong(6, entity.getEnd());
@@ -126,8 +110,8 @@ public class PartEntityDao extends AbstractDao<PartEntity, Long> {
     public PartEntity readEntity(Cursor cursor, int offset) {
         PartEntity entity = new PartEntity( //
             cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1), // taskId
-            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // savePath
+            cursor.getLong(offset + 1), // taskId
+            cursor.getString(offset + 2), // savePath
             cursor.getLong(offset + 3), // current
             cursor.getLong(offset + 4), // start
             cursor.getLong(offset + 5), // end
@@ -140,8 +124,8 @@ public class PartEntityDao extends AbstractDao<PartEntity, Long> {
     @Override
     public void readEntity(Cursor cursor, PartEntity entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getLong(offset + 0));
-        entity.setTaskId(cursor.isNull(offset + 1) ? null : cursor.getLong(offset + 1));
-        entity.setSavePath(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setTaskId(cursor.getLong(offset + 1));
+        entity.setSavePath(cursor.getString(offset + 2));
         entity.setCurrent(cursor.getLong(offset + 3));
         entity.setStart(cursor.getLong(offset + 4));
         entity.setEnd(cursor.getLong(offset + 5));

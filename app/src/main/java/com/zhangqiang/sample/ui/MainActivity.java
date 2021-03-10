@@ -13,8 +13,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.task.DownloadTask;
-import com.zhangqiang.downloadmanager.task.http.okhttp.OKHttpPartDownloadTask;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.config.Configs;
 
@@ -40,11 +38,11 @@ public class MainActivity extends AppCompatActivity {
                     }
                     download(text.toString());
                 }
-                etUrl.getText().clear();
+//                etUrl.getText().clear();
                 return false;
             }
         });
-        etUrl.setText("https://t7.baidu.com/it/u=2851687453,2321283050&fm=193&f=GIF");
+        etUrl.setText("https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd");
         downloadManagerFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
                 .commit();
