@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager;
+package com.zhangqiang.downloadmanager.listener;
 
 public interface DownloadTaskListener {
 
@@ -11,4 +11,6 @@ public interface DownloadTaskListener {
     void onTaskInfoChanged(long id);
 
     void onTaskProgressChanged(long id);
+
+    void onTaskSpeedChanged(long id);
 }

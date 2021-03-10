@@ -15,8 +15,9 @@ import android.view.ViewGroup;
 import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.DownloadTaskListener;
-import com.zhangqiang.downloadmanager.UIDownloadTaskListener;
+import com.zhangqiang.downloadmanager.TaskInfo;
+import com.zhangqiang.downloadmanager.listener.DownloadTaskListener;
+import com.zhangqiang.downloadmanager.listener.UIDownloadTaskListener;
 import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
@@ -30,21 +31,6 @@ public class DownloadManagerFragment extends BaseFragment {
     private RecyclerView recyclerView;
     private CellRVAdapter cellRVAdapter;
     public static final String TAG = "DownloadManagerFragment";
-    private Handler mHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            long taskId = (long) msg.obj;
-            int dataCount = cellRVAdapter.getDataCount();
-            for (int i = 0; i < dataCount; i++) {
-                DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
-                TaskEntity taskEntity = cell.getData();
-                if (taskEntity.getId() == taskId) {
-                    cell.updateProgress();
-                }
-            }
-        }
-    };
 
     @Nullable
     @Override
@@ -60,7 +46,7 @@ public class DownloadManagerFragment extends BaseFragment {
     public void refresh() {
 
         List<Cell> cellList = new ArrayList<>();
-        List<TaskEntity> allTask = DownloadManager.getInstance(getContext()).getTaskList();
+        List<TaskInfo> allTask = DownloadManager.getInstance(getContext()).getTaskList();
         if (allTask != null && !allTask.isEmpty()) {
             for (int i = 0; i < allTask.size(); i++) {
                 cellList.add(makeCell(allTask.get(i)));
@@ -82,7 +68,7 @@ public class DownloadManagerFragment extends BaseFragment {
         DownloadManager.getInstance(getContext()).addDownloadTaskListener(onProgressChangedListener);
     }
 
-    private Cell makeCell(TaskEntity downloadTask) {
+    private Cell makeCell(TaskInfo downloadTask) {
 
         return new DownloadTaskCell(downloadTask, getChildFragmentManager());
     }
@@ -93,6 +79,14 @@ public class DownloadManagerFragment extends BaseFragment {
             DownloadTaskCell cell = findCellByTaskId(id);
             if (cell != null) {
                 cell.updateProgress();
+            }
+        }
+
+        @Override
+        protected void onTaskSpeedChangedMain(long id) {
+            DownloadTaskCell cell = findCellByTaskId(id);
+            if (cell != null) {
+                cell.updateSpeed();
             }
         }
 
@@ -117,7 +111,7 @@ public class DownloadManagerFragment extends BaseFragment {
             int dataCount = cellRVAdapter.getDataCount();
             for (int i = 0; i < dataCount; i++) {
                 DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
-                TaskEntity taskEntity = cell.getData();
+                TaskInfo taskEntity = cell.getData();
                 if (taskEntity.getId() == id) {
                     cellRVAdapter.removeDataAtIndex(i);
                 }
@@ -134,7 +128,7 @@ public class DownloadManagerFragment extends BaseFragment {
         int dataCount = cellRVAdapter.getDataCount();
         for (int i = 0; i < dataCount; i++) {
             DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
-            TaskEntity taskEntity = cell.getData();
+            TaskInfo taskEntity = cell.getData();
             if (taskEntity.getId() == id) {
                 return cell;
             }

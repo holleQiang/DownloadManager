@@ -37,7 +37,7 @@ public class OKHttpDownloadTask extends DownloadTask {
     private final String url;
     private final String saveDir;
     private long contentLength;
-    private int threadSize;
+    private final int threadSize;
     private Call call;
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
     private String fileName;

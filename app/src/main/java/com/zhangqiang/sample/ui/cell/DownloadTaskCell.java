@@ -12,6 +12,7 @@ import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
+import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
@@ -21,12 +22,12 @@ import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
 
-public class DownloadTaskCell extends MultiCell<TaskEntity> {
+public class DownloadTaskCell extends MultiCell<TaskInfo> {
 
     private static final String TAG = "DownloadTaskCell";
     private FragmentManager fragmentManager;
 
-    public DownloadTaskCell(TaskEntity data, FragmentManager fragmentManager) {
+    public DownloadTaskCell(TaskInfo data, FragmentManager fragmentManager) {
         super(R.layout.item_download, data, null);
         this.fragmentManager = fragmentManager;
     }
@@ -36,7 +37,7 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
     protected void onBindViewHolder(final ViewHolder viewHolder) {
         super.onBindViewHolder(viewHolder);
         final Context context = viewHolder.getView().getContext();
-        final TaskEntity entity = getData();
+        final TaskInfo entity = getData();
 
         updateState(viewHolder);
         updateInfo(viewHolder);
@@ -55,8 +56,7 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
                 }
             }
         });
-        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(100) + "/s");
-
+        updateSpeed(viewHolder);
         viewHolder.getView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(final View v) {
@@ -94,8 +94,22 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
         });
     }
 
+    private void updateSpeed(ViewHolder viewHolder) {
+        TaskInfo data = getData();
+        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
+    }
+
+    public void updateSpeed(){
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateSpeed(viewHolder);
+            }
+        });
+    }
+
     private void updateState( ViewHolder viewHolder) {
-        TaskEntity data = getData();
+        TaskInfo data = getData();
 
         int status = data.getState();
         if (status == DownloadManager.STATE_IDLE) {
@@ -118,7 +132,7 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
     }
 
     private void updateInfo(ViewHolder viewHolder){
-        TaskEntity data = getData();
+        TaskInfo data = getData();
         viewHolder.setText(R.id.tv_file_name,data.getFileName());
     }
 
@@ -131,7 +145,7 @@ public class DownloadTaskCell extends MultiCell<TaskEntity> {
     }
 
     private void updateProgress(ViewHolder viewHolder) {
-        TaskEntity data = getData();
+        TaskInfo data = getData();
         long currentLength = data.getCurrentLength();
         long totalLength = data.getContentLength();
         int progress = (int) ((float) currentLength / totalLength * 100);

@@ -1,18 +1,19 @@
-package com.zhangqiang.downloadmanager;
+package com.zhangqiang.downloadmanager.listener;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-public abstract class UIDownloadTaskListener implements DownloadTaskListener{
+public abstract class UIDownloadTaskListener implements DownloadTaskListener {
 
     public static final int MSG_TASK_ADDED = 0;
     public static final int MSG_TASK_REMOVED = 1;
     public static final int MSG_TASK_STATE_CHANGED = 2;
     public static final int MSG_TASK_INFO_CHANGED = 3;
     public static final int MSG_TASK_PROGRESS_CHANGED = 4;
+    public static final int MSG_TASK_SPEED_CHANGED = 5;
 
-    private Handler mHandler = new Handler(Looper.getMainLooper()){
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
@@ -32,11 +33,16 @@ public abstract class UIDownloadTaskListener implements DownloadTaskListener{
                 case MSG_TASK_PROGRESS_CHANGED:
                     onTaskProgressChangedMain(((long) msg.obj));
                     break;
+                case MSG_TASK_SPEED_CHANGED:
+                    onTaskSpeedChangedMain(((long) msg.obj));
+                    break;
             }
         }
     };
 
     public abstract void onTaskProgressChangedMain(long id);
+
+    protected abstract void onTaskSpeedChangedMain(long id);
 
     public abstract void onTaskInfoChangedMain(long id);
 
@@ -77,6 +83,13 @@ public abstract class UIDownloadTaskListener implements DownloadTaskListener{
     @Override
     public void onTaskProgressChanged(long id) {
         Message message = mHandler.obtainMessage(MSG_TASK_PROGRESS_CHANGED);
+        message.obj = id;
+        mHandler.sendMessage(message);
+    }
+
+    @Override
+    public void onTaskSpeedChanged(long id) {
+        Message message = mHandler.obtainMessage(MSG_TASK_SPEED_CHANGED);
         message.obj = id;
         mHandler.sendMessage(message);
     }
