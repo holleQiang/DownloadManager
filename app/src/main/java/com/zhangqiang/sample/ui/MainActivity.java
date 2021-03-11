@@ -15,6 +15,7 @@ import android.widget.TextView;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.config.Configs;
+import com.zhangqiang.sample.service.DownloadService;
 
 import java.io.File;
 
@@ -25,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent = new Intent(this, DownloadService.class);
+        startService(intent);
         setContentView(R.layout.activity_main);
         etUrl = findViewById(R.id.et_url);
         etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     download(text.toString());
                 }
-//                etUrl.getText().clear();
+                etUrl.getText().clear();
                 return false;
             }
         });

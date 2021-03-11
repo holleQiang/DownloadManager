@@ -1,10 +1,13 @@
 package com.zhangqiang.sample;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Intent;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.sample.service.DownloadService;
+
+import java.util.List;
 
 public class DMApplication extends Application {
 
@@ -16,9 +19,7 @@ public class DMApplication extends Application {
 
     @Override
     public void onCreate() {
-        application = this;
         super.onCreate();
-//        Intent intent = new Intent(this, DownloadService.class);
-//        startService(intent);
+        application = this;
     }
 }
