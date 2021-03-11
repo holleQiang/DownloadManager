@@ -65,7 +65,7 @@ public class DownloadManagerFragment extends BaseFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        DownloadManager.getInstance(getContext()).addDownloadTaskListener(onProgressChangedListener);
+        DownloadManager.getInstance(getContext()).removeDownloadTaskListener(onProgressChangedListener);
     }
 
     private Cell makeCell(TaskInfo downloadTask) {

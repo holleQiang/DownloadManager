@@ -99,7 +99,7 @@ public class OKHttpDownloadTask extends DownloadTask {
             }
 
             @Override
-            public void onResponse(@NonNull final Call call, @NonNull final Response response) throws IOException {
+            public void onResponse(@NonNull final Call call, @NonNull final Response response) {
 
                 HttpResponse httpResponse = new OkHttpResponse(response);
                 try {
@@ -302,7 +302,13 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     private void mergePartFile() throws IOException {
 
-        RandomAccessFile raf = new RandomAccessFile(new File(saveDir, fileName), "rw");
+        File dir = new File(saveDir);
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                throw new IOException("create dir fail:" + saveDir);
+            }
+        }
+        RandomAccessFile raf = new RandomAccessFile(new File(dir, fileName), "rw");
         raf.setLength(contentLength);
         try {
 
@@ -317,6 +323,12 @@ public class OKHttpDownloadTask extends DownloadTask {
                     }
                 } finally {
                     fis.close();
+                }
+            }
+            for (OKHttpDownloadPartTask partTask : mPartTasks) {
+                File file = new File(partTask.getSavePath());
+                if (!file.delete()) {
+                    throw new IOException("delete part file fail:" + file.getAbsolutePath());
                 }
             }
         } finally {

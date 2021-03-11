@@ -21,7 +21,6 @@ import java.io.File;
 public class MainActivity extends AppCompatActivity {
 
     private EditText etUrl;
-    private DownloadManagerFragment downloadManagerFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         etUrl.setText("https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd");
-        downloadManagerFragment = new DownloadManagerFragment();
+        DownloadManagerFragment downloadManagerFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
                 .commit();
 
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
             etUrl.setSelection(link.length());
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             if (inputMethodManager != null) {
-                inputMethodManager.showSoftInput(etUrl,InputMethodManager.SHOW_IMPLICIT);
+                inputMethodManager.showSoftInput(etUrl, InputMethodManager.SHOW_IMPLICIT);
             }
         }
 
@@ -81,7 +80,6 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(saveDir)) {
             saveDir = new File(getFilesDir(), "download").getAbsolutePath();
         }
-        DownloadManager.getInstance(this).download(url);
-        downloadManagerFragment.refresh();
+        DownloadManager.getInstance(this).download(url, 10, saveDir);
     }
 }

@@ -1,11 +1,13 @@
 package com.zhangqiang.downloadmanager;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.zhangqiang.downloadmanager.db.DBManager;
 import com.zhangqiang.downloadmanager.db.dao.PartEntityDao;
@@ -22,7 +24,9 @@ import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadManager {
@@ -40,10 +44,10 @@ public class DownloadManager {
 
     private static final int MSG_TASK_FINISH = 1001;
 
+    @SuppressLint("StaticFieldLeak")
     private static volatile DownloadManager instance;
     private final Context mContext;
     private final int maxRunningTaskCount = 2;
-    private final String saveDir;
     private DownloadRecord mRecordHead;
     private final AtomicInteger mTaskSize = new AtomicInteger();
     private final AtomicInteger mActiveTaskSize = new AtomicInteger();
@@ -63,11 +67,6 @@ public class DownloadManager {
 
     private DownloadManager(Context context) {
         mContext = context;
-        File saveDir = new File(mContext.getFilesDir(), "download");
-        if (!saveDir.exists()) {
-            saveDir.mkdir();
-        }
-        this.saveDir = saveDir.getAbsolutePath();
 
         HandlerThread mMonitorThread = new HandlerThread("download_monitor_thread");
         mMonitorThread.start();
@@ -75,11 +74,11 @@ public class DownloadManager {
             @Override
             public boolean handleMessage(Message msg) {
                 if (msg.what == MSG_ACTIVE_POLL) {
-                    syncProgress();
+                    syncTask();
                     trySendActiveMsg();
                 } else if (msg.what == MSG_TASK_FINISH) {
                     DownloadRecord record = (DownloadRecord) msg.obj;
-                    syncRecordProgress(record);
+                    syncTaskProgress(record);
                 }
                 return false;
             }
@@ -108,7 +107,7 @@ public class DownloadManager {
         tryStartIdleTask();
     }
 
-    private DownloadRecord makeDownloadRecord(String url, int threadSize) {
+    private DownloadRecord makeDownloadRecord(String url, int threadSize,String saveDir) {
 
         TaskEntity taskEntity = new TaskEntity();
         taskEntity.setUrl(url);
@@ -126,16 +125,16 @@ public class DownloadManager {
 
     private DownloadRecord makeDownloadRecord(TaskEntity taskEntity) {
         List<PartEntity> partList = taskEntity.getPartList();
-        List<PartRecord> partRecords = null;
+        HashMap<Integer,PartRecord> partRecords = null;
         List<OKHttpDownloadPartTask> partTasks = null;
         if (partList != null) {
             partTasks = new ArrayList<>();
-            partRecords = new ArrayList<>();
+            partRecords = new HashMap<>();
             for (int i = 0; i < partList.size(); i++) {
                 PartEntity partEntity = partList.get(i);
                 OKHttpDownloadPartTask partTask = new OKHttpDownloadPartTask(mContext, taskEntity.getUrl(), partEntity.getStart(), partEntity.getCurrent(), partEntity.getEnd(), partEntity.getSavePath());
                 partTasks.add(partTask);
-                partRecords.add(new PartRecord(partEntity, partTask));
+                partRecords.put(partEntity.getThreadIndex(),new PartRecord(partEntity, partTask));
             }
         }
         DownloadTask task = new OKHttpDownloadTask(mContext,
@@ -150,7 +149,7 @@ public class DownloadManager {
         return downloadRecord;
     }
 
-    public synchronized void download(String url) {
+    public synchronized void download(String url,int threadSize,String saveDir) {
 
         if (TextUtils.isEmpty(url)) {
             return;
@@ -163,13 +162,18 @@ public class DownloadManager {
             curr = curr.next;
         }
 
-        DownloadRecord recordHead = makeDownloadRecord(url, 2);
+        DownloadRecord record = makeDownloadRecord(url, threadSize,saveDir);
         if (prev == null) {
-            this.mRecordHead = recordHead;
+            this.mRecordHead = record;
         } else {
-            prev.next = recordHead;
+            prev.next = record;
         }
         incrementTaskSize();
+        if (downloadTaskListeners != null) {
+            for (int i = downloadTaskListeners.size() - 1; i >= 0; i--) {
+                downloadTaskListeners.get(i).onTaskAdded(record.entity.getId());
+            }
+        }
         tryStartIdleTask();
     }
 
@@ -177,7 +181,7 @@ public class DownloadManager {
         return mTaskSize.get();
     }
 
-    public List<TaskInfo> getTaskList() {
+    public synchronized List<TaskInfo> getTaskList() {
         List<TaskInfo> list = new ArrayList<>();
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
@@ -235,10 +239,18 @@ public class DownloadManager {
 
                 TaskEntityDao taskEntityDao = getTaskEntityDao();
                 taskEntityDao.deleteByKey(id);
+                List<PartEntity> partList = entity.getPartList();
+                if (partList != null) {
+                    for (PartEntity part : partList) {
+                        getPartEntityDao().delete(part);
+                    }
+                }
                 if (deleteFile) {
                     File file = new File(entity.getSaveDir(), entity.getFileName());
                     if (file.exists()) {
-                        file.delete();
+                        if (!file.delete()) {
+                            Log.e(TAG,"delete file fail:" + file.getAbsolutePath());
+                        }
                     }
                 }
                 if (prev == null) {
@@ -350,17 +362,17 @@ public class DownloadManager {
                     partEntity.setEnd(task.getToPosition());
                     getPartEntityDao().insert(partEntity);
 
-                    addPartRecord(record, new PartRecord(partEntity, task));
+                    addPartRecord(record, new PartRecord(partEntity, task),threadIndex);
                 }
             });
         }
     }
 
-    private synchronized void addPartRecord(DownloadRecord record, PartRecord partRecord) {
+    private synchronized void addPartRecord(DownloadRecord record, PartRecord partRecord,int index) {
         if (record.partRecords == null) {
-            record.partRecords = new ArrayList<>();
+            record.partRecords = new HashMap<>();
         }
-        record.partRecords.add(partRecord);
+        record.partRecords.put(index,partRecord);
     }
 
     private void trySendActiveMsg() {
@@ -391,7 +403,7 @@ public class DownloadManager {
         private DownloadRecord next;
         private final TaskEntity entity;
         private final DownloadTask downloadTask;
-        private List<PartRecord> partRecords;
+        private HashMap<Integer,PartRecord> partRecords;
         private long speed;
         private long lastComputeTime;
         private long lastLength;
@@ -400,7 +412,7 @@ public class DownloadManager {
             this(entity, downloadTask, null);
         }
 
-        public DownloadRecord(TaskEntity entity, DownloadTask downloadTask, List<PartRecord> partRecords) {
+        public DownloadRecord(TaskEntity entity, DownloadTask downloadTask, HashMap<Integer,PartRecord> partRecords) {
             this.entity = entity;
             this.downloadTask = downloadTask;
             this.partRecords = partRecords;
@@ -411,6 +423,8 @@ public class DownloadManager {
         private final PartEntity partEntity;
         private final DownloadTask partTask;
         private long speed;
+        private long lastComputeTime;
+        private long lastLength;
 
         public PartRecord(PartEntity partEntity, DownloadTask partTask) {
             this.partEntity = partEntity;
@@ -426,19 +440,28 @@ public class DownloadManager {
         return DBManager.getInstance(mContext).getDaoSession().getPartEntityDao();
     }
 
-    private void syncProgress() {
+    private void syncTask() {
 
         synchronized (DownloadManager.this) {
             DownloadRecord curr = mRecordHead;
             while (curr != null) {
-                syncRecordProgress(curr);
-                computeRecordSpeed(curr);
+                //计算progress
+                syncTaskProgress(curr);
+                //计算主任务下载速度
+                computeTaskSpeed(curr);
+                //计算子任务下载速度
+                HashMap<Integer,PartRecord> partRecords = curr.partRecords;
+                if (partRecords != null && !partRecords.isEmpty()) {
+                    for (Map.Entry<Integer, PartRecord> entry : partRecords.entrySet()) {
+                        computePartTaskSpeed(entry.getValue());
+                    }
+                }
                 curr = curr.next;
             }
         }
     }
 
-    private void syncRecordProgress(DownloadRecord record) {
+    private void syncTaskProgress(DownloadRecord record) {
         DownloadTask downloadTask = record.downloadTask;
         TaskEntity entity = record.entity;
         long oldLength = entity.getCurrentLength();
@@ -447,10 +470,10 @@ public class DownloadManager {
             entity.setCurrentLength(newLength);
             getTaskEntityDao().update(entity);
 
-            List<PartRecord> partRecords = record.partRecords;
-            if (partRecords != null) {
-                for (int i = 0; i < partRecords.size(); i++) {
-                    PartRecord partRecord = partRecords.get(i);
+            HashMap<Integer,PartRecord> partRecords = record.partRecords;
+            if (partRecords != null && !partRecords.isEmpty()) {
+                for (Map.Entry<Integer, PartRecord> entry : partRecords.entrySet()) {
+                    PartRecord partRecord = entry.getValue();
                     long currentLength = partRecord.partTask.getCurrentLength();
                     PartEntity partEntity = partRecord.partEntity;
                     if (partEntity.getCurrent() != currentLength) {
@@ -469,7 +492,7 @@ public class DownloadManager {
         }
     }
 
-    void computeRecordSpeed(DownloadRecord record) {
+    private void computeTaskSpeed(DownloadRecord record) {
         TaskEntity entity = record.entity;
         if (record.lastComputeTime == 0) {
             record.lastComputeTime = SystemClock.elapsedRealtime();
@@ -489,6 +512,27 @@ public class DownloadManager {
                         downloadTaskListeners.get(i).onTaskSpeedChanged(entity.getId());
                     }
                 }
+            }
+            record.lastComputeTime = currentTime;
+            record.lastLength = currentLength;
+        }
+    }
+
+    private void computePartTaskSpeed(PartRecord record){
+        PartEntity entity = record.partEntity;
+        if (record.lastComputeTime == 0) {
+            record.lastComputeTime = SystemClock.elapsedRealtime();
+            record.lastLength = entity.getCurrent();
+            return;
+        }
+        long currentTime = SystemClock.elapsedRealtime();
+        long deltaTime = currentTime - record.lastComputeTime;
+        if (deltaTime > 1000) {
+            long currentLength = entity.getCurrent();
+            long deltaLength = currentLength - record.lastLength;
+            long newSpeed = deltaLength / deltaTime * 1000;
+            if (record.speed != newSpeed) {
+                record.speed = newSpeed;
             }
             record.lastComputeTime = currentTime;
             record.lastLength = currentLength;
@@ -538,7 +582,7 @@ public class DownloadManager {
 
     private static class TaskInfoImpl implements TaskInfo {
 
-        private DownloadRecord record;
+        private final DownloadRecord record;
 
         public TaskInfoImpl(DownloadRecord record) {
             this.record = record;
@@ -616,11 +660,25 @@ public class DownloadManager {
 
         @Override
         public long getThreadSpeed(int threadIndex) {
+            HashMap<Integer, PartRecord> partRecords = record.partRecords;
+            if (partRecords != null) {
+                PartRecord partRecord = partRecords.get(threadIndex);
+                if (partRecord != null) {
+                    return partRecord.speed;
+                }
+            }
             return 0;
         }
 
         @Override
         public long getThreadCurrentLength(int threadIndex) {
+            HashMap<Integer, PartRecord> partRecords = record.partRecords;
+            if (partRecords != null) {
+                PartRecord partRecord = partRecords.get(threadIndex);
+                if (partRecord != null) {
+                    return partRecord.partEntity.getCurrent();
+                }
+            }
             return 0;
         }
     }

@@ -6,7 +6,7 @@ import okhttp3.Request;
 
 public class OkHttpFiledSetter implements FiledSetter {
 
-    private Request.Builder builder;
+    private final Request.Builder builder;
 
     public OkHttpFiledSetter(Request.Builder builder) {
         this.builder = builder;

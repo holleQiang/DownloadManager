@@ -13,6 +13,7 @@ import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.OkHttpUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +31,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
     private final String url;
     private final long fromPosition;
     private final long initialCurrentPosition;
-    private volatile long currentPosition;
+    private long currentPosition;
     private final long toPosition;
     private final String savePath;
     private Call call;
@@ -78,7 +79,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
             }
 
             @Override
-            public void onResponse(@NonNull final Call call, @NonNull final Response response) throws IOException {
+            public void onResponse(@NonNull final Call call, @NonNull final Response response) {
 
                 HttpResponse httpResponse = null;
                 try {
@@ -115,6 +116,9 @@ public class OKHttpDownloadPartTask extends DownloadTask {
     private void doRangeWrite(HttpResponse httpResponse) throws IOException {
 
         RangePart rangePart = HttpUtils.parseRangePart(httpResponse);
+        if (rangePart == null) {
+            throw new IOException("parse range part fail");
+        }
         LogUtils.i(TAG, savePath + "============" + rangePart);
         final long start = rangePart.getStart();
         final long end = rangePart.getEnd();
@@ -124,14 +128,21 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         }
         long fileSeek = initialCurrentPosition - fromPosition;
         InputStream inputStream = httpResponse.getInputStream();
-        FileUtils.writeToFileFrom(inputStream, new File(savePath), fileSeek, new FileUtils.WriteFileListener() {
+        File file = new File(savePath);
+        File parentFile = file.getParentFile();
+        if (!parentFile.exists()) {
+            if (!parentFile.mkdirs()) {
+                throw new FileNotFoundException("dir create fail for:" + parentFile.getAbsolutePath());
+            }
+        }
+        FileUtils.writeToFileFrom(inputStream, file, fileSeek, new FileUtils.WriteFileListener() {
 
             @Override
             public void onWriteFile(byte[] buffer, int offset, int len) {
-                currentPosition = currentPosition + len;
+                currentPosition += len;
             }
         });
-        LogUtils.i(TAG,  "======write finished===start="+fromPosition+"=currentPosition=" + currentPosition + "==end=" +toPosition);
+        LogUtils.i(TAG, "======write finished===start=" + fromPosition + "=currentPosition=" + currentPosition + "==end=" + toPosition);
     }
 
     @Override
