@@ -7,8 +7,9 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.HttpResponse;
 import com.zhangqiang.downloadmanager.task.http.HttpUtils;
-import com.zhangqiang.downloadmanager.task.http.RangePart;
+import com.zhangqiang.downloadmanager.task.http.range.RangePart;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
+import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.OkHttpUtils;
 
@@ -35,7 +36,6 @@ public class OKHttpDownloadPartTask extends DownloadTask {
     private final long toPosition;
     private final String savePath;
     private Call call;
-    private final AtomicBoolean mRunning = new AtomicBoolean(false);
 
     public OKHttpDownloadPartTask(Context context, String url, long fromPosition, long currentPosition, long toPosition, String savePath) {
         this.context = context;
@@ -52,13 +52,8 @@ public class OKHttpDownloadPartTask extends DownloadTask {
     @Override
     protected void onStart() {
 
-        if (mRunning.getAndSet(true)) {
-            return;
-        }
-        notifyStart();
         if (isFinished()) {
-            notifyComplete();
-            setStartFalse();
+            dispatchComplete();
             return;
         }
         final Request.Builder builder = new Request.Builder()
@@ -72,9 +67,8 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                setStartFalse();
                 if (!call.isCanceled()) {
-                    notifyFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
+                    dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
                 }
             }
 
@@ -90,24 +84,18 @@ public class OKHttpDownloadPartTask extends DownloadTask {
                     if (responseCode == 206) {
                         doRangeWrite(httpResponse);
                         LogUtils.i(TAG, "下载完成" + savePath);
-                        setStartFalse();
-                        notifyComplete();
+                        dispatchComplete();
                     } else if (responseCode == 200) {
-                        setStartFalse();
-                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "try use range download to a not support resource:" + url));
+                        dispatchFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "try use range download to a not support resource:" + url));
                     } else {
-                        setStartFalse();
-                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
+                        dispatchFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
                     }
                 } catch (IOException e) {
                     if (!call.isCanceled()) {
-                        setStartFalse();
-                        notifyFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
+                        dispatchFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
                     }
                 } finally {
-                    if (httpResponse != null) {
-                        httpResponse.close();
-                    }
+                    IOUtils.closeSilently(httpResponse);
                 }
             }
         });
@@ -123,7 +111,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         final long start = rangePart.getStart();
         final long end = rangePart.getEnd();
         if (start != currentPosition && end != toPosition) {
-            notifyFail(new DownloadException(DownloadException.RANGE_CHANGED, "range has changed"));
+            dispatchFail(new DownloadException(DownloadException.RANGE_CHANGED, "range has changed"));
             return;
         }
         long fileSeek = initialCurrentPosition - fromPosition;
@@ -147,21 +135,10 @@ public class OKHttpDownloadPartTask extends DownloadTask {
 
     @Override
     protected void onCancel() {
-        setStartFalse();
         if (call != null && !call.isCanceled()) {
             call.cancel();
             call = null;
-            notifyCancel();
         }
-    }
-
-    @Override
-    public boolean isRunning() {
-        return mRunning.get();
-    }
-
-    private void setStartFalse() {
-        mRunning.getAndSet(false);
     }
 
     @Override

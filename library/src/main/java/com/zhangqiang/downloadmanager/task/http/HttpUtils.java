@@ -2,8 +2,7 @@ package com.zhangqiang.downloadmanager.task.http;
 
 import android.text.TextUtils;
 
-import com.zhangqiang.downloadmanager.task.http.FieldGetter;
-import com.zhangqiang.downloadmanager.task.http.FiledSetter;
+import com.zhangqiang.downloadmanager.task.http.range.RangePart;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

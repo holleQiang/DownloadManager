@@ -1,9 +1,10 @@
 package com.zhangqiang.downloadmanager.task.http;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface HttpResponse extends FieldGetter{
+public interface HttpResponse extends FieldGetter, Closeable {
 
     String getContentType();
 
@@ -13,5 +14,4 @@ public interface HttpResponse extends FieldGetter{
 
     InputStream getInputStream() throws IOException;
 
-    void close();
 }

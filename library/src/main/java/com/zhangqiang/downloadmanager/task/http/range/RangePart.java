@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.task.http;
+package com.zhangqiang.downloadmanager.task.http.range;
 
 public class RangePart {
 

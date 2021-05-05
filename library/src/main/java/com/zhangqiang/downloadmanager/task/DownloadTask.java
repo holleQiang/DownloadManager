@@ -4,10 +4,100 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class DownloadTask {
 
     private List<DownloadListener> downloadListeners;
+    private final AtomicBoolean mStarted = new AtomicBoolean(false);
+
+    protected abstract void onStart();
+
+    protected abstract void onCancel();
+
+    public boolean isStarted() {
+        return mStarted.get();
+    }
+
+    public abstract long getCurrentLength();
+
+    public final void start() {
+        if (mStarted.getAndSet(true)) {
+            return;
+        }
+        onStart();
+        notifyStart();
+    }
+
+    public final void cancel() {
+        if (!mStarted.getAndSet(false)) {
+            return;
+        }
+        onCancel();
+        notifyCancel();
+    }
+
+    protected void dispatchComplete() {
+        if (!mStarted.getAndSet(false)) {
+            return;
+        }
+        notifyComplete();
+    }
+
+    protected void dispatchFail(DownloadException e) {
+        if (!mStarted.getAndSet(false)) {
+            return;
+        }
+        notifyFail(e);
+    }
+
+    private synchronized void notifyStart() {
+        if (downloadListeners == null) {
+            return;
+        }
+        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
+            downloadListeners.get(i).onStart();
+        }
+    }
+
+    private synchronized void notifyComplete() {
+        if (downloadListeners == null) {
+            return;
+        }
+        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
+            downloadListeners.get(i).onComplete();
+        }
+    }
+
+    private synchronized void notifyFail(DownloadException e) {
+        if (downloadListeners == null) {
+            return;
+        }
+        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
+            downloadListeners.get(i).onFail(e);
+        }
+    }
+
+    private synchronized void notifyCancel() {
+        if (downloadListeners == null) {
+            return;
+        }
+        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
+            downloadListeners.get(i).onCancel();
+        }
+    }
+
+
+    public interface DownloadListener {
+
+        void onStart();
+
+        void onComplete();
+
+        void onFail(DownloadException e);
+
+        void onCancel();
+    }
 
     public synchronized void addDownloadListener(DownloadListener downloadListener) {
         if (downloadListeners == null) {
@@ -24,70 +114,5 @@ public abstract class DownloadTask {
             return;
         }
         downloadListeners.remove(downloadListener);
-    }
-
-    protected abstract void onStart();
-
-    protected abstract void onCancel();
-
-    public abstract boolean isRunning();
-
-    public abstract long getCurrentLength();
-
-    public final void start() {
-        onStart();
-    }
-
-    public final void cancel() {
-        if (isRunning()) {
-            onCancel();
-        }
-    }
-
-    protected synchronized void notifyComplete() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onComplete();
-        }
-    }
-
-    protected synchronized void notifyFail(DownloadException e) {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onFail(e);
-        }
-    }
-
-    protected synchronized void notifyCancel() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onCancel();
-        }
-    }
-
-    protected synchronized void notifyStart() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onStart();
-        }
-    }
-
-    public interface DownloadListener {
-
-        void onStart();
-
-        void onComplete();
-
-        void onFail(DownloadException e);
-
-        void onCancel();
     }
 }

@@ -17,7 +17,7 @@ public class NetWorkManager {
     private final Context mContext;
 
     private NetWorkManager(Context context) {
-        mContext = context;
+        mContext = context.getApplicationContext();
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addCategory(Intent.CATEGORY_DEFAULT);

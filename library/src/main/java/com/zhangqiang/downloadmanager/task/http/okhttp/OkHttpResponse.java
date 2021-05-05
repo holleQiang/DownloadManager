@@ -59,7 +59,7 @@ public class OkHttpResponse implements HttpResponse {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         response.close();
     }
 }

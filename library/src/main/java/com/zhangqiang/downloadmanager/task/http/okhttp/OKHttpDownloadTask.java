@@ -8,8 +8,9 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.HttpResponse;
 import com.zhangqiang.downloadmanager.task.http.HttpUtils;
-import com.zhangqiang.downloadmanager.task.http.RangePart;
+import com.zhangqiang.downloadmanager.task.http.range.RangePart;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
+import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
 import com.zhangqiang.downloadmanager.utils.OkHttpUtils;
@@ -21,7 +22,6 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.Call;
@@ -39,7 +39,6 @@ public class OKHttpDownloadTask extends DownloadTask {
     private long contentLength;
     private final int threadSize;
     private Call call;
-    private final AtomicBoolean mRunning = new AtomicBoolean(false);
     private String fileName;
     private OnResourceInfoReadyListener onResourceInfoReadyListener;
     private long currentLength;
@@ -72,11 +71,7 @@ public class OKHttpDownloadTask extends DownloadTask {
     @Override
     protected void onStart() {
 
-        if (mRunning.getAndSet(true)) {
-            return;
-        }
         LogUtils.i(TAG, "开始下载。。。");
-        notifyStart();
         if (mPartTasks != null && !mPartTasks.isEmpty()) {
             for (int i = 0; i < mPartTasks.size(); i++) {
                 mPartTasks.get(i).start();
@@ -92,9 +87,8 @@ public class OKHttpDownloadTask extends DownloadTask {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                setRunningFalse();
                 if (!call.isCanceled()) {
-                    notifyFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
+                    dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
                 }
             }
 
@@ -123,21 +117,20 @@ public class OKHttpDownloadTask extends DownloadTask {
                         try {
                             doMultiThreadDownload(httpResponse);
                         } catch (DownloadException e) {
-                            notifyFail(e);
+                            dispatchFail(e);
                         }
                     } else if (responseCode == 200) {
                         LogUtils.i(TAG, "开始单线程下载");
                         doSingleThreadDownload(httpResponse);
                     } else {
-                        notifyFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
+                        dispatchFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
                     }
                 } catch (IOException e) {
                     if (!call.isCanceled()) {
-                        notifyFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
+                        dispatchFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
                     }
-                    setRunningFalse();
                 } finally {
-                    httpResponse.close();
+                    IOUtils.closeSilently(httpResponse);
                 }
             }
         });
@@ -153,8 +146,7 @@ public class OKHttpDownloadTask extends DownloadTask {
             }
         });
         LogUtils.i(TAG, "单线程下载完成" + saveDir);
-        notifyComplete();
-        setRunningFalse();
+        dispatchComplete();
     }
 
     private void doMultiThreadDownload(HttpResponse httpResponse) throws DownloadException {
@@ -207,8 +199,7 @@ public class OKHttpDownloadTask extends DownloadTask {
             public void onFail(DownloadException e) {
                 decrementRunningPartTask();
                 cancelAllRunningPartTasks();
-                setRunningFalse();
-                notifyFail(new DownloadException(DownloadException.PART_FAIL, e));
+                dispatchFail(new DownloadException(DownloadException.PART_FAIL, e));
             }
 
             @Override
@@ -220,23 +211,11 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     @Override
     protected void onCancel() {
-        setRunningFalse();
         if (call != null && !call.isCanceled()) {
             call.cancel();
             call = null;
         }
         cancelAllRunningPartTasks();
-        notifyCancel();
-    }
-
-    @Override
-    public boolean isRunning() {
-        return mRunning.get();
-    }
-
-
-    private void setRunningFalse() {
-        mRunning.set(false);
     }
 
     private String makeFileName(HttpResponse httpResponse) {
@@ -281,7 +260,7 @@ public class OKHttpDownloadTask extends DownloadTask {
     private void cancelAllRunningPartTasks() {
         for (int i = 0; i < mPartTasks.size(); i++) {
             OKHttpDownloadPartTask task = mPartTasks.get(i);
-            if (task.isRunning()) {
+            if (task.isStarted()) {
                 task.cancel();
             }
         }
@@ -291,11 +270,9 @@ public class OKHttpDownloadTask extends DownloadTask {
         try {
             mergePartFile();
             LogUtils.i(TAG, "下载完成" + saveDir);
-            setRunningFalse();
-            notifyComplete();
+            dispatchComplete();
         } catch (IOException e) {
-            setRunningFalse();
-            notifyFail(new DownloadException(DownloadException.MERGE_PART_FAIL, e));
+            dispatchFail(new DownloadException(DownloadException.MERGE_PART_FAIL, e));
         }
     }
 
