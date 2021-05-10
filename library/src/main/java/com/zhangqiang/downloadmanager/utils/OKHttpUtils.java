@@ -13,14 +13,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class OkHttpUtils {
+public class OKHttpUtils {
 
     private static volatile OkHttpClient okHttpClient;
 
     public static OkHttpClient getOkHttpClient(final Context context) {
 
         if (okHttpClient == null) {
-            synchronized (OkHttpUtils.class) {
+            synchronized (OKHttpUtils.class) {
                 if (okHttpClient == null) {
                     okHttpClient = new OkHttpClient.Builder()
                             .connectTimeout(5, TimeUnit.SECONDS)

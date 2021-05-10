@@ -44,7 +44,6 @@ public class DownloadManager {
 
     private static final int MSG_TASK_FINISH = 1001;
 
-    @SuppressLint("StaticFieldLeak")
     private static volatile DownloadManager instance;
     private final Context mContext;
     private final int maxRunningTaskCount = 2;
@@ -66,7 +65,7 @@ public class DownloadManager {
     }
 
     private DownloadManager(Context context) {
-        mContext = context;
+        mContext = context.getApplicationContext();
 
         HandlerThread mMonitorThread = new HandlerThread("download_monitor_thread");
         mMonitorThread.start();

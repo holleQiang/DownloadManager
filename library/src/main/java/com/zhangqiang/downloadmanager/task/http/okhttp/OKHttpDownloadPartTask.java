@@ -11,7 +11,7 @@ import com.zhangqiang.downloadmanager.task.http.range.RangePart;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
-import com.zhangqiang.downloadmanager.utils.OkHttpUtils;
+import com.zhangqiang.downloadmanager.utils.OKHttpUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -63,7 +63,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
                 "-" +
                 toPosition);
         Request request = builder.build();
-        call = OkHttpUtils.getOkHttpClient(context).newCall(request);
+        call = OKHttpUtils.getOkHttpClient(context).newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {

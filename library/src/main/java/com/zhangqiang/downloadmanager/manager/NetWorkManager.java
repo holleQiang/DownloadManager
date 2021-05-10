@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.utils;
+package com.zhangqiang.downloadmanager.manager;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -15,6 +15,7 @@ public class NetWorkManager {
     private static volatile NetWorkManager instance;
     private final List<OnAvailableChangedListener> onAvailableChangedListeners = new ArrayList<>();
     private final Context mContext;
+    private ConnectivityManager mConnectivityManager;
 
     private NetWorkManager(Context context) {
         mContext = context.getApplicationContext();
@@ -25,9 +26,7 @@ public class NetWorkManager {
             @Override
             public void onReceive(Context context, Intent intent) {
                 boolean available = isAvailable();
-                for (int i = onAvailableChangedListeners.size() - 1; i >= 0; i--) {
-                    onAvailableChangedListeners.get(i).onAvailableChanged(available);
-                }
+                notifyAvailableChanged(available);
             }
         }, filter);
     }
@@ -36,7 +35,7 @@ public class NetWorkManager {
         if (instance == null) {
             synchronized (NetWorkManager.class){
                 if (instance == null) {
-                    instance = new NetWorkManager(context.getApplicationContext());
+                    instance = new NetWorkManager(context);
                 }
             }
         }
@@ -47,23 +46,36 @@ public class NetWorkManager {
         void onAvailableChanged(boolean available);
     }
 
-    public void addOnAvailableChangedListener(OnAvailableChangedListener listener){
+    public synchronized void addOnAvailableChangedListener(OnAvailableChangedListener listener){
         if (onAvailableChangedListeners.contains(listener)) {
             return;
         }
         onAvailableChangedListeners.add(listener);
     }
 
-    public void removeOnAvailableChangedListener(OnAvailableChangedListener listener){
+    public synchronized void removeOnAvailableChangedListener(OnAvailableChangedListener listener){
         onAvailableChangedListeners.remove(listener);
     }
 
+    private synchronized void notifyAvailableChanged(boolean available) {
+        for (int i = onAvailableChangedListeners.size() - 1; i >= 0; i--) {
+            onAvailableChangedListeners.get(i).onAvailableChanged(available);
+        }
+    }
+
     public boolean isAvailable(){
-        ConnectivityManager connectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = getConnectivityManager();
         if (connectivityManager != null) {
-            NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+            NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
             return activeNetworkInfo!= null && activeNetworkInfo.isAvailable();
         }
         return false;
+    }
+
+    private synchronized ConnectivityManager getConnectivityManager() {
+        if (mConnectivityManager == null) {
+            mConnectivityManager = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        }
+        return mConnectivityManager;
     }
 }

@@ -13,7 +13,7 @@ import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
-import com.zhangqiang.downloadmanager.utils.OkHttpUtils;
+import com.zhangqiang.downloadmanager.utils.OKHttpUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -83,7 +83,7 @@ public class OKHttpDownloadTask extends DownloadTask {
                 .url(url);
         HttpUtils.setRangeParams(new OkHttpFiledSetter(builder), 0);
         Request request = builder.build();
-        call = OkHttpUtils.getOkHttpClient(context).newCall(request);
+        call = OKHttpUtils.getOkHttpClient(context).newCall(request);
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
