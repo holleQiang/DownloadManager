@@ -120,7 +120,10 @@ public class DownloadManagerFragment extends BaseFragment {
 
         @Override
         public void onTaskAddedMain(long id) {
-            refresh();
+            TaskInfo task = DownloadManager.getInstance(getContext()).getTaskInfo(id);
+            if (task != null) {
+                cellRVAdapter.addDataAtLast(makeCell(task));
+            }
         }
     };
 

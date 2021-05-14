@@ -2,6 +2,7 @@ package com.zhangqiang.downloadmanager.exception;
 
 public class DownloadException extends Exception{
 
+    public static final int UNKNOWN = -1;
     public static final int HTTP_CONNECT_FAIL = 100;
     public static final int HTTP_RESPONSE_ERROR = 101;
     public static final int WRITE_FILE_FAIL = 102;

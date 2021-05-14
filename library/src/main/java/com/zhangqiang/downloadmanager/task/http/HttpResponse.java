@@ -8,7 +8,7 @@ public interface HttpResponse extends FieldGetter, Closeable {
 
     String getContentType();
 
-    int getResponseCode() throws IOException;
+    int getResponseCode();
 
     long getContentLength();
 

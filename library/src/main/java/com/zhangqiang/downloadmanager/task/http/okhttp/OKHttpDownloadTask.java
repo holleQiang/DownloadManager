@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.manager.DownloadExecutors;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.HttpResponse;
 import com.zhangqiang.downloadmanager.task.http.HttpUtils;
@@ -19,9 +20,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.Call;
@@ -45,6 +48,8 @@ public class OKHttpDownloadTask extends DownloadTask {
     private OnPartTaskCreateListener onPartTaskCreateListener;
     private List<OKHttpDownloadPartTask> mPartTasks;
     private final AtomicInteger mRunningPartTaskSize = new AtomicInteger(0);
+    private final AtomicInteger mFinishedPartTaskSize = new AtomicInteger(0);
+    private Future<?> mCancelFuture;
 
     public OKHttpDownloadTask(Context context, String url, String saveDir, int threadSize) {
         this.context = context;
@@ -53,7 +58,7 @@ public class OKHttpDownloadTask extends DownloadTask {
         this.threadSize = threadSize;
     }
 
-    public OKHttpDownloadTask(Context context, String url, String saveDir,int threadSize,String fileName,long contentLength, List<OKHttpDownloadPartTask> partTasks) {
+    public OKHttpDownloadTask(Context context, String url, String saveDir, int threadSize, String fileName, long contentLength, List<OKHttpDownloadPartTask> partTasks) {
         this.context = context;
         this.url = url;
         this.saveDir = saveDir;
@@ -70,90 +75,90 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     @Override
     protected void onStart() {
+        mCancelFuture = DownloadExecutors.executor.submit(new RealTask());
+    }
 
-        LogUtils.i(TAG, "开始下载。。。");
-        if (mPartTasks != null && !mPartTasks.isEmpty()) {
-            for (int i = 0; i < mPartTasks.size(); i++) {
-                mPartTasks.get(i).start();
+    private class RealTask implements Runnable {
+
+        @Override
+        public void run() {
+            mFinishedPartTaskSize.set(0);
+            LogUtils.i(TAG, "开始下载。。。");
+            if (mPartTasks != null && !mPartTasks.isEmpty()) {
+                for (int i = 0; i < mPartTasks.size(); i++) {
+                    mPartTasks.get(i).start();
+                }
+                return;
             }
-            return;
+            final Request.Builder builder = new Request.Builder()
+                    .get()
+                    .url(url);
+            HttpUtils.setRangeParams(new OkHttpFiledSetter(builder), 0);
+            Request request = builder.build();
+            call = OKHttpUtils.getOkHttpClient(context).newCall(request);
+            HttpResponse httpResponse;
+            try {
+                httpResponse = new OkHttpResponse(call.execute());
+            } catch (IOException e) {
+                dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
+                return;
+            }
+            try {
+                int responseCode = httpResponse.getResponseCode();
+                if (responseCode == 206 || responseCode == 200) {
+                    fileName = makeFileName(httpResponse);
+                    if (onResourceInfoReadyListener != null) {
+                        ResourceInfo info = new ResourceInfo();
+                        info.setFileName(fileName);
+                        info.setContentLength(httpResponse.getContentLength());
+                        info.setContentType(httpResponse.getContentType());
+                        info.setETag(HttpUtils.parseETag(httpResponse));
+                        info.setLastModified(HttpUtils.parseLastModified(httpResponse));
+                        onResourceInfoReadyListener.onResourceInfoReady(info);
+
+                        LogUtils.i(TAG, "资源信息就绪。。。" + info.toString());
+                    }
+                }
+                if (responseCode == 206) {
+                    LogUtils.i(TAG, "开始多线程下载");
+                    doMultiThreadDownload(httpResponse);
+                } else if (responseCode == 200) {
+                    LogUtils.i(TAG, "开始单线程下载");
+                    doSingleThreadDownload(httpResponse);
+                } else {
+                    dispatchFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
+                }
+            } catch (Throwable e) {
+                dispatchFail(new DownloadException(DownloadException.UNKNOWN, e));
+            } finally {
+                IOUtils.closeSilently(httpResponse);
+            }
         }
-        final Request.Builder builder = new Request.Builder()
-                .get()
-                .url(url);
-        HttpUtils.setRangeParams(new OkHttpFiledSetter(builder), 0);
-        Request request = builder.build();
-        call = OKHttpUtils.getOkHttpClient(context).newCall(request);
-        call.enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if (!call.isCanceled()) {
-                    dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
-                }
-            }
-
-            @Override
-            public void onResponse(@NonNull final Call call, @NonNull final Response response) {
-
-                HttpResponse httpResponse = new OkHttpResponse(response);
-                try {
-                    int responseCode = httpResponse.getResponseCode();
-                    if (responseCode == 206 || responseCode == 200) {
-                        fileName = makeFileName(httpResponse);
-                        if (onResourceInfoReadyListener != null) {
-                            ResourceInfo info = new ResourceInfo();
-                            info.setFileName(fileName);
-                            info.setContentLength(httpResponse.getContentLength());
-                            info.setContentType(httpResponse.getContentType());
-                            info.setETag(HttpUtils.parseETag(httpResponse));
-                            info.setLastModified(HttpUtils.parseLastModified(httpResponse));
-                            onResourceInfoReadyListener.onResourceInfoReady(info);
-
-                            LogUtils.i(TAG, "资源信息就绪。。。" + info.toString());
-                        }
-                    }
-                    if (responseCode == 206) {
-                        LogUtils.i(TAG, "开始多线程下载");
-                        try {
-                            doMultiThreadDownload(httpResponse);
-                        } catch (DownloadException e) {
-                            dispatchFail(e);
-                        }
-                    } else if (responseCode == 200) {
-                        LogUtils.i(TAG, "开始单线程下载");
-                        doSingleThreadDownload(httpResponse);
-                    } else {
-                        dispatchFail(new DownloadException(DownloadException.HTTP_RESPONSE_ERROR, "http response error:code:" + responseCode));
-                    }
-                } catch (IOException e) {
-                    if (!call.isCanceled()) {
-                        dispatchFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
-                    }
-                } finally {
-                    IOUtils.closeSilently(httpResponse);
-                }
-            }
-        });
     }
 
-    private void doSingleThreadDownload(HttpResponse httpResponse) throws IOException {
-        InputStream inputStream = httpResponse.getInputStream();
-        FileUtils.writeToFileFrom(inputStream, new File(saveDir, fileName), 0, new FileUtils.WriteFileListener() {
+    private void doSingleThreadDownload(HttpResponse httpResponse) {
+        try {
+            InputStream inputStream = httpResponse.getInputStream();
+            FileUtils.writeToFileFrom(inputStream, new File(saveDir, fileName), 0, new FileUtils.WriteFileListener() {
 
-            @Override
-            public void onWriteFile(byte[] buffer, int offset, int len) {
-                currentLength += len;
-            }
-        });
-        LogUtils.i(TAG, "单线程下载完成" + saveDir);
-        dispatchComplete();
+                @Override
+                public void onWriteFile(byte[] buffer, int offset, int len) {
+                    currentLength += len;
+                }
+            });
+            LogUtils.i(TAG, "单线程下载完成" + saveDir);
+            dispatchComplete();
+        } catch (IOException e) {
+            dispatchFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
+        }
     }
 
-    private void doMultiThreadDownload(HttpResponse httpResponse) throws DownloadException {
+    private void doMultiThreadDownload(HttpResponse httpResponse) {
         RangePart rangePart = HttpUtils.parseRangePart(httpResponse);
         LogUtils.i(TAG, saveDir + "============" + rangePart);
         if (rangePart == null) {
-            throw new DownloadException(DownloadException.PARSE_PART_FAIL, "cannot parse range part");
+            dispatchFail(new DownloadException(DownloadException.PARSE_PART_FAIL, "cannot parse range part"));
+            return;
         }
         if (mPartTasks == null) {
             mPartTasks = new ArrayList<>();
@@ -165,10 +170,10 @@ public class OKHttpDownloadTask extends DownloadTask {
             final long start = i * eachDownload;
             long end = start + eachDownload;
             if (i == threadSize - 1) {
-                end += resetDownload;
+                end += resetDownload - 1;
             }
             final String savePath = new File(this.saveDir, fileName + "_" + i + "_" + threadSize).getAbsolutePath();
-            OKHttpDownloadPartTask task = new OKHttpDownloadPartTask(context, url, start, start, end, savePath);
+            OKHttpDownloadPartTask task = new OKHttpDownloadPartTask(context, url, start, 0, end, savePath);
             initPartTask(task);
             if (onPartTaskCreateListener != null) {
                 onPartTaskCreateListener.onPartTaskCreate(i, threadSize, task);
@@ -190,7 +195,8 @@ public class OKHttpDownloadTask extends DownloadTask {
 
             @Override
             public void onComplete() {
-                if (decrementRunningPartTask() == 0) {
+                decrementRunningPartTask();
+                if (mFinishedPartTaskSize.incrementAndGet() == mPartTasks.size()) {
                     handAllTaskFinish();
                 }
             }
@@ -211,6 +217,10 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     @Override
     protected void onCancel() {
+        if (mCancelFuture != null && !mCancelFuture.isCancelled()) {
+            mCancelFuture.cancel(true);
+            mCancelFuture = null;
+        }
         if (call != null && !call.isCanceled()) {
             call.cancel();
             call = null;
@@ -246,7 +256,7 @@ public class OKHttpDownloadTask extends DownloadTask {
             long length = 0;
             for (int i = 0; i < mPartTasks.size(); i++) {
                 OKHttpDownloadPartTask task = mPartTasks.get(i);
-                length += (task.getCurrentLength() - task.getFromPosition());
+                length += task.getCurrentLength();
             }
             return length;
         }
@@ -268,6 +278,7 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     private void handAllTaskFinish() {
         try {
+            LogUtils.i(TAG, "合并临时文件" + saveDir);
             mergePartFile();
             LogUtils.i(TAG, "下载完成" + saveDir);
             dispatchComplete();
@@ -298,10 +309,14 @@ public class OKHttpDownloadTask extends DownloadTask {
                     while ((len = fis.read(buffer)) != -1) {
                         raf.write(buffer, 0, len);
                     }
+                    if (!isStarted()) {
+                        throw new InterruptedIOException();
+                    }
                 } finally {
                     fis.close();
                 }
             }
+            LogUtils.i(TAG, "删除临时文件....");
             for (OKHttpDownloadPartTask partTask : mPartTasks) {
                 File file = new File(partTask.getSavePath());
                 if (!file.delete()) {
@@ -313,15 +328,14 @@ public class OKHttpDownloadTask extends DownloadTask {
         }
     }
 
-    private int decrementRunningPartTask(){
+    private void decrementRunningPartTask() {
         int runningPartTaskSize = mRunningPartTaskSize.decrementAndGet();
         if (runningPartTaskSize < 0) {
             throw new IllegalStateException("running task is smaller than 0");
         }
-        return runningPartTaskSize;
     }
 
-    private void incrementRunningPartTask(){
+    private void incrementRunningPartTask() {
         if (mRunningPartTaskSize.incrementAndGet() > mPartTasks.size()) {
             throw new IllegalStateException("running task is bigger than 0");
         }

@@ -303,7 +303,7 @@ public class DownloadManager {
 
             @Override
             public void onFail(DownloadException e) {
-                LogUtils.i(TAG, "=======onFail=======");
+                LogUtils.i(TAG, "=======onFail=======" + e.getMessage());
                 entity.setState(STATE_FAIL);
                 entity.setErrorMsg("errorCode=" + e.getCode() + ",msg =" + e.getMessage());
                 getTaskEntityDao().update(entity);
@@ -396,6 +396,17 @@ public class DownloadManager {
 
     public int getActiveTaskSize() {
         return mActiveTaskSize.get();
+    }
+
+    public synchronized TaskInfo getTaskInfo(long id) {
+        DownloadRecord curr = mRecordHead;
+        while (curr != null) {
+            if (curr.entity.getId() == id) {
+                return new TaskInfoImpl(curr);
+            }
+            curr = curr.next;
+        }
+        return null;
     }
 
     private static class DownloadRecord {

@@ -31,7 +31,7 @@ public class OkHttpResponse implements HttpResponse {
     }
 
     @Override
-    public int getResponseCode() throws IOException {
+    public int getResponseCode(){
         return response.code();
     }
 
