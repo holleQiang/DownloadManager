@@ -14,6 +14,7 @@ import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskDeleteConfirmDialog;
@@ -25,7 +26,7 @@ import java.io.File;
 public class DownloadTaskCell extends MultiCell<TaskInfo> {
 
     private static final String TAG = "DownloadTaskCell";
-    private FragmentManager fragmentManager;
+    private final FragmentManager fragmentManager;
 
     public DownloadTaskCell(TaskInfo data, FragmentManager fragmentManager) {
         super(R.layout.item_download, data, null);
@@ -97,6 +98,25 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
     private void updateSpeed(ViewHolder viewHolder) {
         TaskInfo data = getData();
         viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
+
+        String resetTimeStr;
+        if (data.getSpeed() == 0 || data.getContentLength() == 0) {
+            resetTimeStr = "未知";
+        }else {
+            long resetTime = data.getContentLength() / data.getSpeed();
+            if(resetTime <= 0){
+                resetTimeStr = "0秒";
+            }else if(resetTime < 60){
+                resetTimeStr = resetTime+"秒";
+            }else if(resetTime < 60 * 60){
+                resetTimeStr = resetTime/60+"分钟";
+            }else if(resetTime < 60 * 60 * 24){
+                resetTimeStr = resetTime/60/60+"小时";
+            }else {
+                resetTimeStr = resetTime/60/60/24+"天";
+            }
+        }
+        viewHolder.setText(R.id.tv_rest_time, "剩余时间：" + resetTimeStr);
     }
 
     public void updateSpeed(){
@@ -112,6 +132,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TaskInfo data = getData();
 
         int status = data.getState();
+        LogUtils.i(TAG,"=====updateState2======"+getData().getState());
         if (status == DownloadManager.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisible(viewHolder, false);
@@ -129,6 +150,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisible(viewHolder, false);
         }
+        LogUtils.i(TAG,"=====updateState3======"+getData().getState());
     }
 
     private void updateInfo(ViewHolder viewHolder){
@@ -142,6 +164,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setVisibility(R.id.pb_download_progress, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_speed, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
+        viewHolder.setVisibility(R.id.tv_rest_time, isError ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void updateProgress(ViewHolder viewHolder) {
@@ -185,6 +208,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
     }
 
     public void updateState() {
+        LogUtils.i(TAG,"=====updateState1======"+getData().getState());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {

@@ -41,7 +41,7 @@ public class OKHttpDownloadTask extends DownloadTask {
     private final String saveDir;
     private long contentLength;
     private final int threadSize;
-    private Call call;
+    private volatile Call call;
     private String fileName;
     private OnResourceInfoReadyListener onResourceInfoReadyListener;
     private long currentLength;
@@ -268,6 +268,9 @@ public class OKHttpDownloadTask extends DownloadTask {
     }
 
     private void cancelAllRunningPartTasks() {
+        if (mPartTasks == null) {
+            return;
+        }
         for (int i = 0; i < mPartTasks.size(); i++) {
             OKHttpDownloadPartTask task = mPartTasks.get(i);
             if (task.isStarted()) {

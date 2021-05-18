@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.listener;
+package com.zhangqiang.downloadmanager.listeners;
 
 public interface DownloadTaskListener {
 

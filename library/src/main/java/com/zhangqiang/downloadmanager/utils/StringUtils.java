@@ -14,7 +14,9 @@ public class StringUtils {
 
     public static String formatFileLength(long length) {
 
-        if (length < KB) {
+        if(length < 0){
+            return "-1";
+        }else if (length < KB) {
             return B_FORMAT.format(length);
         } else if (length < MB) {
             return KB_FORMAT.format((float) length / KB);

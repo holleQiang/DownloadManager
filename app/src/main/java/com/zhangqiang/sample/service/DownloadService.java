@@ -90,6 +90,7 @@ public class DownloadService extends Service {
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("link", link);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 1000, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return new NotificationCompat.Builder(this, getResources().getString(R.string.download_notification_channel_id))
                 .setContentTitle("点击下载此内容")

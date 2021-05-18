@@ -1,9 +1,6 @@
 package com.zhangqiang.sample.ui;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,9 +13,8 @@ import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
-import com.zhangqiang.downloadmanager.listener.DownloadTaskListener;
-import com.zhangqiang.downloadmanager.listener.UIDownloadTaskListener;
-import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
+import com.zhangqiang.downloadmanager.listeners.DownloadTaskListener;
+import com.zhangqiang.downloadmanager.listeners.UIDownloadTaskListener;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.ui.cell.DownloadTaskCell;

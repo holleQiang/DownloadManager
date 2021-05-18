@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -34,21 +35,44 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    CharSequence text = v.getText();
-                    if (TextUtils.isEmpty(text)) {
-                        return false;
-                    }
-                    download(text.toString());
+                    return performDownload();
                 }
-                etUrl.getText().clear();
+//                etUrl.getText().clear();
                 return false;
             }
         });
         etUrl.setText("https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd");
+        findViewById(R.id.bt_go).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                performDownload();
+            }
+        });
+
         DownloadManagerFragment downloadManagerFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
                 .commit();
 
+        handDownloadIntent();
+    }
+
+    private boolean performDownload() {
+        CharSequence text = etUrl.getText();
+        if (TextUtils.isEmpty(text)) {
+            return false;
+        }
+        download(text.toString());
+        return true;
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handDownloadIntent();
+    }
+
+    private void handDownloadIntent() {
         String link = getIntent().getStringExtra("link");
         if (!TextUtils.isEmpty(link)) {
             etUrl.setText(link);
@@ -59,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 inputMethodManager.showSoftInput(etUrl, InputMethodManager.SHOW_IMPLICIT);
             }
         }
-
     }
 
     @Override
@@ -83,6 +106,6 @@ public class MainActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(saveDir)) {
             saveDir = new File(getFilesDir(), "download").getAbsolutePath();
         }
-        DownloadManager.getInstance(this).download(url, 10, saveDir);
+        DownloadManager.getInstance(this).download(url, 2, saveDir);
     }
 }

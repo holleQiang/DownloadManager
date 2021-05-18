@@ -7,11 +7,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/**
- * description :
- * creator : zhangqing.jason@bytedance.com
- * date : 2021-05-13
- */
 public class DownloadExecutors {
     private static final int CORE_POOL_SIZE = 32;
     private static final int MAXIMUM_POOL_SIZE = 100;

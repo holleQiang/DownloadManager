@@ -32,7 +32,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
     private long currentLength;
     private final long toPosition;
     private final String savePath;
-    private Call call;
+    private Call mCall;
     private Future<?> mCancelFuture;
 
     public OKHttpDownloadPartTask(Context context, String url, long fromPosition, long currentLength, long toPosition, String savePath) {
@@ -53,7 +53,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         mCancelFuture = DownloadExecutors.executor.submit(new RealTask());
     }
 
-    private class RealTask implements Runnable{
+    private class RealTask implements Runnable {
 
         @Override
         public void run() {
@@ -69,12 +69,11 @@ public class OKHttpDownloadPartTask extends DownloadTask {
                     "-" +
                     toPosition);
             Request request = builder.build();
-            call = OKHttpUtils.getOkHttpClient(context).newCall(request);
+            Call call = OKHttpUtils.getOkHttpClient(context).newCall(request);
+            mCall = call;
             HttpResponse httpResponse = null;
             try {
-
                 httpResponse = new OkHttpResponse(call.execute());
-
                 int responseCode = httpResponse.getResponseCode();
                 if (responseCode == 206) {
                     doRangeWrite(httpResponse);
@@ -95,6 +94,35 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         }
     }
 
+    @Override
+    protected void dispatchFail(DownloadException e) {
+        super.dispatchFail(e);
+        cancelHttpRequest();
+    }
+
+    @Override
+    protected void onCancel() {
+        if (mCancelFuture != null && !mCancelFuture.isCancelled()) {
+            mCancelFuture.cancel(true);
+            mCancelFuture = null;
+        }
+        cancelHttpRequest();
+    }
+
+    private void cancelHttpRequest() {
+        if (mCall != null  ) {
+            if (!mCall.isCanceled()) {
+                mCall.cancel();
+            }
+            mCall = null;
+        }
+    }
+
+    @Override
+    public long getCurrentLength() {
+        return currentLength;
+    }
+
     private void doRangeWrite(HttpResponse httpResponse) throws IOException {
 
         RangePart rangePart = HttpUtils.parseRangePart(httpResponse);
@@ -104,7 +132,7 @@ public class OKHttpDownloadPartTask extends DownloadTask {
         LogUtils.i(TAG, savePath + "============" + rangePart);
         final long start = rangePart.getStart();
         final long end = rangePart.getEnd();
-        if (start != fromPosition+currentLength && end != toPosition) {
+        if (start != fromPosition + currentLength && end != toPosition) {
             dispatchFail(new DownloadException(DownloadException.RANGE_CHANGED, "range has changed"));
             return;
         }
@@ -125,23 +153,6 @@ public class OKHttpDownloadPartTask extends DownloadTask {
             }
         });
         LogUtils.i(TAG, "======write finished===start=" + fromPosition + "=currentPosition=" + currentLength + "==end=" + toPosition);
-    }
-
-    @Override
-    protected void onCancel() {
-        if (mCancelFuture != null && !mCancelFuture.isCancelled()) {
-            mCancelFuture.cancel(true);
-            mCancelFuture = null;
-        }
-        if (call != null && !call.isCanceled()) {
-            call.cancel();
-            call = null;
-        }
-    }
-
-    @Override
-    public long getCurrentLength() {
-        return currentLength;
     }
 
     public boolean isFinished() {

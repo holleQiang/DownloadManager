@@ -8,7 +8,7 @@
 
     <EditText
         android:id="@+id/et_url"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:ellipsize="middle"
         android:gravity="start|top"
@@ -16,9 +16,18 @@
         android:imeActionLabel="@string/download"
         android:imeOptions="actionDone"
         android:inputType="textUri"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/bt_go"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/bt_go"
+        android:layout_width="wrap_content"
+        android:text="Go"
+        app:layout_constraintStart_toEndOf="@id/et_url"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBaseline_toBaselineOf="@id/et_url"
+        android:layout_height="wrap_content"/>
 
     <FrameLayout
         android:id="@+id/fl_fragment_container"
