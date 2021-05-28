@@ -30,7 +30,11 @@ public interface TaskInfo {
 
     long getSpeed();
 
-    long getThreadSpeed(int threadIndex);
+    int getPartSize();
 
-    long getThreadCurrentLength(int threadIndex);
+    long getPartSpeed(int partIndex);
+
+    long getPartLength(int partIndex);
+
+    long getTotalPartLength(int partIndex);
 }

@@ -1,28 +1,21 @@
 package com.zhangqiang.sample.ui;
 
+import android.content.ClipboardManager;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.config.Configs;
 import com.zhangqiang.sample.service.DownloadService;
-
-import java.io.File;
+import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.ui.dialog.TestDialog;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText etUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,39 +23,12 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DownloadService.class);
         startService(intent);
         setContentView(R.layout.activity_main);
-        etUrl = findViewById(R.id.et_url);
-        etUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    return performDownload();
-                }
-//                etUrl.getText().clear();
-                return false;
-            }
-        });
-        etUrl.setText("https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd");
-        findViewById(R.id.bt_go).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                performDownload();
-            }
-        });
 
         DownloadManagerFragment downloadManagerFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
                 .commit();
 
         handDownloadIntent();
-    }
-
-    private boolean performDownload() {
-        CharSequence text = etUrl.getText();
-        if (TextUtils.isEmpty(text)) {
-            return false;
-        }
-        download(text.toString());
-        return true;
     }
 
     @Override
@@ -74,14 +40,16 @@ public class MainActivity extends AppCompatActivity {
 
     private void handDownloadIntent() {
         String link = getIntent().getStringExtra("link");
-        if (!TextUtils.isEmpty(link)) {
-            etUrl.setText(link);
-            etUrl.requestFocus();
-            etUrl.setSelection(link.length());
-            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-            if (inputMethodManager != null) {
-                inputMethodManager.showSoftInput(etUrl, InputMethodManager.SHOW_IMPLICIT);
+        if (TextUtils.isEmpty(link)) {
+            Uri data = getIntent().getData();
+            if (data != null) {
+                if ("http".equals(data.getScheme()) || "https".equals(data.getScheme())) {
+                    link = data.toString();
+                }
             }
+        }
+        if (!TextUtils.isEmpty(link)) {
+            showTaskCreateDialog(link);
         }
     }
 
@@ -94,18 +62,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+//            startActivity(new Intent(this, SettingsActivity.class));
+            new TestDialog().show(getSupportFragmentManager(),"1111");
+            return true;
+        } else if (item.getItemId() == R.id.create_task) {
+            showTaskCreateDialog(null);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-
-    private void download(String url) {
-        String saveDir = Configs.saveDir.get();
-        if (TextUtils.isEmpty(saveDir)) {
-            saveDir = new File(getFilesDir(), "download").getAbsolutePath();
-        }
-        DownloadManager.getInstance(this).download(url, 2, saveDir);
+    private void showTaskCreateDialog(String url) {
+        CreateTaskDialog dialog = new CreateTaskDialog();
+        Bundle arg = new Bundle();
+        arg.putString("url", url);
+        dialog.setArguments(arg);
+        dialog.show(getSupportFragmentManager(), "create_task");
     }
 }

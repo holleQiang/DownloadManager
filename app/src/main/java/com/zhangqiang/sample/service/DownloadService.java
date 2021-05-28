@@ -39,6 +39,7 @@ public class DownloadService extends Service {
                     NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(mChannel);
         }
+        processCurrentClipboard();
     }
 
     @Override
@@ -49,33 +50,37 @@ public class DownloadService extends Service {
     ClipboardManager.OnPrimaryClipChangedListener clipChangedListener = new ClipboardManager.OnPrimaryClipChangedListener() {
         @Override
         public void onPrimaryClipChanged() {
-            if (clipboardManager == null) {
-                return;
-            }
-            if (!clipboardManager.hasPrimaryClip()) {
-                return;
-            }
-            ClipData clipData = clipboardManager.getPrimaryClip();
-            if (clipData == null) {
-                return;
-            }
-            int itemCount = clipData.getItemCount();
-            for (int i = 0; i < itemCount; i++) {
-                ClipData.Item item = clipData.getItemAt(i);
-                String text = item.getText().toString();
-                Uri uri = Uri.parse(text);
-                String scheme = uri.getScheme();
-                if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
-                    Notification notification = buildDownloadTaskNotification(text);
-                    if (notificationManager != null) {
-                        notificationManager.notify(notificationId, notification);
-                        notificationId++;
-                    }
-                }
-                LogUtils.i("DownloadService", "==========" + item.toString());
-            }
+            processCurrentClipboard();
         }
     };
+
+    private void processCurrentClipboard() {
+        if (clipboardManager == null) {
+            return;
+        }
+        if (!clipboardManager.hasPrimaryClip()) {
+            return;
+        }
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData == null) {
+            return;
+        }
+        int itemCount = clipData.getItemCount();
+        for (int i = 0; i < itemCount; i++) {
+            ClipData.Item item = clipData.getItemAt(i);
+            String text = item.getText().toString();
+            Uri uri = Uri.parse(text);
+            String scheme = uri.getScheme();
+            if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                Notification notification = buildDownloadTaskNotification(text);
+                if (notificationManager != null) {
+                    notificationManager.notify(notificationId, notification);
+                    notificationId++;
+                }
+            }
+            LogUtils.i("DownloadService", "==========" + item.toString());
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -90,7 +95,7 @@ public class DownloadService extends Service {
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("link", link);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 1000, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         return new NotificationCompat.Builder(this, getResources().getString(R.string.download_notification_channel_id))
                 .setContentTitle("点击下载此内容")
@@ -101,5 +106,27 @@ public class DownloadService extends Service {
                 .setWhen(System.currentTimeMillis())
                 .setAutoCancel(true)
                 .build();
+    }
+
+    public static String getLink(ClipboardManager clipboardManager) {
+        if (!clipboardManager.hasPrimaryClip()) {
+            return null;
+        }
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        if (clipData == null) {
+            return null;
+        }
+        int itemCount = clipData.getItemCount();
+        for (int i = 0; i < itemCount; i++) {
+            ClipData.Item item = clipData.getItemAt(i);
+            String text = item.getText().toString();
+            Uri uri = Uri.parse(text);
+            String scheme = uri.getScheme();
+            if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                return text;
+            }
+            LogUtils.i("DownloadService", "==========" + item.toString());
+        }
+        return null;
     }
 }

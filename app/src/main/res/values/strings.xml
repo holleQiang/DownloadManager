@@ -22,5 +22,10 @@
     <string name="delete_file">删除文件</string>
     <string name="copy_success">复制成功</string>
     <string name="waiting">等待中...</string>
+    <string name="create_task">创建下载任务</string>
+    <string name="please_input_url">请输入url</string>
+    <string name="thread_count">线程数量</string>
+    <string name="add_to_queue">加入队列</string>
+    <string name="please_input_thread_count">请输入线程数量</string>
 
 </resources>

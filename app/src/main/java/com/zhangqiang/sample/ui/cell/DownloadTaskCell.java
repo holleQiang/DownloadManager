@@ -3,6 +3,7 @@ package com.zhangqiang.sample.ui.cell;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Toast;
@@ -19,6 +20,7 @@ import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskDeleteConfirmDialog;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
+import com.zhangqiang.sample.ui.widget.MultiProgressView;
 import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
@@ -68,7 +70,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
                     public void onCopyLinkClick() {
 
                         copy(context, entity.getUrl());
-                        Toast.makeText(context,R.string.copy_success,Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -100,26 +102,31 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
 
         String resetTimeStr;
-        if (data.getSpeed() == 0 || data.getContentLength() == 0) {
-            resetTimeStr = "未知";
-        }else {
-            long resetTime = data.getContentLength() / data.getSpeed();
-            if(resetTime <= 0){
-                resetTimeStr = "0秒";
-            }else if(resetTime < 60){
-                resetTimeStr = resetTime+"秒";
-            }else if(resetTime < 60 * 60){
-                resetTimeStr = resetTime/60+"分钟";
-            }else if(resetTime < 60 * 60 * 24){
-                resetTimeStr = resetTime/60/60+"小时";
-            }else {
-                resetTimeStr = resetTime/60/60/24+"天";
+        if (data.getContentLength() == 0) {
+            resetTimeStr = "剩余时间：" + "未知";
+        } else if (data.getContentLength() <= data.getCurrentLength()) {
+            resetTimeStr = "已完成";
+        } else if (data.getSpeed() == 0) {
+            resetTimeStr = "剩余时间：" + "未知";
+        } else {
+            long resetLength = data.getContentLength() - data.getCurrentLength();
+            long resetTime = resetLength / data.getSpeed();
+            if (resetTime <= 0) {
+                resetTimeStr = "剩余时间：" + "0秒";
+            } else if (resetTime < 60) {
+                resetTimeStr = "剩余时间：" + resetTime + "秒";
+            } else if (resetTime < 60 * 60) {
+                resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
+            } else if (resetTime < 60 * 60 * 24) {
+                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
+            } else {
+                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
             }
         }
-        viewHolder.setText(R.id.tv_rest_time, "剩余时间：" + resetTimeStr);
+        viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
     }
 
-    public void updateSpeed(){
+    public void updateSpeed() {
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {
@@ -128,11 +135,11 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         });
     }
 
-    private void updateState( ViewHolder viewHolder) {
+    private void updateState(ViewHolder viewHolder) {
         TaskInfo data = getData();
 
         int status = data.getState();
-        LogUtils.i(TAG,"=====updateState2======"+getData().getState());
+        LogUtils.i(TAG, "=====updateState2======" + getData().getState());
         if (status == DownloadManager.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisible(viewHolder, false);
@@ -150,12 +157,12 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisible(viewHolder, false);
         }
-        LogUtils.i(TAG,"=====updateState3======"+getData().getState());
+        LogUtils.i(TAG, "=====updateState3======" + getData().getState());
     }
 
-    private void updateInfo(ViewHolder viewHolder){
+    private void updateInfo(ViewHolder viewHolder) {
         TaskInfo data = getData();
-        viewHolder.setText(R.id.tv_file_name,data.getFileName());
+        viewHolder.setText(R.id.tv_file_name, data.getFileName());
     }
 
     private void changeVisible(ViewHolder viewHolder, boolean isError) {
@@ -171,9 +178,21 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TaskInfo data = getData();
         long currentLength = data.getCurrentLength();
         long totalLength = data.getContentLength();
-        int progress = (int) ((float) currentLength / totalLength * 100);
-        viewHolder.setProgress(R.id.pb_download_progress, progress);
+//        int progress = (int) ((float) currentLength / totalLength * 100);
         viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
+        MultiProgressView multiProgressView = viewHolder.getView(R.id.pb_download_progress);
+        multiProgressView.clear();
+        int partSize = data.getPartSize();
+        for (int i = 0; i < partSize; i++) {
+            long threadCurrentLength =  data.getPartLength(i);
+            long threadContentLength =  data.getTotalPartLength(i);
+            int progress = (int) (((float)threadCurrentLength/threadContentLength)*100);
+            multiProgressView.addProgressEntry(i,
+                    progress,
+                    100,
+                    Color.rgb(128 / partSize * (i + 1), 128 / partSize * (i + 1), 128 / partSize * (i + 1) + 90),
+                    null);
+        }
     }
 
 
@@ -208,7 +227,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
     }
 
     public void updateState() {
-        LogUtils.i(TAG,"=====updateState1======"+getData().getState());
+        LogUtils.i(TAG, "=====updateState1======" + getData().getState());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {
