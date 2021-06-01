@@ -38,7 +38,7 @@ public class OKHttpDownloadTask extends DownloadTask {
     private final String saveDir;
     private long contentLength;
     private final int threadSize;
-    private volatile Call call;
+    private Call call;
     private final String saveFileName;
     private OnResourceInfoReadyListener onResourceInfoReadyListener;
     private long currentLength;
@@ -80,7 +80,6 @@ public class OKHttpDownloadTask extends DownloadTask {
 
         @Override
         public void run() {
-            currentLength = 0;
             mFinishedPartTaskSize.set(0);
             LogUtils.i(TAG, "开始下载。。。");
             if (mPartTasks != null && !mPartTasks.isEmpty()) {
@@ -138,7 +137,7 @@ public class OKHttpDownloadTask extends DownloadTask {
 
     private void doSingleThreadDownload(HttpResponse httpResponse, String fileName) {
         try {
-
+            currentLength = 0;
             File saveFile = new File(saveDir, fileName);
             if (saveFile.exists()) {
                 if (!saveFile.delete()) {
