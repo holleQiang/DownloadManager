@@ -16,6 +16,8 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListener;
 import com.zhangqiang.downloadmanager.listeners.OnActiveTaskSizeChangedListener;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.http.HttpDownloadPartTask;
+import com.zhangqiang.downloadmanager.task.http.HttpDownloadTask;
 import com.zhangqiang.downloadmanager.task.http.okhttp.OKHttpDownloadPartTask;
 import com.zhangqiang.downloadmanager.task.http.okhttp.OKHttpDownloadTask;
 import com.zhangqiang.downloadmanager.task.http.okhttp.ResourceInfo;
@@ -166,7 +168,14 @@ public class DownloadManager {
                 request.getUrl(),
                 request.getSaveDir(),
                 request.getThreadCount(),
-                request.getFileName());
+                request.getFileName(),
+                new HttpDownloadTask.PartTaskFactory() {
+                    @Override
+                    public HttpDownloadPartTask createPartTask(String url, long start, long end, String savePath) {
+                        return new OKHttpDownloadPartTask(mContext,url,start,0,end,savePath);
+                    }
+                }
+        );
         DownloadRecord downloadRecord = new DownloadRecord(taskEntity, task);
         configDownloadRecord(downloadRecord);
         return downloadRecord;
@@ -175,7 +184,7 @@ public class DownloadManager {
     private DownloadRecord makeDownloadRecord(TaskEntity taskEntity) {
         List<PartEntity> partList = taskEntity.getPartList();
         HashMap<Integer, PartRecord> partRecords = null;
-        List<OKHttpDownloadPartTask> partTasks = null;
+        List<HttpDownloadPartTask> partTasks = null;
         if (partList != null) {
             partTasks = new ArrayList<>();
             partRecords = new HashMap<>();
@@ -379,7 +388,7 @@ public class DownloadManager {
             });
             okHttpDownloadTask.setOnPartTaskCreateListener(new OKHttpDownloadTask.OnPartTaskCreateListener() {
                 @Override
-                public void onPartTaskCreate(int threadIndex, int threadSize, OKHttpDownloadPartTask task) {
+                public void onPartTaskCreate(int threadIndex, int threadSize, HttpDownloadPartTask task) {
                     PartEntity partEntity = new PartEntity();
                     partEntity.setTaskId(entity.getId());
                     partEntity.setSavePath(task.getSavePath());

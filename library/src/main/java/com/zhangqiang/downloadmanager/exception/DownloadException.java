@@ -10,6 +10,7 @@ public class DownloadException extends Exception{
     public static final int RANGE_CHANGED = 104;
     public static final int PART_FAIL = 105;
     public static final int PARSE_PART_FAIL = 106;
+    public static final int PARAM_ERROR = 107;
 
     private final int code;
 

@@ -8,6 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="dialogTheme">@style/Dialog</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
+<!--        <item name="actionBarStyle">@style/Widget.AppCompat.Toolbar</item>-->
+        <item name="actionBarSize">44dp</item>
     </style>
 
     <style name="SettingsTitle"></style>

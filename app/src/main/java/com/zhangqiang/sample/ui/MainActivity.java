@@ -62,11 +62,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.settings) {
-//            startActivity(new Intent(this, SettingsActivity.class));
-            new TestDialog().show(getSupportFragmentManager(),"1111");
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (item.getItemId() == R.id.create_task) {
-            showTaskCreateDialog(null);
+            showTaskCreateDialog("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2496571732,442429806&fm=26&gp=0.jpg");
             return true;
         }
         return super.onOptionsItemSelected(item);
