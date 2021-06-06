@@ -1,6 +1,5 @@
 package com.zhangqiang.sample.ui;
 
-import android.content.ClipboardManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +11,7 @@ import android.view.MenuItem;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.ui.dialog.TestBottomSheetDialog;
 import com.zhangqiang.sample.ui.dialog.TestDialog;
 
 public class MainActivity extends AppCompatActivity {
@@ -24,8 +24,8 @@ public class MainActivity extends AppCompatActivity {
         startService(intent);
         setContentView(R.layout.activity_main);
 
-        DownloadManagerFragment downloadManagerFragment = new DownloadManagerFragment();
-        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManagerFragment)
+        DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
                 .commit();
 
         handDownloadIntent();
@@ -65,7 +65,13 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (item.getItemId() == R.id.create_task) {
-            showTaskCreateDialog("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2496571732,442429806&fm=26&gp=0.jpg");
+            showTaskCreateDialog("https://imtt.dd.qq.com/16891/apk/5C0FF221A948463BCF9F3255E0112034.apk?fsname=com.tencent.mm_8.0.6_1900.apk&csr=1bbd");
+            return true;
+        }else if(item.getItemId() == R.id.test){
+            new TestDialog().show(getSupportFragmentManager(),"test");
+            return true;
+        }else if(item.getItemId() == R.id.test_sheet){
+            new TestBottomSheetDialog().show(getSupportFragmentManager(),"testSheet");
             return true;
         }
         return super.onOptionsItemSelected(item);

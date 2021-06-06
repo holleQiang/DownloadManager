@@ -1,13 +1,13 @@
 package com.zhangqiang.downloadmanager;
 
-public class Request {
+public class DownloadRequest {
 
     private final String url;
     private final int threadCount;
     private final String saveDir;
     private final String fileName;
 
-    Request(String url, int threadCount, String saveDir, String fileName) {
+    DownloadRequest(String url, int threadCount, String saveDir, String fileName) {
         this.url = url;
         this.threadCount = threadCount;
         this.saveDir = saveDir;
@@ -44,7 +44,7 @@ public class Request {
         }
 
         public Builder setThreadCount(int threadCount) {
-            this.threadCount = Math.max(1,threadCount);
+            this.threadCount = Math.max(1, threadCount);
             return this;
         }
 
@@ -53,8 +53,14 @@ public class Request {
             return this;
         }
 
-        public Request build() {
-            return new Request(url, threadCount, saveDir, fileName);
+        public DownloadRequest build() {
+            return new DownloadRequest(url, threadCount, saveDir, fileName);
         }
+    }
+
+    public Builder newBuilder() {
+        return new Builder(url, saveDir)
+                .setFileName(fileName)
+                .setThreadCount(threadCount);
     }
 }

@@ -22,7 +22,7 @@ import com.zhangqiang.sample.ui.cell.DownloadTaskCell;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DownloadManagerFragment extends BaseFragment {
+public class DownloadManageFragment extends BaseFragment {
 
     private RecyclerView recyclerView;
     private CellRVAdapter cellRVAdapter;
@@ -105,7 +105,7 @@ public class DownloadManagerFragment extends BaseFragment {
         @Override
         public void onTaskRemovedMain(long id) {
             int dataCount = cellRVAdapter.getDataCount();
-            for (int i = 0; i < dataCount; i++) {
+            for (int i = dataCount - 1; i >= 0; i--) {
                 DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
                 TaskInfo taskEntity = cell.getData();
                 if (taskEntity.getId() == id) {

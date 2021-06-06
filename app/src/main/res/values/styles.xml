@@ -1,15 +1,20 @@
 <resources>
 
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light">
+    </style>
+
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="BaseAppTheme">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="dialogTheme">@style/Dialog</item>
+        <item name="dialogTheme">@style/DialogTheme</item>
+        <item name="android:dialogTheme">@style/DialogTheme</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
 <!--        <item name="actionBarStyle">@style/Widget.AppCompat.Toolbar</item>-->
-        <item name="actionBarSize">44dp</item>
+        <item name="actionBarSize">48dp</item>
+        <item name="toolbarStyle">@style/AppToolBarStyle</item>
     </style>
 
     <style name="SettingsTitle"></style>
@@ -30,15 +35,35 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="Dialog" parent="Theme.AppCompat.Light.Dialog">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
+    <style name="BaseDialogTheme" parent="Theme.AppCompat.Light.Dialog">
     </style>
 
-    <style name="BottomSheetDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+    <style name="DialogTheme" parent="BaseDialogTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>
+        <item name="android:windowMinWidthMinor">@dimen/abc_dialog_min_width_minor</item>
+    </style>
+
+    <style name="BaseBottomSheetDialogTheme" parent="Theme.AppCompat.Light.Dialog">
+
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="BaseBottomSheetDialogTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowAnimationStyle">@style/Animation.Design.BottomSheetDialog</item>
         <item name="bottomSheetStyle">@style/Widget.Design.BottomSheet.Modal</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppToolBarStyle" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textColorPrimary">@android:color/white</item>
     </style>
 
 </resources>

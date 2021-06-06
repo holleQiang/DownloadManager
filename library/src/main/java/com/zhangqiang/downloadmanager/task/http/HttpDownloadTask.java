@@ -2,6 +2,7 @@ package com.zhangqiang.downloadmanager.task.http;
 
 import android.text.TextUtils;
 
+import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.manager.DownloadExecutors;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
@@ -32,40 +33,19 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
     public static final String TAG = HttpDownloadTask.class.getSimpleName();
 
-    private final String url;
-    private final String saveDir;
-    private long contentLength;
-    private final int threadSize;
-    private final String saveFileName;
+    private final DownloadRequest request;
     private OnResourceInfoReadyListener onResourceInfoReadyListener;
     private long currentLength;
     private OnPartTaskCreateListener onPartTaskCreateListener;
     private List<HttpDownloadPartTask> mPartTasks;
     private final AtomicInteger mRunningPartTaskSize = new AtomicInteger(0);
     private final AtomicInteger mFinishedPartTaskSize = new AtomicInteger(0);
-    private PartTaskFactory mPartTaskFactory;
+    private final PartTaskFactory mPartTaskFactory;
     private Future<?> mCancelFuture;
 
-    public HttpDownloadTask(String url, String saveDir, int threadSize, String saveFileName, PartTaskFactory factory) {
-        this.url = url;
-        this.saveDir = saveDir;
-        this.threadSize = threadSize;
-        this.saveFileName = saveFileName;
+    public HttpDownloadTask(DownloadRequest request, PartTaskFactory factory) {
+        this.request = request;
         this.mPartTaskFactory = factory;
-    }
-
-    public HttpDownloadTask(String url, String saveDir, int threadSize, String fileName, long contentLength, List<HttpDownloadPartTask> partTasks) {
-        this.url = url;
-        this.saveDir = saveDir;
-        this.threadSize = threadSize;
-        this.saveFileName = fileName;
-        this.contentLength = contentLength;
-        this.mPartTasks = partTasks;
-        if (mPartTasks != null && !mPartTasks.isEmpty()) {
-            for (int i = 0; i < mPartTasks.size(); i++) {
-                initPartTask(mPartTasks.get(i), fileName);
-            }
-        }
     }
 
     @Override
@@ -77,9 +57,8 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
                 LogUtils.i(TAG, "开始下载。。。");
                 if (mPartTasks != null && !mPartTasks.isEmpty()) {
-                    mFinishedPartTaskSize.set(0);
-                    for (int i = 0; i < mPartTasks.size(); i++) {
-                        mPartTasks.get(i).start();
+                    for (HttpDownloadPartTask partTask : mPartTasks) {
+                        partTask.start();
                     }
                     return;
                 }
@@ -134,13 +113,8 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
     private void doSingleThreadDownload(HttpResponse httpResponse, String fileName) {
         try {
-            currentLength = 0;
-            File saveFile = new File(saveDir, fileName);
-            if (saveFile.exists()) {
-                if (!saveFile.delete()) {
-                    throw new IOException("delete file fail:" + saveFile.getAbsolutePath());
-                }
-            }
+            File saveFile = new File(FileUtils.createDirIfNotExists(new File(request.getSaveDir())), fileName);
+            FileUtils.deleteFileIfExists(saveFile);
             InputStream inputStream = httpResponse.getInputStream();
             FileUtils.writeToFileFrom(inputStream, saveFile, 0, new FileUtils.WriteFileListener() {
 
@@ -149,7 +123,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
                     currentLength += len;
                 }
             });
-            LogUtils.i(TAG, "单线程下载完成" + saveDir);
+            LogUtils.i(TAG, "单线程下载完成" + request.getSaveDir());
             dispatchComplete();
         } catch (IOException e) {
             dispatchFail(new DownloadException(DownloadException.WRITE_FILE_FAIL, e));
@@ -157,6 +131,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
     }
 
     private void doMultiThreadDownload(HttpResponse httpResponse, String fileName) {
+        String saveDir = request.getSaveDir();
         RangePart rangePart = HttpUtils.parseRangePart(httpResponse);
         LogUtils.i(TAG, saveDir + "============" + rangePart);
         if (rangePart == null) {
@@ -166,6 +141,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
         if (mPartTasks == null) {
             mPartTasks = new ArrayList<>();
         }
+        int threadSize = request.getThreadCount();
         final long total = rangePart.getTotal();
         long eachDownload = total / threadSize;
         long resetDownload = total % threadSize;
@@ -175,8 +151,8 @@ public abstract class HttpDownloadTask extends DownloadTask {
             if (i == threadSize - 1) {
                 end += resetDownload - 1;
             }
-            final String savePath = new File(this.saveDir, fileName + "_" + i + "_" + threadSize).getAbsolutePath();
-            HttpDownloadPartTask task = mPartTaskFactory.createPartTask(url, start, end, savePath);
+            final String savePath = new File(saveDir, fileName + "_" + i + "_" + threadSize).getAbsolutePath();
+            HttpDownloadPartTask task = mPartTaskFactory.createPartTask(request.getUrl(), start, end, savePath);
             initPartTask(task, fileName);
             if (onPartTaskCreateListener != null) {
                 onPartTaskCreateListener.onPartTaskCreate(i,threadSize,task);
@@ -233,14 +209,14 @@ public abstract class HttpDownloadTask extends DownloadTask {
     }
 
     private String makeFileName(HttpResponse httpResponse) {
-        String fileName = saveFileName;
+        String fileName = request.getFileName();
         if (TextUtils.isEmpty(fileName)) {
             fileName = HttpUtils.parseFileName(httpResponse);
         }
         if (TextUtils.isEmpty(fileName)) {
-            fileName = MD5Utils.getMD5(url);
+            fileName = MD5Utils.getMD5(request.getUrl());
         }
-        return FileUtils.getDistinctFileName(saveDir, fileName);
+        return FileUtils.getDistinctFileName(request.getSaveDir(), fileName);
     }
 
     public interface OnResourceInfoReadyListener {
@@ -288,9 +264,9 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
     private void handAllTaskFinish(String fileName) {
         try {
-            LogUtils.i(TAG, "合并临时文件" + saveDir);
+            LogUtils.i(TAG, "合并临时文件" + request.getSaveDir());
             mergePartFile(fileName);
-            LogUtils.i(TAG, "下载完成" + saveDir);
+            LogUtils.i(TAG, "下载完成" + request.getSaveDir());
             dispatchComplete();
         } catch (IOException e) {
             dispatchFail(new DownloadException(DownloadException.MERGE_PART_FAIL, e));
@@ -299,7 +275,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
 
     private void mergePartFile(String fileName) throws IOException {
-
+        String saveDir = request.getSaveDir();
         File dir = new File(saveDir);
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
@@ -309,7 +285,6 @@ public abstract class HttpDownloadTask extends DownloadTask {
         File saveFile = new File(dir, fileName);
         deleteFileIfExists(saveFile);
         RandomAccessFile raf = new RandomAccessFile(saveFile, "rw");
-        raf.setLength(contentLength);
         try {
 
             for (HttpDownloadPartTask partTask : mPartTasks) {
@@ -366,7 +341,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
         HttpDownloadPartTask createPartTask(String url, long start, long end, String savePath);
     }
 
-    public String getUrl() {
-        return url;
+    public DownloadRequest getRequest() {
+        return request;
     }
 }

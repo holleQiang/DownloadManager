@@ -2,6 +2,8 @@ package com.zhangqiang.downloadmanager.utils;
 
 import android.text.TextUtils;
 
+import com.zhangqiang.downloadmanager.exception.DownloadException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,5 +76,22 @@ public class FileUtils {
             }
         }
         return targetFileName;
+    }
+
+    public static void deleteFileIfExists(File file) throws IOException {
+        if (file.exists()) {
+            if (!file.delete()) {
+                throw new IOException("delete file fail:" + file.getAbsolutePath());
+            }
+        }
+    }
+
+    public static File createDirIfNotExists(File dirFile) throws IOException {
+        if (!dirFile.exists()) {
+            if (!dirFile.mkdirs()) {
+                throw new IOException("cannot create dir:" + dirFile.getAbsolutePath());
+            }
+        }
+        return dirFile;
     }
 }

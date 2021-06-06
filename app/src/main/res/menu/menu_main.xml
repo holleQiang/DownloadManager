@@ -11,4 +11,14 @@
         android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/test"
+        android:title="@string/test_dialog"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/test_sheet"
+        android:title="@string/test_dialog_bottom_sheet"
+        app:showAsAction="never" />
 </menu>

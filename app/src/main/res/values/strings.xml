@@ -27,5 +27,11 @@
     <string name="thread_count">线程数量</string>
     <string name="add_to_queue">加入队列</string>
     <string name="please_input_thread_count">请输入线程数量</string>
+    <string name="test_dialog">弹窗测试</string>
+    <string name="test_dialog_bottom_sheet">BottomSheet弹窗测试</string>
+    <string name="restart_download">重新下载</string>
+    <string name="download_link">下载链接</string>
+    <string name="please_input_save_name">请输入文件名称</string>
+    <string name="save_name">保存名称</string>
 
 </resources>

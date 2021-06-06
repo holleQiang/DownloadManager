@@ -28,8 +28,8 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
         if (context == null) {
             return super.onCreateDialog(savedInstanceState);
         }
-//        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : new AppCompatDialog(getActivity(),getTheme());
-        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : new AppCompatDialog(getActivity(),getTheme());
+        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : new Dialog(getActivity(),getTheme());
+//        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : super.onCreateDialog(savedInstanceState);
     }
 
     protected boolean useBottomSheet() {

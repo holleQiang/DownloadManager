@@ -63,35 +63,8 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.getView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(final View v) {
-                final Context context = v.getContext();
-                TaskOperationDialog dialog = TaskOperationDialog.newInstance();
-                dialog.setListener(new TaskOperationDialog.Listener() {
-                    @Override
-                    public void onCopyLinkClick() {
-
-                        copy(context, entity.getUrl());
-                        Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onDeleteTaskClick() {
-
-                        TaskDeleteConfirmDialog dialog = TaskDeleteConfirmDialog.newInstance();
-                        dialog.setListener(new TaskDeleteConfirmDialog.Listener() {
-                            @Override
-                            public void onConfirm(boolean deleteFile) {
-                                DownloadManager.getInstance(context).deleteTask(entity.getId(), deleteFile);
-                                CellParent parent = getParent();
-                                if (parent != null) {
-                                    parent.removeData(DownloadTaskCell.this);
-                                }
-                            }
-                        });
-                        dialog.show(fragmentManager, "delete_confirm");
-                    }
-                });
+                TaskOperationDialog dialog = TaskOperationDialog.newInstance(getData().getId());
                 dialog.show(fragmentManager, "task_operate_dialog");
-
                 return true;
             }
         });
@@ -195,18 +168,6 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         }
     }
 
-
-    private void copy(Context context, String url) {
-        if (context == null) {
-            return;
-        }
-        ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboardManager == null) {
-            return;
-        }
-        ClipData clipData = ClipData.newPlainText(url, url);
-        clipboardManager.setPrimaryClip(clipData);
-    }
 
     public void updateProgress() {
         invalidate(new Action() {

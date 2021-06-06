@@ -1,18 +1,36 @@
 package com.zhangqiang.sample.ui.dialog;
 
+import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.CheckBox;
 
+import com.zhangqiang.downloadmanager.DownloadManager;
+import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 
 public class TaskDeleteConfirmDialog extends BaseDialogFragment {
 
-    private Listener listener;
     private CheckBox cbDeleteFile;
+    private long taskId;
 
-    public static TaskDeleteConfirmDialog newInstance() {
-        return new TaskDeleteConfirmDialog();
+    public static TaskDeleteConfirmDialog newInstance(long taskId) {
+        Bundle arg = new Bundle();
+        arg.putLong("taskId",taskId);
+        TaskDeleteConfirmDialog dialog = new TaskDeleteConfirmDialog();
+        dialog.setArguments(arg);
+        return dialog;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            taskId = arguments.getLong("taskId");
+        }
     }
 
     @Override
@@ -26,9 +44,12 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
         view.findViewById(R.id.bt_confirm).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (listener != null) {
-                    listener.onConfirm(cbDeleteFile.isChecked());
+                Context context = getContext();
+                TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
+                if (taskInfo == null) {
+                    return;
                 }
+                DownloadManager.getInstance(context).deleteTask(taskInfo.getId(), cbDeleteFile.isChecked());
                 getDialog().dismiss();
             }
         });
@@ -45,12 +66,4 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
         return true;
     }
 
-    public interface Listener {
-
-        void onConfirm(boolean deleteFile);
-    }
-
-    public void setListener(Listener listener) {
-        this.listener = listener;
-    }
 }

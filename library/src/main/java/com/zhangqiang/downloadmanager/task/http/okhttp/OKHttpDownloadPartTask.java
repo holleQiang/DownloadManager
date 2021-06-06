@@ -48,7 +48,8 @@ public class OKHttpDownloadPartTask extends HttpDownloadPartTask {
                 "-" +
                 getToPosition());
         Request request = builder.build();
-        final Call call = OKHttpUtils.getOkHttpClient(context).newCall(request);
+        final Call call = OKHttpClients.getDefault(context).newCall(request);
+        mCall = call;
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -75,11 +76,7 @@ public class OKHttpDownloadPartTask extends HttpDownloadPartTask {
     }
 
     private void cancelHttpRequest() {
-        if (mCall != null) {
-            if (!mCall.isCanceled()) {
-                mCall.cancel();
-            }
-            mCall = null;
-        }
+        OKHttpUtils.cancelCall(mCall);
+        mCall = null;
     }
 }

@@ -22,6 +22,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bt_copy_link" />
 
+    <TextView
+        android:id="@+id/bt_restart"
+        style="@style/TaskOperationTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/restart_download"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bt_delete_task" />
 
     <TextView
         android:id="@+id/bt_cancel"
@@ -30,6 +38,6 @@
         android:layout_height="wrap_content"
         android:text="@string/cancel"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/bt_delete_task" />
+        app:layout_constraintTop_toBottomOf="@id/bt_restart" />
 
 </android.support.constraint.ConstraintLayout>
