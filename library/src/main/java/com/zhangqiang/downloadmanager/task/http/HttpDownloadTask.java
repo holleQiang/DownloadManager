@@ -12,6 +12,7 @@ import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
+import com.zhangqiang.downloadmanager.utils.URLUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -213,6 +214,9 @@ public abstract class HttpDownloadTask extends DownloadTask {
         String fileName = request.getFileName();
         if (TextUtils.isEmpty(fileName)) {
             fileName = HttpUtils.parseFileName(httpResponse);
+        }
+        if(TextUtils.isEmpty(fileName)){
+            fileName = URLUtils.getFileName(request.getUrl());
         }
         if (TextUtils.isEmpty(fileName)) {
             fileName = MD5Utils.getMD5(request.getUrl());
