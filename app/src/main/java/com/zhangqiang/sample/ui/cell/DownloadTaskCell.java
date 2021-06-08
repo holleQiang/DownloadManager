@@ -1,24 +1,19 @@
 package com.zhangqiang.sample.ui.cell;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v4.app.FragmentManager;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.Toast;
 
-import com.zhangqiang.celladapter.cell.CellParent;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
-import com.zhangqiang.downloadmanager.db.entity.TaskEntity;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.ui.dialog.TaskDeleteConfirmDialog;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.ui.widget.MultiProgressView;
 import com.zhangqiang.sample.utils.IntentUtils;
@@ -155,6 +150,9 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
         MultiProgressView multiProgressView = viewHolder.getView(R.id.pb_download_progress);
         multiProgressView.clear();
+        TypedValue outValue = new TypedValue();
+        viewHolder.getView().getContext().getTheme().resolveAttribute(R.attr.colorPrimary, outValue,false);
+        int resourceId = outValue.resourceId;
         int partSize = data.getPartSize();
         for (int i = 0; i < partSize; i++) {
             long threadCurrentLength =  data.getPartLength(i);

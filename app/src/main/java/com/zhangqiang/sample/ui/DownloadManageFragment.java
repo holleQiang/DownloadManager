@@ -1,5 +1,7 @@
 package com.zhangqiang.sample.ui;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +20,8 @@ import com.zhangqiang.downloadmanager.listeners.UIDownloadTaskListener;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.ui.cell.DownloadTaskCell;
+import com.zhangqiang.sample.ui.widget.LinearRVDivider;
+import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,9 @@ public class DownloadManageFragment extends BaseFragment {
         cellRVAdapter = new CellRVAdapter();
         recyclerView.setAdapter(cellRVAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        ColorDrawable dividerDrawable = new ColorDrawable(Color.parseColor("#eeeeee"));
+        dividerDrawable.setBounds(0,0,0, ScreenUtils.dp2Px(view.getContext(),10));
+        recyclerView.addItemDecoration(new LinearRVDivider(dividerDrawable));
         return view;
     }
 
