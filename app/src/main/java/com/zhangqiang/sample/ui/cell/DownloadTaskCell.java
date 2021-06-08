@@ -153,10 +153,10 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TypedValue outValue = new TypedValue();
         viewHolder.getView().getContext().getTheme().resolveAttribute(R.attr.colorPrimary, outValue,false);
         int resourceId = outValue.resourceId;
-        int partSize = data.getPartSize();
+        int partSize = data.getPartCount();
         for (int i = 0; i < partSize; i++) {
-            long threadCurrentLength =  data.getPartLength(i);
-            long threadContentLength =  data.getTotalPartLength(i);
+            long threadCurrentLength =  data.getPartCurrentLength(i);
+            long threadContentLength =  data.getPartContentLength(i);
             int progress = (int) (((float)threadCurrentLength/threadContentLength)*100);
             multiProgressView.addProgressEntry(i,
                     progress,

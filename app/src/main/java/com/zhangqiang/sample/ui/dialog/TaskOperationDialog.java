@@ -77,7 +77,7 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 if (taskInfo != null) {
                     DownloadManager.getInstance(context).deleteTask(taskId, true);
                     DownloadRequest request = new DownloadRequest.Builder(taskInfo.getUrl(), taskInfo.getSaveDir())
-                            .setThreadCount(taskInfo.getThreadSize())
+                            .setThreadCount(taskInfo.getThreadCount())
                             .setFileName(taskInfo.getFileName())
                             .build();
                     DownloadManager.getInstance(context).enqueue(request);

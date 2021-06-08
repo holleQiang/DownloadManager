@@ -26,15 +26,15 @@ public interface TaskInfo {
 
     String getErrorMsg();
 
-    int getThreadSize();
+    int getThreadCount();
 
     long getSpeed();
 
-    int getPartSize();
+    int getPartCount();
 
     long getPartSpeed(int partIndex);
 
-    long getPartLength(int partIndex);
+    long getPartCurrentLength(int partIndex);
 
-    long getTotalPartLength(int partIndex);
+    long getPartContentLength(int partIndex);
 }

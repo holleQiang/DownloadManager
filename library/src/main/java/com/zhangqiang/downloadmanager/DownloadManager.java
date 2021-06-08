@@ -711,7 +711,7 @@ public class DownloadManager {
         }
 
         @Override
-        public int getThreadSize() {
+        public int getThreadCount() {
             return record.entity.getThreadSize();
         }
 
@@ -721,7 +721,7 @@ public class DownloadManager {
         }
 
         @Override
-        public int getPartSize() {
+        public int getPartCount() {
             Map<Integer, PartRecord> partRecords = record.partRecords;
             if (!partRecords.isEmpty()) {
                 return partRecords.size();
@@ -745,7 +745,7 @@ public class DownloadManager {
         }
 
         @Override
-        public long getPartLength(int partIndex) {
+        public long getPartCurrentLength(int partIndex) {
             Map<Integer, PartRecord> partRecords = record.partRecords;
             if (!partRecords.isEmpty()) {
                 PartRecord partRecord = partRecords.get(partIndex);
@@ -759,7 +759,7 @@ public class DownloadManager {
         }
 
         @Override
-        public long getTotalPartLength(int partIndex) {
+        public long getPartContentLength(int partIndex) {
             Map<Integer, PartRecord> partRecords = record.partRecords;
             if (!partRecords.isEmpty()) {
                 PartRecord partRecord = partRecords.get(partIndex);

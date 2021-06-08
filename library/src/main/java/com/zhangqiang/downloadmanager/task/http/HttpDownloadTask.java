@@ -57,6 +57,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
                 LogUtils.i(TAG, "开始下载。。。");
                 if (mPartTasks != null && !mPartTasks.isEmpty()) {
+                    mFinishedPartTaskSize.set(0);
                     for (HttpDownloadPartTask partTask : mPartTasks) {
                         partTask.start();
                     }
