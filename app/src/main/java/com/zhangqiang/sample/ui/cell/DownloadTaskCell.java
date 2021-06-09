@@ -2,11 +2,19 @@ package com.zhangqiang.sample.ui.cell;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.CompoundButton;
+import android.widget.ProgressBar;
 
+import com.zhangqiang.celladapter.CellRVAdapter;
+import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.celladapter.cell.MultiCell;
+import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
@@ -15,15 +23,21 @@ import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
+import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.ui.widget.MultiProgressView;
 import com.zhangqiang.sample.utils.IntentUtils;
+import com.zhangqiang.sample.utils.ResourceUtils;
+import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DownloadTaskCell extends MultiCell<TaskInfo> {
 
     private static final String TAG = "DownloadTaskCell";
     private final FragmentManager fragmentManager;
+    private boolean showPartInfo;
 
     public DownloadTaskCell(TaskInfo data, FragmentManager fragmentManager) {
         super(R.layout.item_download, data, null);
@@ -63,6 +77,57 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
                 return true;
             }
         });
+        viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, null);
+        viewHolder.setChecked(R.id.cb_show_part_info, showPartInfo);
+        viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                showPartInfo = isChecked;
+                updatePartInfo(viewHolder);
+            }
+        });
+        updatePartInfo(viewHolder);
+    }
+
+    private void updatePartInfo(ViewHolder viewHolder) {
+        RecyclerView rvPartInfo = viewHolder.getView(R.id.rv_part_info);
+        Context context = viewHolder.getView().getContext();
+        if (showPartInfo) {
+            rvPartInfo.setLayoutManager(new LinearLayoutManager(context));
+            CellRVAdapter adapter = new CellRVAdapter();
+            adapter.setDataList(makePartCells());
+            rvPartInfo.setAdapter(adapter);
+        } else {
+            rvPartInfo.setAdapter(null);
+        }
+        if (rvPartInfo.getItemDecorationCount() <= 0) {
+            int attrColor = ResourceUtils.getAttrColor(context, R.attr.colorAccent);
+            ColorDrawable dividerDrawable = new ColorDrawable(attrColor);
+            dividerDrawable.setBounds(0,0,0, ScreenUtils.dp2Px(context,1));
+            rvPartInfo.addItemDecoration(new LinearRVDivider(dividerDrawable));
+        }
+    }
+
+    private List<Cell> makePartCells() {
+        List<Cell> cells = new ArrayList<>();
+        final TaskInfo taskInfo = getData();
+        int partCount = taskInfo.getPartCount();
+        for (int i = 0; i < partCount; i++) {
+
+            cells.add(new MultiCell<>(R.layout.item_part_info, i, new ViewHolderBinder<Integer>() {
+                @Override
+                public void onBind(ViewHolder viewHolder, Integer i) {
+                    long partSpeed = taskInfo.getPartSpeed(i);
+                    final long partContentLength = taskInfo.getPartContentLength(i);
+                    final long partCurrentLength = taskInfo.getPartCurrentLength(i);
+                    viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(partCurrentLength) + "/" + StringUtils.formatFileLength(partContentLength));
+                    viewHolder.setProgress(R.id.pb_progress, (int) ((float) partCurrentLength / partContentLength * 100));
+                    viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(partSpeed) + "/s");
+                    viewHolder.setText(R.id.tv_part_index,String.valueOf(i));
+                }
+            }));
+        }
+        return cells;
     }
 
     private void updateSpeed(ViewHolder viewHolder) {
@@ -73,14 +138,18 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         if (data.getContentLength() == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (data.getContentLength() <= data.getCurrentLength()) {
-            resetTimeStr = "已完成";
+            if(data.getState() == DownloadManager.STATE_COMPLETE){
+                resetTimeStr = "已完成";
+            }else {
+                resetTimeStr = "剩余时间：0秒";
+            }
         } else if (data.getSpeed() == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else {
             long resetLength = data.getContentLength() - data.getCurrentLength();
             long resetTime = resetLength / data.getSpeed();
             if (resetTime <= 0) {
-                resetTimeStr = "剩余时间：" + "0秒";
+                resetTimeStr = "剩余时间：0秒";
             } else if (resetTime < 60) {
                 resetTimeStr = "剩余时间：" + resetTime + "秒";
             } else if (resetTime < 60 * 60) {
@@ -99,6 +168,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             @Override
             public void onBind(ViewHolder viewHolder) {
                 updateSpeed(viewHolder);
+                updatePartInfo(viewHolder);
             }
         });
     }
@@ -146,24 +216,10 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TaskInfo data = getData();
         long currentLength = data.getCurrentLength();
         long totalLength = data.getContentLength();
-//        int progress = (int) ((float) currentLength / totalLength * 100);
+        int progress = (int) ((float) currentLength / totalLength * 100);
         viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
-        MultiProgressView multiProgressView = viewHolder.getView(R.id.pb_download_progress);
-        multiProgressView.clear();
-        TypedValue outValue = new TypedValue();
-        viewHolder.getView().getContext().getTheme().resolveAttribute(R.attr.colorPrimary, outValue,false);
-        int resourceId = outValue.resourceId;
-        int partSize = data.getPartCount();
-        for (int i = 0; i < partSize; i++) {
-            long threadCurrentLength =  data.getPartCurrentLength(i);
-            long threadContentLength =  data.getPartContentLength(i);
-            int progress = (int) (((float)threadCurrentLength/threadContentLength)*100);
-            multiProgressView.addProgressEntry(i,
-                    progress,
-                    100,
-                    Color.rgb(128 / partSize * (i + 1), 128 / partSize * (i + 1), 128 / partSize * (i + 1) + 90),
-                    null);
-        }
+        ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
+        progressBar.setProgress(progress);
     }
 
 
@@ -172,6 +228,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             @Override
             public void onBind(ViewHolder viewHolder) {
                 updateProgress(viewHolder);
+                updatePartInfo(viewHolder);
             }
         });
     }

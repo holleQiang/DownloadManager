@@ -33,5 +33,6 @@
     <string name="download_link">下载链接</string>
     <string name="please_input_save_name">请输入文件名称</string>
     <string name="save_name">保存名称</string>
+    <string name="look_part_info">显示线程信息</string>
 
 </resources>

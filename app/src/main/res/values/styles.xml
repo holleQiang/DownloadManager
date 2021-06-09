@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="BaseAppTheme" parent="Theme.AppCompat.Light">
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar">
     </style>
 
     <!-- Base application theme. -->
@@ -12,9 +12,6 @@
         <item name="dialogTheme">@style/DialogTheme</item>
         <item name="android:dialogTheme">@style/DialogTheme</item>
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
-<!--        <item name="actionBarStyle">@style/Widget.AppCompat.Toolbar</item>-->
-        <item name="actionBarSize">48dp</item>
-        <item name="toolbarStyle">@style/AppToolBarStyle</item>
     </style>
 
     <style name="SettingsTitle"></style>
@@ -62,7 +59,11 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppToolBarStyle" parent="Widget.AppCompat.Toolbar">
+    <style name="AppToolBarStyle" parent="Widget.AppCompat.ActionBar.Solid">
+    </style>
+
+    <style name="AppTitleTextAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textColor">@android:color/white</item>
     </style>
 
 </resources>

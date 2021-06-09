@@ -40,7 +40,7 @@ public class LinearRVDivider extends RecyclerView.ItemDecoration {
     }
 
     private boolean shouldDrawDivider(int adapterPosition, int itemCount) {
-        return adapterPosition >= 0 && adapterPosition != itemCount - 1;
+        return adapterPosition >= 0 && adapterPosition != itemCount - 1 && itemCount > 1;
     }
 
     @Override
@@ -68,18 +68,17 @@ public class LinearRVDivider extends RecyclerView.ItemDecoration {
                 View child = parent.getChildAt(i);
                 RecyclerView.ViewHolder viewHolder = parent.getChildViewHolder(child);
                 int adapterPosition = viewHolder.getAdapterPosition();
+                if (!shouldDrawDivider(adapterPosition, itemCount)) {
+                    continue;
+                }
                 if (orientation == LinearLayoutManager.HORIZONTAL) {
-                    if (shouldDrawDivider(adapterPosition, itemCount)) {
-                        int right = child.getRight();
-                        bounds.offsetTo(right, 0);
-                        mDividerDrawable.setBounds(bounds);
-                    }
+                    int right = child.getRight();
+                    bounds.offsetTo(right, 0);
+                    mDividerDrawable.setBounds(bounds);
                 } else {
-                    if (shouldDrawDivider(adapterPosition, itemCount)) {
-                        int bottom = child.getBottom();
-                        bounds.offsetTo(0, bottom);
-                        mDividerDrawable.setBounds(bounds);
-                    }
+                    int bottom = child.getBottom();
+                    bounds.offsetTo(0, bottom);
+                    mDividerDrawable.setBounds(bounds);
                 }
                 mDividerDrawable.draw(c);
             }

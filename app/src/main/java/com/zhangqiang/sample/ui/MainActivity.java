@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +24,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DownloadService.class);
         startService(intent);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.m_tool_bar);
+        setSupportActionBar(toolbar);
 
         DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
