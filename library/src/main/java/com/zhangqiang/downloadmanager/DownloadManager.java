@@ -62,7 +62,7 @@ public class DownloadManager {
 
     private static volatile DownloadManager instance;
     private final Context mContext;
-    private final int maxRunningTaskCount = 2;
+    private int maxRunningTaskCount = 3;
     private DownloadRecord mRecordHead;
     private final AtomicInteger mTaskSize = new AtomicInteger();
     private final AtomicInteger mActiveTaskSize = new AtomicInteger();
@@ -161,7 +161,7 @@ public class DownloadManager {
 
     private DownloadRecord makeDownloadRecord(DownloadRequest request) {
 
-        TaskEntity taskEntity = new TaskEntity();
+        final TaskEntity taskEntity = new TaskEntity();
         taskEntity.setUrl(request.getUrl());
         taskEntity.setSaveDir(request.getSaveDir());
         taskEntity.setCreateTime(System.currentTimeMillis());
@@ -172,12 +172,7 @@ public class DownloadManager {
 
         DownloadTask task = new OKHttpDownloadTask(mContext,
                 request,
-                new HttpDownloadTask.PartTaskFactory() {
-                    @Override
-                    public HttpDownloadPartTask createPartTask(String url, long start, long end, String savePath) {
-                        return new OKHttpDownloadPartTask(mContext, url, start, 0, end, savePath);
-                    }
-                }
+                new DefaultHttpPartTaskFactory(taskEntity)
         );
         DownloadRecord downloadRecord = new DownloadRecord(taskEntity, task);
         configDownloadRecord(downloadRecord);
@@ -218,12 +213,7 @@ public class DownloadManager {
                     .setFileName(taskEntity.getFileName())
                     .setThreadCount(taskEntity.getThreadSize())
                     .build();
-            task = new OKHttpDownloadTask(mContext, request, new HttpDownloadTask.PartTaskFactory() {
-                @Override
-                public HttpDownloadPartTask createPartTask(String url, long start, long end, String savePath) {
-                    return new OKHttpDownloadPartTask(mContext, url, start, 0, end, savePath);
-                }
-            });
+            task = new OKHttpDownloadTask(mContext, request, new DefaultHttpPartTaskFactory(taskEntity));
         }
 
         DownloadRecord downloadRecord = new DownloadRecord(taskEntity, task, partRecords);
@@ -450,7 +440,7 @@ public class DownloadManager {
         }
     }
 
-    private void tryStartIdleTask() {
+    private synchronized void tryStartIdleTask() {
 
         DownloadRecord curr = mRecordHead;
         while (curr != null && getActiveTaskSize() < maxRunningTaskCount) {
@@ -850,6 +840,28 @@ public class DownloadManager {
             for (int i = downloadTaskListeners.size() - 1; i >= 0; i--) {
                 downloadTaskListeners.get(i).onTaskAdded(record.entity.getId());
             }
+        }
+    }
+
+    public void setMaxRunningTaskCount(int count) {
+        if (maxRunningTaskCount != count) {
+            maxRunningTaskCount = count;
+            tryStartIdleTask();
+        }
+    }
+
+    private class DefaultHttpPartTaskFactory implements HttpDownloadTask.PartTaskFactory {
+
+        private final TaskEntity taskEntity;
+
+        private DefaultHttpPartTaskFactory(TaskEntity taskEntity) {
+            this.taskEntity = taskEntity;
+        }
+
+        @Override
+        public HttpDownloadPartTask createPartTask(String url, long start, long end, int partIndex, int partCount) {
+            final String savePath = new File(taskEntity.getSaveDir(), taskEntity.getId() + "_" + partIndex + "_" + partCount+".download").getAbsolutePath();
+            return new OKHttpDownloadPartTask(mContext, url, start, 0, end, savePath);
         }
     }
 }

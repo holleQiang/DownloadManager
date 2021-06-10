@@ -12,8 +12,6 @@ import android.view.MenuItem;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
-import com.zhangqiang.sample.ui.dialog.TestBottomSheetDialog;
-import com.zhangqiang.sample.ui.dialog.TestDialog;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,13 +69,14 @@ public class MainActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.create_task) {
             showTaskCreateDialog("https://imtt.dd.qq.com/16891/apk/5C0FF221A948463BCF9F3255E0112034.apk?fsname=com.tencent.mm_8.0.6_1900.apk&csr=1bbd");
             return true;
-        }else if(item.getItemId() == R.id.test){
-            new TestDialog().show(getSupportFragmentManager(),"test");
-            return true;
-        }else if(item.getItemId() == R.id.test_sheet){
-            new TestBottomSheetDialog().show(getSupportFragmentManager(),"testSheet");
-            return true;
         }
+//        else if(item.getItemId() == R.id.test){
+//            new TestDialog().show(getSupportFragmentManager(),"test");
+//            return true;
+//        }else if(item.getItemId() == R.id.test_sheet){
+//            new TestBottomSheetDialog().show(getSupportFragmentManager(),"testSheet");
+//            return true;
+//        }
         return super.onOptionsItemSelected(item);
     }
 

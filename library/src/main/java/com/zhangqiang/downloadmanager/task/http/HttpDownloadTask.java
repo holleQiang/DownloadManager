@@ -153,11 +153,10 @@ public abstract class HttpDownloadTask extends DownloadTask {
             if (i == threadSize - 1) {
                 end += resetDownload - 1;
             }
-            final String savePath = new File(saveDir, fileName + "_" + i + "_" + threadSize).getAbsolutePath();
-            HttpDownloadPartTask task = mPartTaskFactory.createPartTask(request.getUrl(), start, end, savePath);
+            HttpDownloadPartTask task = mPartTaskFactory.createPartTask(request.getUrl(), start, end,i,threadSize);
             initPartTask(task, fileName);
             if (onPartTaskCreateListener != null) {
-                onPartTaskCreateListener.onPartTaskCreate(i,threadSize,task);
+                onPartTaskCreateListener.onPartTaskCreate(i, threadSize, task);
             }
             mPartTasks.add(task);
         }
@@ -215,7 +214,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
         if (TextUtils.isEmpty(fileName)) {
             fileName = HttpUtils.parseFileName(httpResponse);
         }
-        if(TextUtils.isEmpty(fileName)){
+        if (TextUtils.isEmpty(fileName)) {
             fileName = URLUtils.getFileName(request.getUrl());
         }
         if (TextUtils.isEmpty(fileName)) {
@@ -235,7 +234,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
     public interface OnPartTaskCreateListener {
 
-        void onPartTaskCreate(int threadIndex,int threadSize,HttpDownloadPartTask task);
+        void onPartTaskCreate(int threadIndex, int threadSize, HttpDownloadPartTask task);
     }
 
     @Override
@@ -289,13 +288,14 @@ public abstract class HttpDownloadTask extends DownloadTask {
         }
         File saveFile = new File(dir, fileName);
         deleteFileIfExists(saveFile);
-        RandomAccessFile raf = new RandomAccessFile(saveFile, "rw");
+        RandomAccessFile raf = null;
         try {
-
+            raf = new RandomAccessFile(saveFile, "rw");
             for (HttpDownloadPartTask partTask : mPartTasks) {
                 raf.seek(partTask.getFromPosition());
-                FileInputStream fis = new FileInputStream(partTask.getSavePath());
+                FileInputStream fis = null;
                 try {
+                    fis = new FileInputStream(partTask.getSavePath());
                     byte[] buffer = new byte[1024];
                     int len;
                     while ((len = fis.read(buffer)) != -1) {
@@ -305,7 +305,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
                         throw new InterruptedIOException();
                     }
                 } finally {
-                    fis.close();
+                    IOUtils.closeSilently(fis);
                 }
             }
             LogUtils.i(TAG, "删除临时文件....");
@@ -316,7 +316,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
                 }
             }
         } finally {
-            raf.close();
+            IOUtils.closeSilently(raf);
         }
     }
 
@@ -343,7 +343,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
 
     public interface PartTaskFactory {
 
-        HttpDownloadPartTask createPartTask(String url, long start, long end, String savePath);
+        HttpDownloadPartTask createPartTask(String url, long start, long end,int partIndex,int partCount);
     }
 
     public DownloadRequest getRequest() {

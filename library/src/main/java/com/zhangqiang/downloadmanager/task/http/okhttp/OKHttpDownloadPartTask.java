@@ -4,23 +4,11 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
-import com.zhangqiang.downloadmanager.manager.DownloadExecutors;
-import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.HttpDownloadPartTask;
-import com.zhangqiang.downloadmanager.task.http.HttpResponse;
-import com.zhangqiang.downloadmanager.task.http.HttpUtils;
 import com.zhangqiang.downloadmanager.task.http.ResponseReadyCallback;
-import com.zhangqiang.downloadmanager.task.http.range.RangePart;
-import com.zhangqiang.downloadmanager.utils.FileUtils;
-import com.zhangqiang.downloadmanager.utils.IOUtils;
-import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.OKHttpUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.concurrent.Future;
 
 import okhttp3.Call;
 import okhttp3.Callback;

@@ -1,87 +1,77 @@
 package com.zhangqiang.sample.ui;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.view.View;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
-import android.widget.TextView;
+import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
 
-import com.zhangqiang.activitystart.ActivityStartHelper;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
-import com.zhangqiang.sample.config.Configs;
 import com.zhangqiang.sample.impl.BaseObserver;
+import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.utils.RxJavaUtils;
+
+import java.util.regex.Pattern;
 
 public class SettingsActivity extends BaseActivity {
 
-    private TextView tvCurrentPath;
+    private EditText etMaxRunningTaskSize;
+    private EditText etSaveDir;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.settings);
         setContentView(R.layout.activity_settings);
-        RadioGroup radioGroup = findViewById(R.id.rg_thread_num);
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.rb_thread_1) {
-                    Configs.threadNum.set(1);
-                } else if (checkedId == R.id.rb_thread_2) {
-                    Configs.threadNum.set(2);
-                } else if (checkedId == R.id.rb_thread_3) {
-                    Configs.threadNum.set(3);
-                }
-            }
-        });
-        RadioButton radioButton1 = findViewById(R.id.rb_thread_1);
-        RadioButton radioButton2 = findViewById(R.id.rb_thread_2);
-        RadioButton radioButton3 = findViewById(R.id.rb_thread_3);
-        if (Configs.threadNum.get() == 1) {
-            radioButton1.setChecked(true);
-        } else if (Configs.threadNum.get() == 2) {
-            radioButton2.setChecked(true);
-        }
-        if (Configs.threadNum.get() == 3) {
-            radioButton3.setChecked(true);
-        }
+        Toolbar toolBar = findViewById(R.id.m_tool_bar);
+        setSupportActionBar(toolBar);
+        etMaxRunningTaskSize = findViewById(R.id.et_max_running_task_size);
+        etSaveDir = findViewById(R.id.et_save_dir);
 
-        tvCurrentPath = findViewById(R.id.tv_current_path);
-        Configs.saveDir.toObservable()
+        SettingsManager.getInstance().getMaxRunningTaskCountOption().toObservable()
+                .compose(RxJavaUtils.<Integer>bindLifecycle(this))
+                .subscribe(new BaseObserver<Integer>() {
+                    @Override
+                    public void onNext(Integer integer) {
+                        etMaxRunningTaskSize.setText(String.valueOf(integer));
+                    }
+                });
+        SettingsManager.getInstance().getSaveDirOption().toObservable()
                 .compose(RxJavaUtils.<String>bindLifecycle(this))
                 .subscribe(new BaseObserver<String>() {
                     @Override
-                    public void onNext(String value) {
-                        super.onNext(value);
-                        tvCurrentPath.setText(value);
+                    public void onNext(String s) {
+                        etSaveDir.setText(s);
                     }
                 });
-        View.OnClickListener chooseDirListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(v.getContext(), ChooseSaveDirActivity.class);
-                ActivityStartHelper.startActivityForResult(SettingsActivity.this, intent, new ActivityStartHelper.Callback() {
-                    @Override
-                    public void onActivityResult(int resultCode, Intent data) {
-                        if (resultCode == RESULT_OK) {
-                            String path = data.getStringExtra("path");
-                            Configs.saveDir.set(path);
-                        }
-                    }
-                });
-            }
-        };
-        tvCurrentPath.setOnClickListener(chooseDirListener);
-        findViewById(R.id.tv_current_path_title).setOnClickListener(chooseDirListener);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_settings, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.bt_confirm) {
+            String s = etMaxRunningTaskSize.getText().toString();
+            if (!TextUtils.isEmpty(s)) {
+                SettingsManager.getInstance().getMaxRunningTaskCountOption().set(Integer.valueOf(s));
+            }
+            String saveDir = etSaveDir.getText().toString();
+            if (isValidDir(saveDir)) {
+                SettingsManager.getInstance().getSaveDirOption().set(saveDir);
+            }
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private boolean isValidDir(String saveDir) {
+        Pattern pattern = Pattern.compile("[a-zA-Z0-9/]+");
+        return pattern.matcher(saveDir).matches();
     }
 }

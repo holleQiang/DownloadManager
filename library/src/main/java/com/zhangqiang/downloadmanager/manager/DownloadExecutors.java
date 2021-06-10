@@ -1,6 +1,5 @@
 package com.zhangqiang.downloadmanager.manager;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;

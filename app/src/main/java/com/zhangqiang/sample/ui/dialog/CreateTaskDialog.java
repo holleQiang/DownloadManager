@@ -14,6 +14,7 @@ import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
+import com.zhangqiang.sample.manager.SettingsManager;
 
 import java.io.File;
 
@@ -59,7 +60,7 @@ public class CreateTaskDialog extends BaseDialogFragment {
             if (TextUtils.isEmpty(url)) {
                 return;
             }
-            File dirFile = new File(Environment.getExternalStorageDirectory(), "Download");
+            File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
             DownloadRequest request = new DownloadRequest.Builder(url, dirFile.getAbsolutePath())
                     .setThreadCount(Integer.parseInt(etThreadSize.getText().toString()))
                     .setFileName(etSaveName.getText().toString().trim())

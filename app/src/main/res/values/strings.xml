@@ -34,5 +34,9 @@
     <string name="please_input_save_name">请输入文件名称</string>
     <string name="save_name">保存名称</string>
     <string name="look_part_info">显示线程信息</string>
+    <string name="max_running_task_count">最大同时下载任务数量</string>
+    <string name="please_input_max_running_task_count">请输入最大同时下载任务数量</string>
+    <string name="file_save_dir">文件保存目录</string>
+    <string name="please_input_save_dir">请输入文件保存路径</string>
 
 </resources>

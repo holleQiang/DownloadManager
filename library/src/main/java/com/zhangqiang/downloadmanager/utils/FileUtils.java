@@ -2,8 +2,6 @@ package com.zhangqiang.downloadmanager.utils;
 
 import android.text.TextUtils;
 
-import com.zhangqiang.downloadmanager.exception.DownloadException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

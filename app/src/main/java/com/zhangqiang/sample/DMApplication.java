@@ -1,25 +1,31 @@
 package com.zhangqiang.sample;
 
-import android.app.ActivityManager;
 import android.app.Application;
-import android.content.Intent;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.sample.service.DownloadService;
-
-import java.util.List;
+import com.zhangqiang.sample.impl.BaseObserver;
+import com.zhangqiang.sample.manager.SettingsManager;
 
 public class DMApplication extends Application {
-
-    private static DMApplication application;
-
-    public static DMApplication get() {
-        return application;
-    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        application = this;
+        getSettingsManager().init(this);
+        getSettingsManager().getMaxRunningTaskCountOption().toObservable()
+                .subscribe(new BaseObserver<Integer>() {
+                    @Override
+                    public void onNext(Integer integer) {
+                        getDownloadManager().setMaxRunningTaskCount(integer);
+                    }
+                });
+    }
+
+    private SettingsManager getSettingsManager() {
+        return SettingsManager.getInstance();
+    }
+
+    private DownloadManager getDownloadManager() {
+        return DownloadManager.getInstance(this);
     }
 }

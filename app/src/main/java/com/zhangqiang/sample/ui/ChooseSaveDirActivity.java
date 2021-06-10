@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.zhangqiang.filechooser.FileChooserFragment;
 import com.zhangqiang.sample.R;
