@@ -1,10 +1,11 @@
 package com.zhangqiang.downloadmanager.task.http.okhttp;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.http.HttpDownloadPartTask;
+import com.zhangqiang.downloadmanager.task.http.HttpUtils;
 import com.zhangqiang.downloadmanager.task.http.ResponseReadyCallback;
 import com.zhangqiang.downloadmanager.utils.OKHttpUtils;
 
@@ -32,8 +33,8 @@ public class OKHttpDownloadPartTask extends HttpDownloadPartTask {
         final Request.Builder builder = new Request.Builder()
                 .get()
                 .url(getUrl());
-        builder.header("Range", "bytes=" + (getFromPosition() + getCurrentLength()) +
-                "-" +
+        HttpUtils.setRangeParams(new OkHttpFiledSetter(builder),
+                getFromPosition() + getCurrentLength(),
                 getToPosition());
         Request request = builder.build();
         final Call call = OKHttpClients.getDefault(context).newCall(request);
@@ -41,7 +42,7 @@ public class OKHttpDownloadPartTask extends HttpDownloadPartTask {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL,e));
+                dispatchFail(new DownloadException(DownloadException.HTTP_CONNECT_FAIL, e));
             }
 
             @Override

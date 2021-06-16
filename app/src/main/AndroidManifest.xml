@@ -33,11 +33,14 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.SettingsActivity" />
+        <activity android:name=".business.settings.SettingsActivity" />
         <activity android:name=".ui.ChooseSaveDirActivity" />
+        <activity android:name=".business.web.WebViewActivity"
+            android:launchMode="singleInstance"
+            android:taskAffinity="${applicationId}.web"/>
 
         <provider
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileProvider"
             android:exported="false"
             android:grantUriPermissions="true">

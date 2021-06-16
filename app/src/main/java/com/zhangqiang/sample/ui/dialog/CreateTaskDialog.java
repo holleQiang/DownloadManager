@@ -4,8 +4,9 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -24,6 +25,15 @@ public class CreateTaskDialog extends BaseDialogFragment {
     private EditText etThreadSize;
     private EditText etSaveName;
     private String defaultUrl = "https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd";
+
+   public static void createAndShow(FragmentManager fragmentManager, String url){
+       CreateTaskDialog dialog = new CreateTaskDialog();
+       Bundle arg = new Bundle();
+       arg.putString("url", url);
+       dialog.setArguments(arg);
+       dialog.show(fragmentManager, "create_task");
+   }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

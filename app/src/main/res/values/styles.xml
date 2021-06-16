@@ -59,7 +59,10 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="AppToolBarStyle" parent="Widget.AppCompat.ActionBar.Solid">
+    <style name="AppToolBarStyle">
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
     </style>
 
     <style name="AppTitleTextAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">

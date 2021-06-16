@@ -38,5 +38,6 @@
     <string name="please_input_max_running_task_count">请输入最大同时下载任务数量</string>
     <string name="file_save_dir">文件保存目录</string>
     <string name="please_input_save_dir">请输入文件保存路径</string>
+    <string name="web_view">浏览器</string>
 
 </resources>

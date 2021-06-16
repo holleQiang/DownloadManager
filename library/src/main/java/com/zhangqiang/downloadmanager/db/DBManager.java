@@ -2,7 +2,7 @@ package com.zhangqiang.downloadmanager.db;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.github.yuweiguocn.library.greendao.MigrationHelper;
 import com.zhangqiang.downloadmanager.db.dao.DaoMaster;

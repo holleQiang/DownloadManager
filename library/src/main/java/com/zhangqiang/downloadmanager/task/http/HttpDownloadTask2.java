@@ -1,6 +1,6 @@
 package com.zhangqiang.downloadmanager.task.http;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.manager.DownloadExecutors;

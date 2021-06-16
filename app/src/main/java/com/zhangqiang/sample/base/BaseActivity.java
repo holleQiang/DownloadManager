@@ -1,7 +1,7 @@
 package com.zhangqiang.sample.base;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.zhangqiang.visiblehelper.ActivityVisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelper;

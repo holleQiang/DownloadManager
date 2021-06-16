@@ -3,13 +3,18 @@ package com.zhangqiang.sample.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.zhangqiang.downloadmanager.task.http.FieldGetter;
+import com.zhangqiang.downloadmanager.task.http.HttpUtils;
 import com.zhangqiang.sample.R;
+import com.zhangqiang.sample.business.settings.SettingsActivity;
+import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 
@@ -69,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.create_task) {
             showTaskCreateDialog("https://imtt.dd.qq.com/16891/apk/5C0FF221A948463BCF9F3255E0112034.apk?fsname=com.tencent.mm_8.0.6_1900.apk&csr=1bbd");
             return true;
+        }else if(item.getItemId() == R.id.web_view){
+            startActivity(new Intent(this, WebViewActivity.class));
         }
 //        else if(item.getItemId() == R.id.test){
 //            new TestDialog().show(getSupportFragmentManager(),"test");
@@ -81,10 +88,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showTaskCreateDialog(String url) {
-        CreateTaskDialog dialog = new CreateTaskDialog();
-        Bundle arg = new Bundle();
-        arg.putString("url", url);
-        dialog.setArguments(arg);
-        dialog.show(getSupportFragmentManager(), "create_task");
+        CreateTaskDialog.createAndShow(getSupportFragmentManager(),url);
     }
 }

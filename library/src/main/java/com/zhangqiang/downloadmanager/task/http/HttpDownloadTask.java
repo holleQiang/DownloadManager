@@ -218,7 +218,8 @@ public abstract class HttpDownloadTask extends DownloadTask {
             fileName = URLUtils.getFileName(request.getUrl());
         }
         if (TextUtils.isEmpty(fileName)) {
-            fileName = MD5Utils.getMD5(request.getUrl());
+            fileName = MD5Utils.getMD5(request.getUrl())
+                    +"."+HttpUtils.getFileNameSuffixByContentType(httpResponse);
         }
         return FileUtils.getDistinctFileName(request.getSaveDir(), fileName);
     }

@@ -2,7 +2,7 @@ package com.zhangqiang.downloadmanager.task.http.okhttp;
 
 import android.content.Context;
 import android.os.Build;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.webkit.WebSettings;
 
 import com.zhangqiang.downloadmanager.utils.OKHttpUtils;

@@ -11,4 +11,9 @@
         android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/web_view"
+        android:title="@string/web_view"
+        app:showAsAction="never" />
 </menu>

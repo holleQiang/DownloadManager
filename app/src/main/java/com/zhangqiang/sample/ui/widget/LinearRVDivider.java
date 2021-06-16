@@ -3,10 +3,10 @@ package com.zhangqiang.sample.ui.widget;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 
 public class LinearRVDivider extends RecyclerView.ItemDecoration {
@@ -44,8 +44,8 @@ public class LinearRVDivider extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void onDrawOver(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        super.onDrawOver(c, parent, state);
+    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+        super.onDraw(c, parent, state);
         RecyclerView.LayoutManager layoutManager = parent.getLayoutManager();
         if (!(layoutManager instanceof GridLayoutManager) && layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
@@ -83,10 +83,5 @@ public class LinearRVDivider extends RecyclerView.ItemDecoration {
                 mDividerDrawable.draw(c);
             }
         }
-    }
-
-    @Override
-    public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-        super.onDraw(c, parent, state);
     }
 }

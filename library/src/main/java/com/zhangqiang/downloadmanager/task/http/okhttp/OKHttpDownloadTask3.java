@@ -1,7 +1,7 @@
 package com.zhangqiang.downloadmanager.task.http.okhttp;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.http.HttpDownloadTask3;

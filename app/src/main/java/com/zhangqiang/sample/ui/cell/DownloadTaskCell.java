@@ -2,9 +2,9 @@ package com.zhangqiang.sample.ui.cell;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
