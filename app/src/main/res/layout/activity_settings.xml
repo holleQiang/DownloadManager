@@ -61,4 +61,15 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         app:layout_constraintTop_toBottomOf="@id/tv_title_save_dir" />
 
+    <com.zhangqiang.qrcodescan.widget.LimitHorizontalLayout
+        android:id="@+id/dhl_layout"
+        app:layout_constraintTop_toBottomOf="@id/et_save_dir"
+        android:layout_width="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:paddingTop="50dp"
+        android:paddingBottom="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="wrap_content"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

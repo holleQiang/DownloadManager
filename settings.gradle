@@ -1,2 +1,5 @@
 include ':app', ':library', ':filechooser'
 include ':template'
+include ':qrcode-core'
+include ':qrcode-scan'
+include ':camraview'

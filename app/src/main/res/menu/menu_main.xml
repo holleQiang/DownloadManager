@@ -8,6 +8,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/scan_qr_code"
+        android:title="@string/scan_qr_code"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />

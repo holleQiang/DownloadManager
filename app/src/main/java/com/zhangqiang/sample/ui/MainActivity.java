@@ -3,39 +3,52 @@ package com.zhangqiang.sample.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.zhangqiang.downloadmanager.task.http.FieldGetter;
-import com.zhangqiang.downloadmanager.task.http.HttpUtils;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.zhangqiang.qrcodescan.HttpProcessor;
+import com.zhangqiang.qrcodescan.Processor;
+import com.zhangqiang.qrcodescan.QRCodeScanActivity;
+import com.zhangqiang.qrcodescan.QRCodeScanManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.business.web.WebViewActivity;
+import com.zhangqiang.sample.databinding.ActivityMainBinding;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
+
+    private ActivityMainBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = new Intent(this, DownloadService.class);
         startService(intent);
-        setContentView(R.layout.activity_main);
+        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.m_tool_bar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar(mBinding.mToolBar);
 
         DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
                 .commit();
 
         handDownloadIntent();
+
+        QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
+
+
     }
 
     @Override
@@ -76,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }else if(item.getItemId() == R.id.web_view){
             startActivity(new Intent(this, WebViewActivity.class));
+        }else if(item.getItemId() == R.id.scan_qr_code){
+            startActivity(new Intent(this, QRCodeScanActivity.class));
         }
 //        else if(item.getItemId() == R.id.test){
 //            new TestDialog().show(getSupportFragmentManager(),"test");
@@ -87,7 +102,20 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        QRCodeScanManager.Companion.getInstance().removeProcessor(mHttpProcessor);
+    }
+
     private void showTaskCreateDialog(String url) {
         CreateTaskDialog.createAndShow(getSupportFragmentManager(),url);
     }
+
+    private final Processor mHttpProcessor = new HttpProcessor() {
+        @Override
+        public void processHttpUrls(@NotNull List<String> urls) {
+            showTaskCreateDialog(urls.get(0));
+        }
+    };
 }
