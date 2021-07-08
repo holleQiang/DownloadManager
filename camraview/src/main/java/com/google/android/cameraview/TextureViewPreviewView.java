@@ -26,13 +26,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 @TargetApi(14)
-class TextureViewPreview extends PreviewImpl {
+class TextureViewPreviewView extends BasePreviewView {
 
     private final TextureView mTextureView;
 
     private int mDisplayOrientation;
 
-    TextureViewPreview(Context context, ViewGroup parent) {
+    TextureViewPreviewView(Context context, ViewGroup parent) {
         final View view = View.inflate(context, R.layout.texture_view, parent);
         mTextureView = view.findViewById(R.id.texture_view);
         mTextureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
@@ -83,11 +83,6 @@ class TextureViewPreview extends PreviewImpl {
     @Override
     View getView() {
         return mTextureView;
-    }
-
-    @Override
-    Class getOutputClass() {
-        return SurfaceTexture.class;
     }
 
     @Override

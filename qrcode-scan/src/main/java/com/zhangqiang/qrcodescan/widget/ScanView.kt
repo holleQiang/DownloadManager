@@ -11,6 +11,7 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.SystemClock
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.View
 import android.view.animation.LinearInterpolator
 import androidx.core.view.ViewCompat
@@ -34,16 +35,24 @@ class ScanView @JvmOverloads constructor(
     private val scanInterval = 3000
     private var scanOffset: Int = 0
     private var scanAnimator: Animator? = null
+    private var mMainColor:Int = Color.BLACK
 
     init {
-
+        mMainColor = Color.WHITE
         scanDrawable = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, IntArray(2) {
             if (it == 0) {
-                Color.BLACK
+                mMainColor
             } else {
                 Color.TRANSPARENT
             }
         })
+        barWidth = 2.dpToPx()
+        scanRegionHeight = 10.dpToPx()
+        horizontalBarLength = 50.dpToPx()
+        verticalBarLength = 30.dpToPx()
+        mPaint.isAntiAlias = true
+        mPaint.isDither = true
+        mPaint.color = mMainColor
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -166,5 +175,15 @@ class ScanView @JvmOverloads constructor(
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         updateAnimator()
+    }
+
+    private fun Int.dpToPx():Int{
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,this.toFloat(),resources.displayMetrics)
+            .toInt()
+    }
+
+    fun Float.dpToPx():Int{
+       return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,this,resources.displayMetrics)
+           .toInt()
     }
 }

@@ -9,6 +9,7 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.Lifecycle;
 
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ActivityMainBinding mBinding;
+    private String pendingUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +76,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (pendingUrl != null) {
+            showTaskCreateDialog(pendingUrl);
+            pendingUrl = null;
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
@@ -115,7 +126,11 @@ public class MainActivity extends AppCompatActivity {
     private final Processor mHttpProcessor = new HttpProcessor() {
         @Override
         public void processHttpUrls(@NotNull List<String> urls) {
-            showTaskCreateDialog(urls.get(0));
+            if (getLifecycle().getCurrentState() != Lifecycle.State.RESUMED) {
+                pendingUrl = urls.get(0);
+            }else {
+                showTaskCreateDialog(urls.get(0));
+            }
         }
     };
 }

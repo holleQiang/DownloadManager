@@ -2,6 +2,7 @@ package com.zhangqiang.qrcodescan
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import android.hardware.Camera
@@ -39,7 +40,6 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
         super.onCreate(savedInstanceState)
         mViewBinding = QrcodeActivityScanBinding.inflate(layoutInflater)
         setContentView(mViewBinding.root)
-        mViewBinding.cameraView.addCallback(mCallback)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
@@ -54,11 +54,37 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
                     .or(View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
             }
         }
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(Manifest.permission.CAMERA),
-            REQUEST_CODE_CAMERA
-        )
+        if (!hasCameraPermission()) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                REQUEST_CODE_CAMERA
+            )
+        }
+        mViewBinding.cameraView.addCallback(object : CameraView.Callback() {
+            override fun onCameraOpened(cameraView: CameraView?) {
+                super.onCameraOpened(cameraView)
+                if (mDecodeThread == null) {
+                    mDecodeThread = DecodeThread(mViewBinding.cameraView.cameraView,
+                        this@QRCodeScanActivity,
+                        object : Callback {
+                            override fun onDecodeSuccess(text: String): Boolean {
+                                if (QRCodeScanManager.instance.dispatchDecodeResult(text)) {
+                                    finish()
+                                    return true
+                                }
+                                return false
+                            }
+                        })
+                }
+                mDecodeThread?.start()
+            }
+
+            override fun onCameraClosed(cameraView: CameraView?) {
+                super.onCameraClosed(cameraView)
+                mDecodeThread?.stop()
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(
@@ -71,17 +97,13 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
             && permissions.size == 1 && permissions[0] == Manifest.permission.CAMERA
             && grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
-            mViewBinding.cameraView.start()
+            start()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (hasCameraPermission()) {
             start()
         }
     }
@@ -93,7 +115,6 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
 
     override fun onDestroy() {
         super.onDestroy()
-        mDecodeThread?.destroy()
     }
 
     private fun start() {
@@ -102,18 +123,6 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
 
     private fun stop() {
         mViewBinding.cameraView.stop()
-    }
-
-    private val mCallback = object : CameraView.Callback() {
-        override fun onCameraOpened(cameraView: CameraView?) {
-            super.onCameraOpened(cameraView)
-            mDecodeThread?.start()
-        }
-
-        override fun onCameraClosed(cameraView: CameraView?) {
-            super.onCameraClosed(cameraView)
-            mDecodeThread?.stop()
-        }
     }
 
     override val previewWidth: Int
@@ -128,5 +137,12 @@ class QRCodeScanActivity : AppCompatActivity(), PreviewView {
             mViewBinding.scanView.right,
             mViewBinding.scanView.bottom
         )
+    }
+
+    private fun hasCameraPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
     }
 }

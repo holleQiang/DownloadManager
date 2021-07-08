@@ -25,11 +25,11 @@ import android.view.ViewGroup;
 
 import androidx.core.view.ViewCompat;
 
-class SurfaceViewPreview extends PreviewImpl {
+class SurfaceViewPreviewView extends BasePreviewView {
 
     final SurfaceView mSurfaceView;
 
-    SurfaceViewPreview(Context context, ViewGroup parent) {
+    SurfaceViewPreviewView(Context context, ViewGroup parent) {
         final View view = View.inflate(context, R.layout.surface_view, parent);
         mSurfaceView = view.findViewById(R.id.surface_view);
         final SurfaceHolder holder = mSurfaceView.getHolder();
@@ -68,11 +68,6 @@ class SurfaceViewPreview extends PreviewImpl {
     @Override
     View getView() {
         return mSurfaceView;
-    }
-
-    @Override
-    Class getOutputClass() {
-        return SurfaceHolder.class;
     }
 
     @Override

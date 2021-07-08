@@ -1,16 +1,14 @@
 package com.zhangqiang.qrcodescan.decode
 
-import android.graphics.Rect
-import android.hardware.Camera
+import android.graphics.*
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.util.Log
-import com.google.zxing.BinaryBitmap
-import com.google.zxing.PlanarYUVLuminanceSource
+import com.google.android.cameraview.BaseCamera
+import com.google.zxing.*
 import com.google.zxing.common.HybridBinarizer
-import com.google.zxing.qrcode.QRCodeReader
 import com.zhangqiang.qrcodescan.preview.PreviewView
+
 
 /**
  * description :
@@ -18,7 +16,7 @@ import com.zhangqiang.qrcodescan.preview.PreviewView
  * date : 2021-06-21
  */
 class DecodeThread(
-    private val mCamera: Camera,
+    private val mCamera: BaseCamera,
     private val previewView: PreviewView,
     private val callback: Callback
 ) {
@@ -31,9 +29,17 @@ class DecodeThread(
     }
 
     private var mDecodeHandler: Handler? = null
-    private var mCaptureHandler: Handler? = null
     private var mRunning: Boolean = false
     private val mTmpRect: Rect = Rect()
+    private val multiReader = MultiFormatReader()
+
+    init {
+        val hints = mutableMapOf<DecodeHintType, Any>()
+        val mutableListOf = mutableListOf<BarcodeFormat>()
+        mutableListOf.add(BarcodeFormat.QR_CODE)
+        hints[DecodeHintType.POSSIBLE_FORMATS] = mutableListOf
+        multiReader.setHints(hints)
+    }
 
     fun start() {
 
@@ -41,11 +47,10 @@ class DecodeThread(
             return
         }
         mRunning = true
-        mCaptureHandler = Handler(Looper.getMainLooper(), mHandlerCallback)
         val decodeHandlerThread = HandlerThread("qr_decode_thread")
         decodeHandlerThread.start()
         mDecodeHandler = Handler(decodeHandlerThread.looper, mHandlerCallback)
-        mCaptureHandler?.sendEmptyMessage(MSG_CAPTURE)
+        mDecodeHandler?.sendEmptyMessage(MSG_CAPTURE)
     }
 
     fun stop() {
@@ -53,7 +58,6 @@ class DecodeThread(
             return
         }
         mRunning = false
-        mCaptureHandler?.removeCallbacksAndMessages(null)
         mDecodeHandler?.removeCallbacksAndMessages(null)
     }
 
@@ -68,57 +72,46 @@ class DecodeThread(
         }
         when (it.what) {
             MSG_CAPTURE -> {
-                mCamera.setOneShotPreviewCallback { data, camera ->
-                    val msg = mDecodeHandler?.obtainMessage(MSG_DECODE)
-                    msg?.apply {
-                        if (obj == null) {
-                            obj = PreviewData(
-                                data,
-                                camera?.parameters?.previewSize?.width ?: 0,
-                                camera?.parameters?.previewSize?.height ?: 0
-                            )
-                        } else {
-                            val previewData = obj as PreviewData
-                            previewData.data = data
-                            previewData.width = camera?.parameters?.previewSize?.height ?: 0
-                            previewData.height = camera?.parameters?.previewSize?.width ?: 0
+                mCamera.takePicture { data, width, height ->
+
+                    previewView.getScanRegion(mTmpRect)
+
+//                val left =
+//                    previewData.width.toFloat() / previewView.previewWidth * mTmpRect.left
+//                val top =
+//                    previewData.height.toFloat() / previewView.previewHeight * mTmpRect.top
+//                val right =
+//                    previewData.width.toFloat() / previewView.previewWidth * mTmpRect.right
+//                val bottom =
+//                    previewData.height.toFloat() / previewView.previewHeight * mTmpRect.bottom
+//                val source = buildLuminanceSource(
+//                    previewData.data,
+//                    previewData.width,
+//                    previewData.height,
+//                    Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+//                )
+                    val source = buildLuminanceSource(
+                        data,
+                        width,
+                        height,
+                        Rect(0, 0, width, height)
+                    )
+                    try {
+                        val result =
+                            multiReader.decodeWithState(BinaryBitmap(HybridBinarizer(source)))
+                        val text = result.text
+                        Log.i(TAG, "=========$text")
+                        if (text.isNotEmpty()) {
+                            if (callback.onDecodeSuccess(text)) {
+                                stop()
+                                return@takePicture
+                            }
                         }
-                        mDecodeHandler?.sendMessage(this)
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
                     }
+                    mDecodeHandler?.sendEmptyMessage(MSG_CAPTURE)
                 }
-            }
-            MSG_DECODE -> {
-                previewView.getScanRegion(mTmpRect)
-                val previewData = it.obj as PreviewData
-                val left =
-                    previewData.width.toFloat() / previewView.previewWidth * mTmpRect.left
-                val top =
-                    previewData.height.toFloat() / previewView.previewHeight * mTmpRect.top
-                val right =
-                    previewData.width.toFloat() / previewView.previewWidth * mTmpRect.right
-                val bottom =
-                    previewData.height.toFloat() / previewView.previewHeight * mTmpRect.bottom
-                val source = buildLuminanceSource(
-                    previewData.data,
-                    previewData.width,
-                    previewData.height,
-                    Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-                )
-                try {
-                    val result = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(source)))
-                    val text = result.text
-                    Log.i(TAG, "=========$text")
-                    if (text.isNotEmpty()) {
-                        if (callback.onDecodeSuccess(text)) {
-                            stop()
-                            return@Callback true
-                        }
-                    }
-                } catch (e: Throwable) {
-                }
-                mCaptureHandler?.sendEmptyMessage(MSG_CAPTURE)
-            }
-            else -> {
             }
         }
         true
@@ -138,15 +131,11 @@ class DecodeThread(
     }
 }
 
-class PreviewData(
-    var data: ByteArray?,
-    var width: Int,
-    var height: Int
-)
 
 interface Callback {
     /**
      * return true to stop decode
      */
     fun onDecodeSuccess(text: String): Boolean
+
 }

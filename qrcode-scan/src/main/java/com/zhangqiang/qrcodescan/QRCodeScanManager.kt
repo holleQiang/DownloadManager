@@ -16,7 +16,6 @@ class QRCodeScanManager {
         val instance: QRCodeScanManager by lazy {
             QRCodeScanManager()
         }
-
     }
 
     fun addProcessor(processor: Processor) {
@@ -50,7 +49,7 @@ interface Processor {
 
 abstract class HttpProcessor : Processor {
     override fun process(text: String): Boolean {
-        val pattern = Pattern.compile("http[s]*:\\\\.+")
+        val pattern = Pattern.compile("http[s]*://.+")
         val matcher = pattern.matcher(text)
         val urls: MutableList<String> = mutableListOf()
         while (matcher.find()) {

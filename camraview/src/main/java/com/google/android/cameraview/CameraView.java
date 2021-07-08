@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Build;
+import android.os.Handler;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -69,14 +70,14 @@ public class CameraView extends FrameLayout {
     public @interface Flash {
     }
 
-    CameraViewImpl mImpl;
+    BaseCamera mImpl;
 
     private final CallbackBridge mCallbacks;
 
     private boolean mAdjustViewBounds;
 
     private final DisplayOrientationDetector mDisplayOrientationDetector;
-
+    private Handler mHandler;
     public CameraView(Context context) {
         this(context, null);
     }
@@ -94,15 +95,9 @@ public class CameraView extends FrameLayout {
             return;
         }
         // Internal setup
-        final PreviewImpl preview = createPreviewImpl(context);
+        final BasePreviewView preview = createPreviewImpl(context);
         mCallbacks = new CallbackBridge();
-        if (Build.VERSION.SDK_INT < 21) {
-            mImpl = new Camera1(mCallbacks, preview);
-        } else if (Build.VERSION.SDK_INT < 23) {
-            mImpl = new Camera2(mCallbacks, preview, context);
-        } else {
-            mImpl = new Camera2Api23(mCallbacks, preview, context);
-        }
+        mImpl = new Camera1(mCallbacks, preview);
         // Attributes
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CameraView, defStyleAttr,
                 R.style.Widget_CameraView);
@@ -127,12 +122,12 @@ public class CameraView extends FrameLayout {
     }
 
     @NonNull
-    private PreviewImpl createPreviewImpl(Context context) {
-        PreviewImpl preview;
+    private BasePreviewView createPreviewImpl(Context context) {
+        BasePreviewView preview;
         if (Build.VERSION.SDK_INT >= 23) {
-            preview = new SurfaceViewPreview(context, this);
+            preview = new SurfaceViewPreviewView(context, this);
         } else {
-            preview = new TextureViewPreview(context, this);
+            preview = new TextureViewPreviewView(context, this);
         }
         return preview;
     }
@@ -201,12 +196,12 @@ public class CameraView extends FrameLayout {
         }
         assert ratio != null;
         if (height < width * ratio.getY() / ratio.getX()) {
-            mImpl.getView().measure(
+            mImpl.getPreviewView().getView().measure(
                     MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(width * ratio.getY() / ratio.getX(),
                             MeasureSpec.EXACTLY));
         } else {
-            mImpl.getView().measure(
+            mImpl.getPreviewView().getView().measure(
                     MeasureSpec.makeMeasureSpec(height * ratio.getX() / ratio.getY(),
                             MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
@@ -403,10 +398,11 @@ public class CameraView extends FrameLayout {
      * {@link Callback#onPictureTaken(CameraView, byte[])}.
      */
     public void takePicture() {
-        mImpl.takePicture();
+
+        mImpl.takePicture(mCallbacks);
     }
 
-    private class CallbackBridge implements CameraViewImpl.Callback {
+    private class CallbackBridge implements BaseCamera.Callback, PictureTakenCallback {
 
         private final ArrayList<Callback> mCallbacks = new ArrayList<>();
 
@@ -441,15 +437,15 @@ public class CameraView extends FrameLayout {
             }
         }
 
-        @Override
-        public void onPictureTaken(byte[] data) {
-            for (Callback callback : mCallbacks) {
-                callback.onPictureTaken(CameraView.this, data);
-            }
-        }
-
         public void reserveRequestLayoutOnOpen() {
             mRequestLayoutOnOpen = true;
+        }
+
+        @Override
+        public void onPictureTaken(byte[] data, int width, int height) {
+            for (Callback mCallback : mCallbacks) {
+                mCallback.onPictureTaken(data,width,height);
+            }
         }
     }
 
@@ -534,11 +530,15 @@ public class CameraView extends FrameLayout {
         /**
          * Called when a picture is taken.
          *
-         * @param cameraView The associated {@link CameraView}.
          * @param data       JPEG data.
+         * @param width
+         * @param height
          */
-        public void onPictureTaken(CameraView cameraView, byte[] data) {
+        public void onPictureTaken(byte[] data, int width, int height) {
         }
     }
 
+    public BaseCamera getCameraView() {
+        return mImpl;
+    }
 }
