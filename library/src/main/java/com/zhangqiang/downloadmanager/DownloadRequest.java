@@ -3,13 +3,13 @@ package com.zhangqiang.downloadmanager;
 public class DownloadRequest {
 
     private final String url;
-    private final int threadCount;
+    private final int threadSize;
     private final String saveDir;
     private final String fileName;
 
-    DownloadRequest(String url, int threadCount, String saveDir, String fileName) {
+    DownloadRequest(String url, int threadSize, String saveDir, String fileName) {
         this.url = url;
-        this.threadCount = threadCount;
+        this.threadSize = threadSize;
         this.saveDir = saveDir;
         this.fileName = fileName;
     }
@@ -18,8 +18,8 @@ public class DownloadRequest {
         return url;
     }
 
-    public int getThreadCount() {
-        return threadCount;
+    public int getThreadSize() {
+        return threadSize;
     }
 
     public String getSaveDir() {
@@ -33,18 +33,18 @@ public class DownloadRequest {
     public static class Builder {
 
         private final String url;
-        private int threadCount;
+        private int threadSize;
         private final String saveDir;
         private String fileName;
 
         public Builder(String url, String saveDir) {
             this.url = url;
             this.saveDir = saveDir;
-            this.threadCount = 1;
+            this.threadSize = 1;
         }
 
-        public Builder setThreadCount(int threadCount) {
-            this.threadCount = Math.max(1, threadCount);
+        public Builder setThreadSize(int threadSize) {
+            this.threadSize = threadSize;
             return this;
         }
 
@@ -54,13 +54,13 @@ public class DownloadRequest {
         }
 
         public DownloadRequest build() {
-            return new DownloadRequest(url, threadCount, saveDir, fileName);
+            return new DownloadRequest(url, threadSize, saveDir, fileName);
         }
     }
 
     public Builder newBuilder() {
         return new Builder(url, saveDir)
                 .setFileName(fileName)
-                .setThreadCount(threadCount);
+                .setThreadSize(threadSize);
     }
 }

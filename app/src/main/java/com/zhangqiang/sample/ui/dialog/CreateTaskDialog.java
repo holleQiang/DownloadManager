@@ -72,7 +72,7 @@ public class CreateTaskDialog extends BaseDialogFragment {
             }
             File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
             DownloadRequest request = new DownloadRequest.Builder(url, dirFile.getAbsolutePath())
-                    .setThreadCount(Integer.parseInt(etThreadSize.getText().toString()))
+                    .setThreadSize(Integer.parseInt(etThreadSize.getText().toString()))
                     .setFileName(etSaveName.getText().toString().trim())
                     .build();
             DownloadManager.getInstance(getContext()).enqueue(request);

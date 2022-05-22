@@ -25,16 +25,16 @@ public abstract class DownloadTask {
         if (mStarted.getAndSet(true)) {
             return;
         }
-        notifyStart();
         onStart();
+        notifyStart();
     }
 
     public final void cancel() {
         if (!mStarted.getAndSet(false)) {
             return;
         }
-        notifyCancel();
         onCancel();
+        notifyCancel();
     }
 
     protected void dispatchComplete() {

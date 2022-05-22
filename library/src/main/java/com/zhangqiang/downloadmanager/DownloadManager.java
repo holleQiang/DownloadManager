@@ -165,7 +165,7 @@ public class DownloadManager {
         taskEntity.setUrl(request.getUrl());
         taskEntity.setSaveDir(request.getSaveDir());
         taskEntity.setCreateTime(System.currentTimeMillis());
-        taskEntity.setThreadSize(request.getThreadCount());
+        taskEntity.setThreadSize(request.getThreadSize());
         taskEntity.setFileName(request.getFileName());
         taskEntity.setState(STATE_IDLE);
         getTaskEntityDao().insert(taskEntity);
@@ -211,7 +211,7 @@ public class DownloadManager {
         } else {
             DownloadRequest request = new DownloadRequest.Builder(taskEntity.getUrl(), taskEntity.getSaveDir())
                     .setFileName(taskEntity.getFileName())
-                    .setThreadCount(taskEntity.getThreadSize())
+                    .setThreadSize(taskEntity.getThreadSize())
                     .build();
             task = new OKHttpDownloadTask(mContext, request, new DefaultHttpPartTaskFactory(taskEntity));
         }
@@ -225,7 +225,7 @@ public class DownloadManager {
 
         if (TextUtils.isEmpty(request.getUrl())
                 || TextUtils.isEmpty(request.getSaveDir())
-                || request.getThreadCount() < 1) {
+                || request.getThreadSize() < 1) {
             return -1;
         }
 
