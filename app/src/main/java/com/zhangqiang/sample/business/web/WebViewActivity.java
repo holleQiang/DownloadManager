@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+
+import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -12,6 +14,7 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.web.image.ImageClickJSI;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.utils.WebViewUtils;
 
 /**
  * description :
@@ -30,7 +33,6 @@ public class WebViewActivity extends BaseActivity {
         Toolbar mToolbar = findViewById(R.id.m_tool_bar);
         setSupportActionBar(mToolbar);
         mWebView = findViewById(R.id.m_web_view);
-        mWebView.loadUrl("https://www.baidu.com");
         mWebView.setWebChromeClient(new WebChromeClientImpl());
         mWebView.setWebViewClient(new WebViewClientImpl());
         mWebView.setDownloadListener(new DownloadListenerImpl(getSupportFragmentManager()));
@@ -51,6 +53,12 @@ public class WebViewActivity extends BaseActivity {
                 return false;
             }
         });
+
+        String urlFromIntent = getIntent().getStringExtra(WebViewUtils.INTENT_KEY_URL);
+        if(TextUtils.isEmpty(urlFromIntent)){
+            urlFromIntent = "https://www.baidu.com";
+        }
+        mWebView.loadUrl(urlFromIntent);
     }
 
     @Override

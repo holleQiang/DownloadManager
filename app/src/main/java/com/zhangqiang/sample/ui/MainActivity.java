@@ -21,6 +21,8 @@ import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.utils.IntentUtils;
+import com.zhangqiang.sample.utils.WebViewUtils;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private ActivityMainBinding mBinding;
-    private String pendingUrl;
+    private String pendingScanUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,9 +80,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (pendingUrl != null) {
-            showTaskCreateDialog(pendingUrl);
-            pendingUrl = null;
+        if (pendingScanUrl != null) {
+            WebViewUtils.open(this, pendingScanUrl);
+            pendingScanUrl = null;
         }
     }
 
@@ -98,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.create_task) {
             showTaskCreateDialog("https://imtt.dd.qq.com/16891/apk/5C0FF221A948463BCF9F3255E0112034.apk?fsname=com.tencent.mm_8.0.6_1900.apk&csr=1bbd");
             return true;
-        }else if(item.getItemId() == R.id.web_view){
+        } else if (item.getItemId() == R.id.web_view) {
             startActivity(new Intent(this, WebViewActivity.class));
-        }else if(item.getItemId() == R.id.scan_qr_code){
+        } else if (item.getItemId() == R.id.scan_qr_code) {
             startActivity(new Intent(this, QRCodeScanActivity.class));
         }
 //        else if(item.getItemId() == R.id.test){
@@ -120,17 +122,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showTaskCreateDialog(String url) {
-        CreateTaskDialog.createAndShow(getSupportFragmentManager(),url);
+        CreateTaskDialog.createAndShow(getSupportFragmentManager(), url);
     }
 
     private final Processor mHttpProcessor = new HttpProcessor() {
         @Override
         public void processHttpUrls(@NotNull List<String> urls) {
             if (getLifecycle().getCurrentState() != Lifecycle.State.RESUMED) {
-                pendingUrl = urls.get(0);
-            }else {
-                showTaskCreateDialog(urls.get(0));
+                pendingScanUrl = urls.get(0);
+            } else {
+                WebViewUtils.open(MainActivity.this, urls.get(0));
             }
         }
     };
+
+
 }

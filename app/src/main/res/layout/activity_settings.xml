@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="16dp"
         android:text="@string/max_running_task_count"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
@@ -34,7 +34,7 @@
         android:layout_marginEnd="16dp"
         android:hint="@string/please_input_max_running_task_count"
         android:inputType="number"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
         app:layout_constraintTop_toBottomOf="@id/tv_title"
         tools:text="3" />
 
@@ -58,18 +58,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:hint="@string/please_input_save_dir"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
         app:layout_constraintTop_toBottomOf="@id/tv_title_save_dir" />
-
-    <com.zhangqiang.qrcodescan.widget.LimitHorizontalLayout
-        android:id="@+id/dhl_layout"
-        app:layout_constraintTop_toBottomOf="@id/et_save_dir"
-        android:layout_width="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:paddingTop="50dp"
-        android:paddingBottom="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_height="wrap_content"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

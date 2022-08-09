@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.os.Build;
 import androidx.core.content.FileProvider;
 
+import com.zhangqiang.sample.business.web.WebViewActivity;
+
 import java.io.File;
 
 public class IntentUtils {
@@ -29,4 +31,6 @@ public class IntentUtils {
             e.printStackTrace();
         }
     }
+
+
 }

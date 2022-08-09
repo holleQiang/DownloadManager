@@ -143,7 +143,7 @@ public abstract class HttpDownloadTask extends DownloadTask {
         if (mPartTasks == null) {
             mPartTasks = new ArrayList<>();
         }
-        int threadSize = request.getThreadCount();
+        int threadSize = request.getThreadSize();
         final long total = rangePart.getTotal();
         long eachDownload = total / threadSize;
         long resetDownload = total % threadSize;
