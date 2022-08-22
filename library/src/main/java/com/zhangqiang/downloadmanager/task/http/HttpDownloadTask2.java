@@ -127,7 +127,7 @@ public class HttpDownloadTask2 extends DownloadTask {
             mergePartFile();
             LogUtils.i(TAG, "下载完成" + saveDir);
             dispatchComplete();
-        } catch (IOException e) {
+        } catch (Throwable e) {
             dispatchFail(new DownloadException(DownloadException.MERGE_PART_FAIL, e));
         }
     }

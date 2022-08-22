@@ -2,9 +2,11 @@ package com.zhangqiang.sample.ui.cell;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
@@ -100,7 +102,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         if (rvPartInfo.getItemDecorationCount() <= 0) {
             int attrColor = ResourceUtils.getAttrColor(context, R.attr.colorAccent);
             ColorDrawable dividerDrawable = new ColorDrawable(attrColor);
-            dividerDrawable.setBounds(0,0,0, ScreenUtils.dp2Px(context,1));
+            dividerDrawable.setBounds(0, 0, 0, ScreenUtils.dp2Px(context, 1));
             rvPartInfo.addItemDecoration(new LinearRVDivider(dividerDrawable));
         }
     }
@@ -120,7 +122,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
                     viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(partCurrentLength) + "/" + StringUtils.formatFileLength(partContentLength));
                     viewHolder.setProgress(R.id.pb_progress, (int) ((float) partCurrentLength / partContentLength * 100));
                     viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(partSpeed) + "/s");
-                    viewHolder.setText(R.id.tv_part_index,String.valueOf(i));
+                    viewHolder.setText(R.id.tv_part_index, String.valueOf(i));
                 }
             }));
         }
@@ -135,9 +137,9 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         if (data.getContentLength() == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (data.getContentLength() <= data.getCurrentLength()) {
-            if(data.getState() == DownloadManager.STATE_COMPLETE){
+            if (data.getState() == DownloadManager.STATE_COMPLETE) {
                 resetTimeStr = "已完成";
-            }else {
+            } else {
                 resetTimeStr = "剩余时间：0秒";
             }
         } else if (data.getSpeed() == 0) {
@@ -192,7 +194,6 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisible(viewHolder, false);
         }
-        LogUtils.i(TAG, "=====updateState3======" + getData().getState());
     }
 
     private void updateInfo(ViewHolder viewHolder) {
@@ -207,6 +208,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setVisibility(R.id.tv_speed, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_rest_time, isError ? View.INVISIBLE : View.VISIBLE);
+        viewHolder.setVisibility(R.id.cb_show_part_info, isError ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void updateProgress(ViewHolder viewHolder) {

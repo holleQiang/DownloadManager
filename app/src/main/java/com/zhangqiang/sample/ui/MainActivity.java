@@ -1,34 +1,49 @@
 package com.zhangqiang.sample.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Lifecycle;
 
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.common.HybridBinarizer;
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
 import com.zhangqiang.qrcodescan.QRCodeScanActivity;
 import com.zhangqiang.qrcodescan.QRCodeScanManager;
 import com.zhangqiang.sample.R;
+import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
+import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.utils.BitmapUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
+import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
+import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.WebViewUtils;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity {
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
+
+public class MainActivity extends BaseActivity {
 
 
     private ActivityMainBinding mBinding;
@@ -81,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (pendingScanUrl != null) {
-            WebViewUtils.open(this, pendingScanUrl);
+            processHttpUrl(pendingScanUrl);
             pendingScanUrl = null;
         }
     }
@@ -98,12 +113,19 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (item.getItemId() == R.id.create_task) {
-            showTaskCreateDialog("https://imtt.dd.qq.com/16891/apk/5C0FF221A948463BCF9F3255E0112034.apk?fsname=com.tencent.mm_8.0.6_1900.apk&csr=1bbd");
+            showTaskCreateDialog("");
             return true;
         } else if (item.getItemId() == R.id.web_view) {
             startActivity(new Intent(this, WebViewActivity.class));
         } else if (item.getItemId() == R.id.scan_qr_code) {
             startActivity(new Intent(this, QRCodeScanActivity.class));
+        } else if (item.getItemId() == R.id.choose_image_with_qrcode) {
+            IntentUtils.openChooseImagePage(this, getContentResolver(), new IntentUtils.ChooseImagePageCallback() {
+                @Override
+                public void onChooseImage(String imageFilePath) {
+                    IntentUtils.openQRCodeDecodePage(MainActivity.this, imageFilePath);
+                }
+            });
         }
 //        else if(item.getItemId() == R.id.test){
 //            new TestDialog().show(getSupportFragmentManager(),"test");
@@ -131,10 +153,14 @@ public class MainActivity extends AppCompatActivity {
             if (getLifecycle().getCurrentState() != Lifecycle.State.RESUMED) {
                 pendingScanUrl = urls.get(0);
             } else {
+                processHttpUrl(urls.get(0));
                 WebViewUtils.open(MainActivity.this, urls.get(0));
             }
         }
     };
 
+    private void processHttpUrl(String url) {
+        QRCodeResultProcessUtils.processHttpUrl(this,url);
+    }
 
 }

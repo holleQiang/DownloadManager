@@ -1,6 +1,5 @@
 package com.zhangqiang.sample.business.web;
 
-import android.net.Uri;
 import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -38,19 +37,8 @@ public class WebViewClientImpl extends WebViewClient {
     }
 
     @Override
-    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        Uri uri = Uri.parse(url);
-        String scheme = uri.getScheme();
-        if ("http".equals(scheme) || "https".equals(scheme)) {
-             view.loadUrl(url);
-        }
-        return true;
-    }
-
-    @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         ImageClickJSI.addImageClickListener(view);
     }
-
 }

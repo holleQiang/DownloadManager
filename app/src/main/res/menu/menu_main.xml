@@ -13,6 +13,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/choose_image_with_qrcode"
+        android:title="@string/choose_image_with_qrcode"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/settings"
         android:title="@string/settings"
         app:showAsAction="never" />

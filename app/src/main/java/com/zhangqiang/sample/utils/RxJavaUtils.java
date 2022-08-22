@@ -1,18 +1,25 @@
 package com.zhangqiang.sample.utils;
 
+import android.util.Log;
+
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.annotation.NonNull;
 
+import com.zhangqiang.downloadmanager.utils.ThreadUtils;
+import com.zhangqiang.sample.ui.dialog.loading.LoadingDialogHolderOwner;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 
 public class RxJavaUtils {
@@ -42,13 +49,45 @@ public class RxJavaUtils {
                         .doOnSubscribe(new Consumer<Disposable>() {
                             @Override
                             public void accept(Disposable disposable) throws Exception {
-                                lifecycle.addObserver(observer);
+                                ThreadUtils.doOnUIThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lifecycle.addObserver(observer);
+                                    }
+                                });
                             }
                         })
                         .doOnDispose(new Action() {
                             @Override
                             public void run() throws Exception {
-                                lifecycle.removeObserver(observer);
+                                ThreadUtils.doOnUIThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lifecycle.removeObserver(observer);
+                                    }
+                                });
+                            }
+                        })
+                        .doOnError(new Consumer<Throwable>() {
+                            @Override
+                            public void accept(Throwable throwable) throws Exception {
+                                ThreadUtils.doOnUIThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lifecycle.removeObserver(observer);
+                                    }
+                                });
+                            }
+                        })
+                        .doOnComplete(new Action() {
+                            @Override
+                            public void run() throws Exception {
+                                ThreadUtils.doOnUIThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        lifecycle.removeObserver(observer);
+                                    }
+                                });
                             }
                         })
                         .takeUntil(abortSubject.filter(new Predicate<Boolean>() {
@@ -90,5 +129,69 @@ public class RxJavaUtils {
         @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         public void onDestroy(@NonNull LifecycleOwner owner) {
         }
+    }
+
+    public static <T> ObservableTransformer<T,T> applyIOMainSchedules(){
+        return new ObservableTransformer<T,T>(){
+
+            @Override
+            public ObservableSource<T> apply(Observable<T> upstream) {
+                return upstream.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
+            }
+        };
+    }
+
+    public static <T> ObservableTransformer<T,T> withLoadingDialog(LoadingDialogHolderOwner owner){
+        return new ObservableTransformer<T,T>(){
+
+            @Override
+            public ObservableSource<T> apply(Observable<T> upstream) {
+                return upstream.doOnSubscribe(new Consumer<Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        ThreadUtils.doOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                owner.getLoadingDialogHolder().showLoading();
+                            }
+                        });
+                    }
+                }).doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        ThreadUtils.doOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                owner.getLoadingDialogHolder().hideLoading();
+                                Log.i("Test","=======hideLoading==========");
+                            }
+                        });
+                    }
+                }).doOnError(new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        throwable.printStackTrace();
+                        ThreadUtils.doOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                owner.getLoadingDialogHolder().hideLoading();
+                                Log.i("Test","=======hideLoading==========");
+                            }
+                        });
+                    }
+                }).doOnDispose(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        ThreadUtils.doOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                owner.getLoadingDialogHolder().hideLoading();
+                                Log.i("Test","=======hideLoading==========");
+                            }
+                        });
+                    }
+                });
+            }
+        };
     }
 }

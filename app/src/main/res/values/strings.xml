@@ -40,5 +40,9 @@
     <string name="please_input_save_dir">请输入文件保存路径</string>
     <string name="web_view">浏览器</string>
     <string name="scan_qr_code">扫描二维码</string>
+    <string name="choose_image_with_qrcode">识别二维码图片</string>
+    <string name="decode_qrcode">识别二维码</string>
+    <string name="qr_code_not_found">未发现二维码</string>
+    <string name="qr_code_decode_fail">二维码识别失败</string>
 
 </resources>

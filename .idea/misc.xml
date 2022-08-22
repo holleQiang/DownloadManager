@@ -4,7 +4,11 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.223602294921875" />
+        <entry key="app/src/main/res/drawable/ic_nav_back.xml" value="0.2685" />
+        <entry key="app/src/main/res/drawable/ic_nav_close.xml" value="0.226" />
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.21927083333333333" />
+        <entry key="app/src/main/res/layout/activity_web_view.xml" value="0.2635416666666667" />
+        <entry key="app/src/main/res/menu/menu_main.xml" value="0.21927083333333333" />
       </map>
     </option>
   </component>
