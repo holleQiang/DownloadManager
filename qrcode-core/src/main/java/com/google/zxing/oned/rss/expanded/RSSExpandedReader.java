@@ -41,13 +41,13 @@ import com.google.zxing.oned.rss.FinderPattern;
 import com.google.zxing.oned.rss.RSSUtils;
 import com.google.zxing.oned.rss.expanded.decoders.AbstractExpandedDecoder;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 /**
  * @author Pablo Orduña, University of Deusto (pablo.orduna@deusto.es)
@@ -101,6 +101,7 @@ public final class RSSExpandedReader extends AbstractRSSReader {
   private static final int FINDER_PAT_E = 4;
   private static final int FINDER_PAT_F = 5;
 
+  @SuppressWarnings("checkstyle:lineLength")
   private static final int[][] FINDER_PATTERN_SEQUENCES = {
     { FINDER_PAT_A, FINDER_PAT_A },
     { FINDER_PAT_A, FINDER_PAT_B, FINDER_PAT_B },
@@ -291,7 +292,7 @@ public final class RSSExpandedReader extends AbstractRSSReader {
       return;
     }
 
-    this.rows.add(insertPos, new ExpandedRow(this.pairs, rowNumber, false));
+    this.rows.add(insertPos, new ExpandedRow(this.pairs, rowNumber));
 
     removePartialRows(this.pairs, this.rows);
   }

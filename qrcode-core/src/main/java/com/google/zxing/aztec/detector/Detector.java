@@ -66,7 +66,7 @@ public final class Detector {
    * @return {@link AztecDetectorResult} encapsulating results of detecting an Aztec Code
    * @throws NotFoundException if no Aztec Code can be found
    */
-   public AztecDetectorResult detect(boolean isMirror) throws NotFoundException {
+  public AztecDetectorResult detect(boolean isMirror) throws NotFoundException {
 
     // 1. Get the center of the aztec matrix
     Point pCenter = getMatrixCenter();
@@ -425,10 +425,12 @@ public final class Detector {
 
     int corr = 3;
 
-    p1 = new Point(p1.getX() - corr, p1.getY() + corr);
-    p2 = new Point(p2.getX() - corr, p2.getY() - corr);
-    p3 = new Point(p3.getX() + corr, p3.getY() - corr);
-    p4 = new Point(p4.getX() + corr, p4.getY() + corr);
+    p1 = new Point(Math.max(0, p1.getX() - corr), Math.min(image.getHeight() - 1, p1.getY() + corr));
+    p2 = new Point(Math.max(0, p2.getX() - corr), Math.max(0, p2.getY() - corr));
+    p3 = new Point(Math.min(image.getWidth() - 1, p3.getX() + corr),
+                   Math.max(0, Math.min(image.getHeight() - 1, p3.getY() - corr)));
+    p4 = new Point(Math.min(image.getWidth() - 1, p4.getX() + corr),
+                   Math.min(image.getHeight() - 1, p4.getY() + corr));
 
     int cInit = getColor(p4, p1);
 
@@ -461,6 +463,9 @@ public final class Detector {
    */
   private int getColor(Point p1, Point p2) {
     float d = distance(p1, p2);
+    if (d == 0.0f) {
+      return 0;
+    }
     float dx = (p2.getX() - p1.getX()) / d;
     float dy = (p2.getY() - p1.getY()) / d;
     int error = 0;
@@ -470,13 +475,13 @@ public final class Detector {
 
     boolean colorModel = image.get(p1.getX(), p1.getY());
 
-    int iMax = (int) Math.ceil(d);
+    int iMax = (int) Math.floor(d);
     for (int i = 0; i < iMax; i++) {
-      px += dx;
-      py += dy;
       if (image.get(MathUtils.round(px), MathUtils.round(py)) != colorModel) {
         error++;
       }
+      px += dx;
+      py += dy;
     }
 
     float errRatio = error / d;
@@ -545,7 +550,7 @@ public final class Detector {
   }
 
   private boolean isValid(int x, int y) {
-    return x >= 0 && x < image.getWidth() && y > 0 && y < image.getHeight();
+    return x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight();
   }
 
   private boolean isValid(ResultPoint point) {

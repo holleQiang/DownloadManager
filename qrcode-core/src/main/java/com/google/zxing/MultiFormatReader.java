@@ -129,10 +129,10 @@ public final class MultiFormatReader implements Reader {
         readers.add(new AztecReader());
       }
       if (formats.contains(BarcodeFormat.PDF_417)) {
-         readers.add(new PDF417Reader());
+        readers.add(new PDF417Reader());
       }
       if (formats.contains(BarcodeFormat.MAXICODE)) {
-         readers.add(new MaxiCodeReader());
+        readers.add(new MaxiCodeReader());
       }
       // At end in "try harder" mode
       if (addOneDReader && tryHarder) {
@@ -169,6 +169,9 @@ public final class MultiFormatReader implements Reader {
   private Result decodeInternal(BinaryBitmap image) throws NotFoundException {
     if (readers != null) {
       for (Reader reader : readers) {
+        if (Thread.currentThread().isInterrupted()) {
+          throw NotFoundException.getNotFoundInstance();
+        }
         try {
           return reader.decode(image, hints);
         } catch (ReaderException re) {
@@ -179,6 +182,9 @@ public final class MultiFormatReader implements Reader {
         // Calling all readers again with inverted image
         image.getBlackMatrix().flip();
         for (Reader reader : readers) {
+          if (Thread.currentThread().isInterrupted()) {
+            throw NotFoundException.getNotFoundInstance();
+          }
           try {
             return reader.decode(image, hints);
           } catch (ReaderException re) {

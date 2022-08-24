@@ -27,23 +27,23 @@ public class QRCodeDecodeUtils {
     public static final int MIN_DECODE_SIZE = 400;
 
     public static String decodeQRCode(String imageFilePath) throws NotFoundException {
-        return decodeQRCode(imageFilePath, MAX_DECODE_SIZE, MAX_DECODE_SIZE, 1);
+        BitmapUtils.DecodeResult decodeResult = BitmapUtils.decodeBitmap(imageFilePath, MAX_DECODE_SIZE, MAX_DECODE_SIZE);
+        try {
+            return decodeQRCode(decodeResult.getBitmap());
+        } catch (NotFoundException e) {
+            return decodeQRCode(imageFilePath, decodeResult.getSampleSize() + 1);
+        }
     }
 
-    private static String decodeQRCode(String imageFilePath, int maxWidth, int maxHeight, float scale) throws NotFoundException {
-        Bitmap bitmap = BitmapUtils.decodeBitmap(imageFilePath, (int) (maxWidth * scale), (int) (maxHeight * scale));
+    private static String decodeQRCode(String imageFilePath, int sampleSize) throws NotFoundException {
+        Bitmap bitmap = BitmapUtils.decodeBitmap(imageFilePath, sampleSize);
         try {
             return decodeQRCode(bitmap);
         } catch (NotFoundException e) {
-            if (maxWidth == MIN_DECODE_SIZE && maxHeight == MIN_DECODE_SIZE) {
+            if (bitmap.getWidth() < MIN_DECODE_SIZE || bitmap.getHeight() < MIN_DECODE_SIZE) {
                 throw e;
             }
-            float tryScale = scale - 0.2f;
-            if (maxWidth * tryScale < MIN_DECODE_SIZE || maxHeight * tryScale < MIN_DECODE_SIZE) {
-                return decodeQRCode(imageFilePath, MIN_DECODE_SIZE, MIN_DECODE_SIZE, 1);
-            } else {
-                return decodeQRCode(imageFilePath, maxWidth, maxHeight, tryScale);
-            }
+            return decodeQRCode(imageFilePath, sampleSize + 1);
         }
     }
 
@@ -58,8 +58,6 @@ public class QRCodeDecodeUtils {
         List<BarcodeFormat> formats = new ArrayList<>();
         formats.add(BarcodeFormat.QR_CODE);
         hints.put(DecodeHintType.POSSIBLE_FORMATS, formats);
-        hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
-        hints.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
         try {
             return new MultiFormatReader()
                     .decode(new BinaryBitmap(

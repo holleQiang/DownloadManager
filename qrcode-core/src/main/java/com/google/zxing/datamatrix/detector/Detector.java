@@ -76,7 +76,7 @@ public final class Detector {
       dimensionTop = dimensionRight = Math.max(dimensionTop, dimensionRight);
     }
 
-    BitMatrix bits = sampleGrid(image, 
+    BitMatrix bits = sampleGrid(image,
                                 topLeft,
                                 bottomLeft,
                                 bottomRight,
@@ -219,11 +219,11 @@ public final class Detector {
     trRight = transitionsBetween(pointCs, pointD);
 
     ResultPoint candidate1 = new ResultPoint(
-      pointD.getX() + (pointC.getX() - pointB.getX()) / (trTop + 1),
-      pointD.getY() + (pointC.getY() - pointB.getY()) / (trTop + 1));
+        pointD.getX() + (pointC.getX() - pointB.getX()) / (trTop + 1),
+        pointD.getY() + (pointC.getY() - pointB.getY()) / (trTop + 1));
     ResultPoint candidate2 = new ResultPoint(
-      pointD.getX() + (pointA.getX() - pointB.getX()) / (trRight + 1),
-      pointD.getY() + (pointA.getY() - pointB.getY()) / (trRight + 1));
+        pointD.getX() + (pointA.getX() - pointB.getX()) / (trRight + 1),
+        pointD.getY() + (pointA.getY() - pointB.getY()) / (trRight + 1));
 
     if (!isValid(candidate1)) {
       if (isValid(candidate2)) {
@@ -301,7 +301,7 @@ public final class Detector {
   }
 
   private boolean isValid(ResultPoint p) {
-    return p.getX() >= 0 && p.getX() < image.getWidth() && p.getY() > 0 && p.getY() < image.getHeight();
+    return p.getX() >= 0 && p.getX() <= image.getWidth() - 1 && p.getY() > 0 && p.getY() <= image.getHeight() - 1;
   }
 
   private static BitMatrix sampleGrid(BitMatrix image,
@@ -343,7 +343,8 @@ public final class Detector {
     int fromX = (int) from.getX();
     int fromY = (int) from.getY();
     int toX = (int) to.getX();
-    int toY = (int) to.getY();
+    int toY = Math.min(image.getHeight() - 1, (int) to.getY());
+
     boolean steep = Math.abs(toY - fromY) > Math.abs(toX - fromX);
     if (steep) {
       int temp = fromX;

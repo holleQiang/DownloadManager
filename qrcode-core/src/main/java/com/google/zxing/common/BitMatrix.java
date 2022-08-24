@@ -287,6 +287,29 @@ public final class BitMatrix implements Cloneable {
   }
 
   /**
+   * Modifies this {@code BitMatrix} to represent the same but rotated the given degrees (0, 90, 180, 270)
+   *
+   * @param degrees number of degrees to rotate through counter-clockwise (0, 90, 180, 270)
+   */
+  public void rotate(int degrees) {
+    switch (degrees % 360) {
+      case 0:
+        return;
+      case 90:
+        rotate90();
+        return;
+      case 180:
+        rotate180();
+        return;
+      case 270:
+        rotate90();
+        rotate180();
+        return;
+    }
+    throw new IllegalArgumentException("degrees must be a multiple of 0, 90, 180, or 270");
+  }
+
+  /**
    * Modifies this {@code BitMatrix} to represent the same but rotated 180 degrees
    */
   public void rotate180() {
@@ -462,7 +485,7 @@ public final class BitMatrix implements Cloneable {
     hash = 31 * hash + width;
     hash = 31 * hash + height;
     hash = 31 * hash + rowSize;
-     hash = 31 * hash + Arrays.hashCode(bits);
+    hash = 31 * hash + Arrays.hashCode(bits);
     return hash;
   }
 

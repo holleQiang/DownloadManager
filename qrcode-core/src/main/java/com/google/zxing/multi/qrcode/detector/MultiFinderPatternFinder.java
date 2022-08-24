@@ -97,7 +97,12 @@ public final class MultiFinderPatternFinder extends FinderPatternFinder {
    * @throws NotFoundException if 3 such finder patterns do not exist
    */
   private FinderPattern[][] selectMultipleBestPatterns() throws NotFoundException {
-    List<FinderPattern> possibleCenters = getPossibleCenters();
+    List<FinderPattern> possibleCenters = new ArrayList<>();
+    for (FinderPattern fp : getPossibleCenters()) {
+      if (fp.getCount() >= 2) {
+        possibleCenters.add(fp);
+      }
+    }
     int size = possibleCenters.size();
 
     if (size < 3) {
@@ -130,7 +135,7 @@ public final class MultiFinderPatternFinder extends FinderPatternFinder {
      * So, if the layout seems right, lets have the decoder try to decode.
      */
 
-     List<FinderPattern[]> results = new ArrayList<>(); // holder for the results
+    List<FinderPattern[]> results = new ArrayList<>(); // holder for the results
 
     for (int i1 = 0; i1 < (size - 2); i1++) {
       FinderPattern p1 = possibleCenters.get(i1);

@@ -26,8 +26,8 @@ import com.google.zxing.ResultPointCallback;
 import com.google.zxing.common.BitArray;
 import com.google.zxing.common.detector.MathUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -160,7 +160,7 @@ public final class RSS14Reader extends AbstractRSSReader {
       FinderPattern pattern = parseFoundFinderPattern(row, rowNumber, right, startEnd);
 
       ResultPointCallback resultPointCallback = hints == null ? null :
-        (ResultPointCallback) hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
+          (ResultPointCallback) hints.get(DecodeHintType.NEED_RESULT_POINT_CALLBACK);
 
       if (resultPointCallback != null) {
         startEnd = pattern.getStartEnd();

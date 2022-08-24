@@ -17,18 +17,20 @@
 package com.google.zxing.datamatrix;
 
 import com.google.zxing.BarcodeFormat;
-import com.google.zxing.Dimension;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.Writer;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.datamatrix.encoder.DefaultPlacement;
+import com.google.zxing.Dimension;
 import com.google.zxing.datamatrix.encoder.ErrorCorrection;
 import com.google.zxing.datamatrix.encoder.HighLevelEncoder;
+import com.google.zxing.datamatrix.encoder.MinimalEncoder;
 import com.google.zxing.datamatrix.encoder.SymbolInfo;
 import com.google.zxing.datamatrix.encoder.SymbolShapeHint;
 import com.google.zxing.qrcode.encoder.ByteMatrix;
 
 import java.util.Map;
+import java.nio.charset.Charset;
 
 /**
  * This object renders a Data Matrix code as a BitMatrix 2D array of greyscale values.
@@ -81,7 +83,26 @@ public final class DataMatrixWriter implements Writer {
 
 
     //1. step: Data encodation
-    String encoded = HighLevelEncoder.encodeHighLevel(contents, shape, minSize, maxSize);
+    String encoded;
+
+    boolean hasCompactionHint = hints != null && hints.containsKey(EncodeHintType.DATA_MATRIX_COMPACT) &&
+        Boolean.parseBoolean(hints.get(EncodeHintType.DATA_MATRIX_COMPACT).toString());
+    if (hasCompactionHint) {
+
+      boolean hasGS1FormatHint = hints.containsKey(EncodeHintType.GS1_FORMAT) &&
+          Boolean.parseBoolean(hints.get(EncodeHintType.GS1_FORMAT).toString());
+
+      Charset charset = null;
+      boolean hasEncodingHint = hints.containsKey(EncodeHintType.CHARACTER_SET);
+      if (hasEncodingHint) {
+        charset = Charset.forName(hints.get(EncodeHintType.CHARACTER_SET).toString());
+      }
+      encoded = MinimalEncoder.encodeHighLevel(contents, charset, hasGS1FormatHint ? 0x1D : -1, shape);
+    } else {
+      boolean hasForceC40Hint = hints != null && hints.containsKey(EncodeHintType.FORCE_C40) &&
+          Boolean.parseBoolean(hints.get(EncodeHintType.FORCE_C40).toString());
+      encoded = HighLevelEncoder.encodeHighLevel(contents, shape, minSize, maxSize, hasForceC40Hint);
+    }
 
     SymbolInfo symbolInfo = SymbolInfo.lookup(encoded.length(), shape, minSize, maxSize, true);
 
@@ -89,7 +110,8 @@ public final class DataMatrixWriter implements Writer {
     String codewords = ErrorCorrection.encodeECC200(encoded, symbolInfo);
 
     //3. step: Module placement in Matrix
-    DefaultPlacement placement = new DefaultPlacement(codewords, symbolInfo.getSymbolDataWidth(), symbolInfo.getSymbolDataHeight());
+    DefaultPlacement placement =
+        new DefaultPlacement(codewords, symbolInfo.getSymbolDataWidth(), symbolInfo.getSymbolDataHeight());
     placement.place();
 
     //4. step: low-level encoding

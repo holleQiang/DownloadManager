@@ -19,6 +19,7 @@ package com.google.zxing.datamatrix.decoder;
 import com.google.zxing.FormatException;
 import com.google.zxing.common.BitSource;
 import com.google.zxing.common.DecoderResult;
+import com.google.zxing.common.ECIStringBuilder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -87,11 +88,12 @@ final class DecodedBitStreamParser {
 
   static DecoderResult decode(byte[] bytes) throws FormatException {
     BitSource bits = new BitSource(bytes);
-    StringBuilder result = new StringBuilder(100);
+    ECIStringBuilder result = new ECIStringBuilder(100);
     StringBuilder resultTrailer = new StringBuilder(0);
     List<byte[]> byteSegments = new ArrayList<>(1);
     Mode mode = Mode.ASCII_ENCODE;
-    Set<Integer> fnc1Positions = new HashSet<>(); // Would be replaceable by looking directly at 'bytes', if we're sure to not having to account for multi byte values.
+    // Could look directly at 'bytes', if we're sure of not having to account for multi byte values
+    Set<Integer> fnc1Positions = new HashSet<>();
     int symbologyModifier;
     boolean isECIencoded = false;
     do {
@@ -115,6 +117,7 @@ final class DecodedBitStreamParser {
             decodeBase256Segment(bits, result, byteSegments);
             break;
           case ECI_ENCODE:
+            decodeECISegment(bits, result);
             isECIencoded = true; // ECI detection only, atm continue decoding as ASCII
             break;
           default:
@@ -124,7 +127,7 @@ final class DecodedBitStreamParser {
       }
     } while (mode != Mode.PAD_ENCODE && bits.available() > 0);
     if (resultTrailer.length() > 0) {
-      result.append(resultTrailer);
+      result.appendCharacters(resultTrailer);
     }
     if (isECIencoded) {
       // Examples for this numbers can be found in this documentation of a hardware barcode scanner:
@@ -146,14 +149,18 @@ final class DecodedBitStreamParser {
       }
     }
 
-    return new DecoderResult(bytes, result.toString(), byteSegments.isEmpty() ? null : byteSegments, null, symbologyModifier);
+    return new DecoderResult(bytes,
+                             result.toString(),
+                             byteSegments.isEmpty() ? null : byteSegments,
+                             null,
+                             symbologyModifier);
   }
 
   /**
    * See ISO 16022:2006, 5.2.3 and Annex C, Table C.2
    */
   private static Mode decodeAsciiSegment(BitSource bits,
-                                         StringBuilder result,
+                                         ECIStringBuilder result,
                                          StringBuilder resultTrailer,
                                          Set<Integer> fnc1positions) throws FormatException {
     boolean upperShift = false;
@@ -226,7 +233,8 @@ final class DecodedBitStreamParser {
   /**
    * See ISO 16022:2006, 5.2.5 and Annex C, Table C.1
    */
-  private static void decodeC40Segment(BitSource bits, StringBuilder result, Set<Integer> fnc1positions) throws FormatException {
+  private static void decodeC40Segment(BitSource bits, ECIStringBuilder result, Set<Integer> fnc1positions)
+      throws FormatException {
     // Three C40 values are encoded in a 16-bit value as
     // (1600 * C1) + (40 * C2) + C3 + 1
     // TODO(bbrown): The Upper Shift with C40 doesn't work in the 4 value scenario all the time
@@ -317,7 +325,8 @@ final class DecodedBitStreamParser {
   /**
    * See ISO 16022:2006, 5.2.6 and Annex C, Table C.2
    */
-  private static void decodeTextSegment(BitSource bits, StringBuilder result, Set<Integer> fnc1positions) throws FormatException {
+  private static void decodeTextSegment(BitSource bits, ECIStringBuilder result, Set<Integer> fnc1positions)
+      throws FormatException {
     // Three Text values are encoded in a 16-bit value as
     // (1600 * C1) + (40 * C2) + C3 + 1
     // TODO(bbrown): The Upper Shift with Text doesn't work in the 4 value scenario all the time
@@ -414,7 +423,7 @@ final class DecodedBitStreamParser {
    * See ISO 16022:2006, 5.2.7
    */
   private static void decodeAnsiX12Segment(BitSource bits,
-                                           StringBuilder result) throws FormatException {
+                                           ECIStringBuilder result) throws FormatException {
     // Three ANSI X12 values are encoded in a 16-bit value as
     // (1600 * C1) + (40 * C2) + C3 + 1
 
@@ -473,7 +482,7 @@ final class DecodedBitStreamParser {
   /**
    * See ISO 16022:2006, 5.2.8 and Annex C Table C.3
    */
-  private static void decodeEdifactSegment(BitSource bits, StringBuilder result) {
+  private static void decodeEdifactSegment(BitSource bits, ECIStringBuilder result) {
     do {
       // If there is only two or less bytes left then it will be encoded as ASCII
       if (bits.available() <= 16) {
@@ -505,7 +514,7 @@ final class DecodedBitStreamParser {
    * See ISO 16022:2006, 5.2.9 and Annex B, B.2
    */
   private static void decodeBase256Segment(BitSource bits,
-                                           StringBuilder result,
+                                           ECIStringBuilder result,
                                            Collection<byte[]> byteSegments)
       throws FormatException {
     // Figure out how long the Base 256 Segment is.
@@ -537,6 +546,36 @@ final class DecodedBitStreamParser {
     byteSegments.add(bytes);
     result.append(new String(bytes, StandardCharsets.ISO_8859_1));
   }
+
+  /**
+   * See ISO 16022:2007, 5.4.1
+   */
+  private static void decodeECISegment(BitSource bits,
+                                           ECIStringBuilder result)
+      throws FormatException {
+    if (bits.available() < 8) {
+      throw FormatException.getFormatInstance();
+    }
+    int c1 = bits.readBits(8);
+    if (c1 <= 127) {
+      result.appendECI(c1 - 1);
+    }
+    //currently we only support character set ECIs
+    /*} else {
+      if (bits.available() < 8) {
+        throw FormatException.getFormatInstance();
+      }
+      int c2 = bits.readBits(8);
+      if (c1 >= 128 && c1 <= 191) {
+      } else {
+        if (bits.available() < 8) {
+          throw FormatException.getFormatInstance();
+        }
+        int c3 = bits.readBits(8);
+      }
+    }*/
+  }
+
 
   /**
    * See ISO 16022:2006, Annex B, B.2

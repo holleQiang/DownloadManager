@@ -1,12 +1,12 @@
 package com.zhangqiang.sample;
 
-import android.app.Application;
+import androidx.multidex.MultiDexApplication;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
 
-public class DMApplication extends Application {
+public class DMApplication extends MultiDexApplication {
 
     @Override
     public void onCreate() {
