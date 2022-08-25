@@ -19,7 +19,6 @@ import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
-import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
@@ -176,23 +175,27 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TaskInfo data = getData();
 
         int status = data.getState();
-        LogUtils.i(TAG, "=====updateState2======" + getData().getState());
         if (status == DownloadManager.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
-            changeVisible(viewHolder, false);
+            changeVisibleByError(viewHolder, false);
+            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == DownloadManager.STATE_DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
-            changeVisible(viewHolder, false);
+            changeVisibleByError(viewHolder, false);
+            viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
         } else if (status == DownloadManager.STATE_COMPLETE) {
             viewHolder.setText(R.id.bt_state, R.string.open);
-            changeVisible(viewHolder, false);
+            changeVisibleByError(viewHolder, false);
+            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == DownloadManager.STATE_FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
-            changeVisible(viewHolder, true);
+            changeVisibleByError(viewHolder, true);
             viewHolder.setText(R.id.tv_error, data.getErrorMsg());
+            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == DownloadManager.STATE_PAUSE) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
-            changeVisible(viewHolder, false);
+            changeVisibleByError(viewHolder, false);
+            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         }
     }
 
@@ -201,7 +204,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setText(R.id.tv_file_name, data.getFileName());
     }
 
-    private void changeVisible(ViewHolder viewHolder, boolean isError) {
+    private void changeVisibleByError(ViewHolder viewHolder, boolean isError) {
 
         viewHolder.setVisibility(R.id.tv_error, isError ? View.VISIBLE : View.INVISIBLE);
         viewHolder.setVisibility(R.id.pb_download_progress, isError ? View.INVISIBLE : View.VISIBLE);
@@ -242,7 +245,6 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
     }
 
     public void updateState() {
-        LogUtils.i(TAG, "=====updateState1======" + getData().getState());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {

@@ -25,15 +25,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <data android:scheme="http" />
-                <data android:scheme="https" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
         <activity android:name=".business.settings.SettingsActivity" />
         <activity android:name=".ui.ChooseSaveDirActivity" />
@@ -55,14 +46,25 @@
         <activity android:name=".ui.deeplink.DeepLinkActivity"
             android:exported="true"
             android:theme="@style/Transparent">
+
+        </activity>
+        <activity android:name=".business.container.ContainerActivity"
+            android:theme="@style/Transparent">
             <intent-filter android:label="@string/decode_qrcode">
                 <action android:name="android.intent.action.SEND"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:mimeType="image/*"/>
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
-        <activity android:name=".ui.decodeqrcode.QRCodeDecodeActivity"
-            android:theme="@style/Transparent"/>
     </application>
 
 </manifest>

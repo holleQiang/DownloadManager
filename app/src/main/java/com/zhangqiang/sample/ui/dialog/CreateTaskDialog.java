@@ -26,12 +26,13 @@ public class CreateTaskDialog extends BaseDialogFragment {
     private EditText etSaveName;
     private String defaultUrl = "https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd";
 
-   public static void createAndShow(FragmentManager fragmentManager, String url){
+   public static CreateTaskDialog createAndShow(FragmentManager fragmentManager, String url){
        CreateTaskDialog dialog = new CreateTaskDialog();
        Bundle arg = new Bundle();
        arg.putString("url", url);
        dialog.setArguments(arg);
        dialog.show(fragmentManager, "create_task");
+       return dialog;
    }
 
     @Override

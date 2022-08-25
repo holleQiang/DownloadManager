@@ -11,4 +11,8 @@
 
     </style>
 
+    <style name="Transparent" parent="TransparentBase">
+        <item name="android:statusBarColor">@color/transparent</item>
+    </style>
+
 </resources>

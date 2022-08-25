@@ -1,19 +1,16 @@
 package com.zhangqiang.sample.ui;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.MultiFormatReader;
-import com.google.zxing.RGBLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
 import com.zhangqiang.qrcodescan.QRCodeScanActivity;
@@ -23,25 +20,15 @@ import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
-import com.zhangqiang.sample.utils.BitmapUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.WebViewUtils;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.regex.Pattern;
-
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends BaseActivity {
 
@@ -66,8 +53,17 @@ public class MainActivity extends BaseActivity {
         handDownloadIntent();
 
         QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
-
-
+        QRCodeScanManager.Companion.getInstance().addProcessor(new Processor() {
+            @Override
+            public boolean process(@NonNull String text) {
+                try {
+                    IntentUtils.openActivityByUri(MainActivity.this,Uri.parse(text));
+                }catch (Throwable e){
+                    Toast.makeText(MainActivity.this, getString(R.string.cannot_found_app_to_process), Toast.LENGTH_SHORT).show();
+                }
+                return false;
+            }
+        });
     }
 
     @Override
