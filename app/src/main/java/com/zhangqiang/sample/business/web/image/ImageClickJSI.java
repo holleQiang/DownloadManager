@@ -2,6 +2,8 @@ package com.zhangqiang.sample.business.web.image;
 
 import android.annotation.SuppressLint;
 import androidx.fragment.app.FragmentManager;
+
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -32,15 +34,14 @@ public class ImageClickJSI {
 
 
     public static void addImageClickListener(WebView webView) {
-        webView.loadUrl("javascript:(function(){" +
+        String javascript = "javascript:(function(){" +
                 "var objs = document.getElementsByTagName(\"img\"); " +
-                "for(var i=0;i<objs.length;i++)  " +
-                "{"
-                + "    objs[i].onclick=function()  " +
-                "    {  "
-                + "        window.imagelistener.openImage(this.src);  " +//通过js代码找到标签为img的代码块，设置点击的监听方法与本地的openImage方法进行连接
+                "for(var i=0;i<objs.length;i++){" +
+                "    objs[i].onclick=function(){  " +
+                "        window.imageListener.openImage(this.src);  " +//通过js代码找到标签为img的代码块，设置点击的监听方法与本地的openImage方法进行连接
                 "    }  " +
-                "}" +
-                "})()");
+                "};" +
+                "})()";
+        webView.loadUrl(javascript);
     }
 }
