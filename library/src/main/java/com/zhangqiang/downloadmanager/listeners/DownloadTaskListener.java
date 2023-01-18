@@ -2,15 +2,17 @@ package com.zhangqiang.downloadmanager.listeners;
 
 public interface DownloadTaskListener {
 
-    void onTaskAdded(long id);
+    void onTaskAdded(String id);
 
-    void onTaskRemoved(long id);
+    void onTaskRemoved(String id);
 
-    void onTaskStateChanged(long id);
+    void onTaskStateChanged(String id);
 
-    void onTaskInfoChanged(long id);
+    void onTaskInfoChanged(String id);
 
-    void onTaskProgressChanged(long id);
+    void onTaskProgressChanged(String id);
 
-    void onTaskSpeedChanged(long id);
+    void onTaskSpeedChanged(String id);
+
+    void onActiveTaskSizeChanged();
 }

@@ -2,7 +2,13 @@ package com.zhangqiang.downloadmanager;
 
 public interface TaskInfo {
 
-    Long getId();
+    int STATE_IDLE = 0;
+    int STATE_FAIL = 1;
+    int STATE_PAUSE = 2;
+    int STATE_DOWNLOADING = 3;
+    int STATE_COMPLETE = 4;
+
+    String getId();
 
     String getUrl();
 
@@ -15,10 +21,6 @@ public interface TaskInfo {
     long getContentLength();
 
     int getState();
-
-    String getETag();
-
-    String getLastModified();
 
     String getContentType();
 

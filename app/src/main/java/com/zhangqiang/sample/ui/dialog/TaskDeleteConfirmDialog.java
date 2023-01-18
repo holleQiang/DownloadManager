@@ -14,11 +14,11 @@ import com.zhangqiang.sample.base.BaseDialogFragment;
 public class TaskDeleteConfirmDialog extends BaseDialogFragment {
 
     private CheckBox cbDeleteFile;
-    private long taskId;
+    private String taskId;
 
-    public static TaskDeleteConfirmDialog newInstance(long taskId) {
+    public static TaskDeleteConfirmDialog newInstance(String taskId) {
         Bundle arg = new Bundle();
-        arg.putLong("taskId",taskId);
+        arg.putString("taskId",taskId);
         TaskDeleteConfirmDialog dialog = new TaskDeleteConfirmDialog();
         dialog.setArguments(arg);
         return dialog;
@@ -29,7 +29,7 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments != null) {
-            taskId = arguments.getLong("taskId");
+            taskId = arguments.getString("taskId");
         }
     }
 

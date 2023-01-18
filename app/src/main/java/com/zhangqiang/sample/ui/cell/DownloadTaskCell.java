@@ -19,6 +19,7 @@ import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
@@ -56,11 +57,12 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             @Override
             public void onClick(View v) {
                 int status = entity.getState();
-                if (status == DownloadManager.STATE_FAIL || status == DownloadManager.STATE_PAUSE) {
+                LogUtils.i(TAG,"------------State:"+status);
+                if (status == TaskInfo.STATE_FAIL || status == TaskInfo.STATE_PAUSE) {
                     DownloadManager.getInstance(context).start(entity.getId());
-                } else if (status == DownloadManager.STATE_DOWNLOADING) {
+                } else if (status == TaskInfo.STATE_DOWNLOADING) {
                     DownloadManager.getInstance(context).pause(entity.getId());
-                } else if (status == DownloadManager.STATE_COMPLETE) {
+                } else if (status == TaskInfo.STATE_COMPLETE) {
                     File file = new File(entity.getSaveDir(), entity.getFileName());
                     IntentUtils.openFile(v.getContext(), file, entity.getContentType());
                 }
@@ -136,7 +138,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         if (data.getContentLength() == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (data.getContentLength() <= data.getCurrentLength()) {
-            if (data.getState() == DownloadManager.STATE_COMPLETE) {
+            if (data.getState() == TaskInfo.STATE_COMPLETE) {
                 resetTimeStr = "已完成";
             } else {
                 resetTimeStr = "剩余时间：0秒";
@@ -175,24 +177,24 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         TaskInfo data = getData();
 
         int status = data.getState();
-        if (status == DownloadManager.STATE_IDLE) {
+        if (status == TaskInfo.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == DownloadManager.STATE_DOWNLOADING) {
+        } else if (status == TaskInfo.STATE_DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
-        } else if (status == DownloadManager.STATE_COMPLETE) {
+        } else if (status == TaskInfo.STATE_COMPLETE) {
             viewHolder.setText(R.id.bt_state, R.string.open);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == DownloadManager.STATE_FAIL) {
+        } else if (status == TaskInfo.STATE_FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
             changeVisibleByError(viewHolder, true);
             viewHolder.setText(R.id.tv_error, data.getErrorMsg());
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == DownloadManager.STATE_PAUSE) {
+        } else if (status == TaskInfo.STATE_PAUSE) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
@@ -245,6 +247,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
     }
 
     public void updateState() {
+        LogUtils.i(TAG,"======updateState========="+getData().getState());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {

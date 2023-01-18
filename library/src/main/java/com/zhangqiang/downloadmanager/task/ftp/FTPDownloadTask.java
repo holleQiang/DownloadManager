@@ -3,6 +3,11 @@ package com.zhangqiang.downloadmanager.task.ftp;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 
 public class FTPDownloadTask extends DownloadTask {
+
+    public FTPDownloadTask(String id) {
+        super(id);
+    }
+
     @Override
     protected void onStart() {
 
@@ -17,4 +22,5 @@ public class FTPDownloadTask extends DownloadTask {
     public long getCurrentLength() {
         return 0;
     }
+
 }

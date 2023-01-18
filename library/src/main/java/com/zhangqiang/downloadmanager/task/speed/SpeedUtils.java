@@ -10,7 +10,7 @@ public class SpeedUtils {
 
     public static boolean computeSpeed(SpeedSupport speedSupport) {
 
-        LogUtils.i(TAG,"computeSpeed=========" + speedSupport);
+//        LogUtils.i(TAG,"computeSpeed=========" + speedSupport);
         SpeedRecord record = speedSupport.getSpeedRecord();
         long currentLength = speedSupport.getCurrentLength();
         if (record.lastComputeTime == 0) {

@@ -1,32 +1,51 @@
 package com.zhangqiang.downloadmanager.task;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.task.speed.SpeedRecord;
+import com.zhangqiang.downloadmanager.task.speed.SpeedSupport;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class DownloadTask {
+public abstract class DownloadTask implements SpeedSupport {
 
-    private List<DownloadListener> downloadListeners;
+    private final DownloadListeners downloadListeners = new DownloadListeners();
     private final AtomicBoolean mStarted = new AtomicBoolean(false);
+    private final SpeedRecord speedRecord = new SpeedRecord();
+    private final String id;
+
+    public DownloadTask(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
 
     protected abstract void onStart();
 
     protected abstract void onCancel();
 
-    public boolean isStarted() {
+    @Override
+    public abstract long getCurrentLength();
+
+    public final boolean isStarted(){
         return mStarted.get();
     }
 
-    public abstract long getCurrentLength();
+    public void reset() {
+        cancel();
+        getDownloadListeners().notifyIdle();
+    }
 
     public final void start() {
         if (mStarted.getAndSet(true)) {
             return;
         }
         onStart();
-        notifyStart();
+        getDownloadListeners().notifyStart();
     }
 
     public final void cancel() {
@@ -34,61 +53,34 @@ public abstract class DownloadTask {
             return;
         }
         onCancel();
-        notifyCancel();
+        getDownloadListeners().notifyCancel();
     }
 
     protected void dispatchComplete() {
         if (!mStarted.getAndSet(false)) {
             return;
         }
-        notifyComplete();
+        getDownloadListeners().notifyComplete();
     }
 
     protected void dispatchFail(DownloadException e) {
         if (!mStarted.getAndSet(false)) {
             return;
         }
-        notifyFail(e);
+        getDownloadListeners().notifyFail(e);
     }
 
-    private synchronized void notifyStart() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onStart();
-        }
+    public List<? extends DownloadTask> getChildTasks() {
+        return null;
     }
 
-    private synchronized void notifyComplete() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onComplete();
-        }
+    public List<String> getFilePaths() {
+        return null;
     }
-
-    private synchronized void notifyFail(DownloadException e) {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onFail(e);
-        }
-    }
-
-    private synchronized void notifyCancel() {
-        if (downloadListeners == null) {
-            return;
-        }
-        for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onCancel();
-        }
-    }
-
 
     public interface DownloadListener {
+
+        void onIdle();
 
         void onStart();
 
@@ -99,20 +91,20 @@ public abstract class DownloadTask {
         void onCancel();
     }
 
-    public synchronized void addDownloadListener(DownloadListener downloadListener) {
-        if (downloadListeners == null) {
-            downloadListeners = new ArrayList<>();
-        }
-        if (downloadListeners.contains(downloadListener)) {
-            return;
-        }
-        downloadListeners.add(downloadListener);
+    public void addDownloadListener(DownloadListener downloadListener) {
+        getDownloadListeners().addDownloadListener(downloadListener);
     }
 
-    public synchronized void removeDownloadListener(DownloadListener downloadListener) {
-        if (downloadListeners == null) {
-            return;
-        }
-        downloadListeners.remove(downloadListener);
+    public void removeDownloadListener(DownloadListener downloadListener) {
+        getDownloadListeners().removeDownloadListener(downloadListener);
+    }
+
+    @Override
+    public SpeedRecord getSpeedRecord() {
+        return speedRecord;
+    }
+
+    public DownloadListeners getDownloadListeners() {
+        return downloadListeners;
     }
 }

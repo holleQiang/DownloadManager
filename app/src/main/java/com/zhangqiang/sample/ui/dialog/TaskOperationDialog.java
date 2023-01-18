@@ -17,11 +17,11 @@ import com.zhangqiang.sample.base.BaseDialogFragment;
 public class TaskOperationDialog extends BaseDialogFragment {
 
 
-    private long taskId;
+    private String taskId;
 
-    public static TaskOperationDialog newInstance(long taskId) {
+    public static TaskOperationDialog newInstance(String taskId) {
         Bundle arg = new Bundle();
-        arg.putLong("taskId", taskId);
+        arg.putString("taskId", taskId);
         TaskOperationDialog dialog = new TaskOperationDialog();
         dialog.setArguments(arg);
         return dialog;
@@ -32,7 +32,7 @@ public class TaskOperationDialog extends BaseDialogFragment {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments != null) {
-            taskId = arguments.getLong("taskId");
+            taskId = arguments.getString("taskId");
         }
     }
 

@@ -7,15 +7,16 @@ import androidx.annotation.Nullable;
 import com.github.yuweiguocn.library.greendao.MigrationHelper;
 import com.zhangqiang.downloadmanager.db.dao.DaoMaster;
 import com.zhangqiang.downloadmanager.db.dao.DaoSession;
-import com.zhangqiang.downloadmanager.db.dao.PartEntityDao;
-import com.zhangqiang.downloadmanager.db.dao.TaskEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.HttpDefaultTaskEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskItemEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
 
 import org.greenrobot.greendao.database.Database;
 
 public class DBManager {
 
     private static final String DB_NAME = "download_manager.db";
-    private static volatile DBManager instance;
     private final ThreadLocal<DaoSession> mDaoSessionRef = new ThreadLocal<DaoSession>(){
         @Nullable
         @Override
@@ -25,18 +26,7 @@ public class DBManager {
     };
     private final DaoMaster mDaoMaster;
 
-    public static DBManager getInstance(Context context) {
-        if (instance == null) {
-            synchronized (DBManager.class){
-                if (instance == null) {
-                    instance = new DBManager(context.getApplicationContext());
-                }
-            }
-        }
-        return instance;
-    }
-
-    private DBManager(@Nullable Context context) {
+    public DBManager(@Nullable Context context) {
         DaoMaster.OpenHelper openHelper = new MyDBOpenHelper(context, DB_NAME, null);
         SQLiteDatabase database = openHelper.getWritableDatabase();
         mDaoMaster = new DaoMaster(database);
@@ -63,7 +53,11 @@ public class DBManager {
                 public void onDropAllTables(Database db, boolean ifExists) {
                     DaoMaster.dropAllTables(db, ifExists);
                 }
-            }, PartEntityDao.class, TaskEntityDao.class);
+            },
+                    HttpTaskEntityDao.class,
+                    HttpDefaultTaskEntityDao.class,
+                    HttpPartTaskEntityDao.class,
+                    HttpPartTaskItemEntityDao.class);
         }
     }
 }

@@ -7,6 +7,7 @@
         <entry key="app/src/main/res/drawable/bt_download.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_nav_back.xml" value="0.2685" />
         <entry key="app/src/main/res/drawable/ic_nav_close.xml" value="0.226" />
+        <entry key="app/src/main/res/layout/activity_download_manager.xml" value="0.178125" />
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.21927083333333333" />
         <entry key="app/src/main/res/layout/activity_web_view.xml" value="0.2635416666666667" />
         <entry key="app/src/main/res/layout/item_download.xml" value="0.16293929712460065" />
