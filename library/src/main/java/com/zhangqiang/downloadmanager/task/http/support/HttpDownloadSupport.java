@@ -1,6 +1,7 @@
 package com.zhangqiang.downloadmanager.task.http.support;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
@@ -22,7 +23,10 @@ import com.zhangqiang.downloadmanager.task.http.engine.HttpEngine;
 import com.zhangqiang.downloadmanager.task.http.engine.okhttp.OkHttpEngine;
 import com.zhangqiang.downloadmanager.task.http.part.HttpDownloadPartTask;
 import com.zhangqiang.downloadmanager.task.http.part.HttpPartTaskFactory;
+import com.zhangqiang.downloadmanager.utils.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -154,6 +158,38 @@ public class HttpDownloadSupport implements DownloadSupport {
                 || state == HttpTaskBean.STATE_WAITING_CHILDREN_TASK;
     }
 
+    @Override
+    public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
+        HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
+        mHttpTaskService.remove(httpTaskBean.getId());
+        try {
+            FileUtils.deleteFileIfExists(new File(httpTaskBean.getSaveDir(),httpTaskBean.getFileName()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int type = httpTaskBean.getType();
+        if (type == HttpTaskBean.TYPE_DEFAULT) {
+            HttpDefaultTaskBean httpDefaultTask = httpTaskBean.getHttpDefaultTask();
+            if (httpDefaultTask != null) {
+                mHttpDefaultTaskService.remove(httpDefaultTask.getId());
+            }
+        }else if(type == HttpTaskBean.TYPE_PART){
+            HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTask();
+            mHttpPartTaskService.remove(httpPartTask.getId());
+            List<HttpPartTaskItemBean> items = httpPartTask.getItems();
+            if (items != null) {
+                for (HttpPartTaskItemBean item : items) {
+                    mHttpPartTaskItemService.remove(item.getId());
+                    try {
+                        FileUtils.deleteFileIfExists(new File(item.getFilePath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     private void configHttpDownloadTask(HttpTaskBean httpTaskBean, InternalTask httpDownloadTask) {
         httpDownloadTask.httpTaskBean = httpTaskBean;
         httpDownloadTask.getCallbacks().addCallback(new Callback() {
@@ -222,6 +258,14 @@ public class HttpDownloadSupport implements DownloadSupport {
                     httpPartTaskBean.setItems(itemBeans);
                     mHttpPartTaskService.update(httpPartTaskBean);
                 }
+            }
+
+            @Override
+            public void onPartTaskFail(HttpDownloadPartTask task, Throwable e) {
+                HttpPartTaskItemBean httpPartTaskItemBean = ((InternalPartTask) task).httpPartTaskItemBean;
+                httpPartTaskItemBean.setState(HttpPartTaskItemBean.STATE_FAIL);
+                httpPartTaskItemBean.setErrorMsg(e.getMessage());
+                mHttpPartTaskItemService.update(httpPartTaskItemBean);
             }
         });
         httpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {

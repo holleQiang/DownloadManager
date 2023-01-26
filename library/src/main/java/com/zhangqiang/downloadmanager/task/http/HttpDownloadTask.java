@@ -206,6 +206,7 @@ public class HttpDownloadTask extends DownloadTask{
             public void onFail(DownloadException e) {
                 cancelAllRunningPartTasks();
                 dispatchFail(new DownloadException(DownloadException.PART_FAIL, "子任务失败："+task.getFilePath()));
+                getCallbacks().notifyPartTaskFail(task,e);
             }
 
             @Override

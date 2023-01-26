@@ -19,4 +19,6 @@ public interface DownloadSupport {
     boolean isTaskIdle(DownloadTask downloadTask);
 
     boolean isTaskDownloading(DownloadTask downloadTask);
+
+    void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile);
 }

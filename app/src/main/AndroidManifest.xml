@@ -45,10 +45,12 @@
             android:process=":monitor"/>
         <activity android:name=".ui.deeplink.DeepLinkActivity"
             android:exported="true"
+            android:excludeFromRecents="true"
             android:theme="@style/Transparent">
 
         </activity>
         <activity android:name=".business.container.ContainerActivity"
+            android:excludeFromRecents="true"
             android:theme="@style/Transparent">
             <intent-filter android:label="@string/decode_qrcode">
                 <action android:name="android.intent.action.SEND"/>

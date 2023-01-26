@@ -16,6 +16,7 @@ import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.Function;
@@ -29,7 +30,7 @@ public class QRCodeProcessor implements ContainerProcessor {
         String imageFilePath = null;
         Intent intent = activity.getIntent();
         if (Objects.equals(intent.getAction(), Intent.ACTION_SEND)) {
-            if ("image/*".equals(intent.getType())) {
+            if (Pattern.compile("image/*").matcher(intent.getType()).find()) {
                 ClipData.Item item = intent.getClipData().getItemAt(0);
                 imageFilePath = IntentUtils.getImageFilePathFromUri(activity.getContentResolver(), item.getUri());
             }

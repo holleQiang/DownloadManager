@@ -47,4 +47,8 @@ public class HttpDefaultTaskService {
         httpDefaultTaskEntity.setErrorMsg(httpDefaultTask.getErrorMsg());
         return httpDefaultTaskEntity;
     }
+
+    public void remove(String id) {
+        getHttpDefaultTaskEntityDao().deleteByKey(id);
+    }
 }

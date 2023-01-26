@@ -67,4 +67,13 @@ public class Callbacks {
             callbacks.get(i).onStartPartDownload();
         }
     }
+
+    public synchronized void notifyPartTaskFail(HttpDownloadPartTask task,Throwable e) {
+        if (callbacks == null) {
+            return;
+        }
+        for (int i = callbacks.size() - 1; i >= 0; i--) {
+            callbacks.get(i).onPartTaskFail(task,e);
+        }
+    }
 }

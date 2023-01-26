@@ -74,4 +74,8 @@ public class HttpPartTaskService {
         }
         return httpPartTaskEntity;
     }
+
+    public void remove(String id) {
+        getHttpPartTaskEntityDao().deleteByKey(id);
+    }
 }

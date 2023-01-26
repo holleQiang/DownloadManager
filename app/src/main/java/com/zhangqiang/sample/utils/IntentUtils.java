@@ -85,7 +85,7 @@ public class IntentUtils {
 
     public static String getImageFilePathFromUri(ContentResolver contentResolver, Uri uri) {
         try (Cursor query = contentResolver.query(uri, null, null, null, null)) {
-            if (query.moveToNext()) {
+            if (query.moveToFirst()) {
                 return query.getString(query.getColumnIndex(MediaStore.Images.Media.DATA));
             } else {
                 return null;

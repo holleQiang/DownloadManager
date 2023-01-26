@@ -53,4 +53,8 @@ public class HttpPartTaskItemService {
         itemEntity.setErrorMsg(item.getErrorMsg());
         return itemEntity;
     }
+
+    public void remove(String id) {
+        getHttpPartTaskItemEntityDao().deleteByKey(id);
+    }
 }

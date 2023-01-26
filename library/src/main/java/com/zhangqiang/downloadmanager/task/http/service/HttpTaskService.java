@@ -106,4 +106,7 @@ public class HttpTaskService {
     }
 
 
+    public void remove(String id) {
+        getHttpTaskEntityDao().deleteByKey(id);
+    }
 }

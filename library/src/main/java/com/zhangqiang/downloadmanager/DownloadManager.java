@@ -194,9 +194,7 @@ public class DownloadManager {
 
                 downloadTask.cancel();
 
-                if (deleteFile) {
-                    deleteTaskFiles(downloadTask);
-                }
+                curr.downloadSupport.handleDeleteTask(downloadTask, deleteFile);
                 if (prev == null) {
                     mRecordHead = curr.next;
                 } else {
@@ -211,26 +209,6 @@ public class DownloadManager {
             curr = curr.next;
         }
         tryStartIdleTask();
-    }
-
-    private void deleteTaskFiles(DownloadTask downloadTask) {
-        List<String> filePaths = downloadTask.getFilePaths();
-        if (filePaths != null && !filePaths.isEmpty()) {
-            for (String filePath : filePaths) {
-                File file = new File(filePath);
-                if (file.exists()) {
-                    if (!file.delete()) {
-                        Log.e(TAG, "delete file fail:" + file.getAbsolutePath());
-                    }
-                }
-            }
-        }
-        List<? extends DownloadTask> childTasks = downloadTask.getChildTasks();
-        if (childTasks != null) {
-            for (DownloadTask childTask : childTasks) {
-                deleteTaskFiles(childTask);
-            }
-        }
     }
 
     private void configDownloadRecord(final DownloadRecord record) {
