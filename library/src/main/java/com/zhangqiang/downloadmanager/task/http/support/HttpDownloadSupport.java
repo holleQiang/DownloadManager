@@ -275,7 +275,7 @@ public class HttpDownloadSupport implements DownloadSupport {
         });
         httpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
-            public void onIdle() {
+            public void onReset() {
                 httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
                 mHttpTaskService.update(httpTaskBean);
             }

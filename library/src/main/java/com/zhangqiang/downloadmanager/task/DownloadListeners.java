@@ -9,12 +9,12 @@ public class DownloadListeners {
 
     private List<DownloadTask.DownloadListener> downloadListeners;
 
-    public synchronized void notifyIdle() {
+    public synchronized void notifyReset() {
         if (downloadListeners == null) {
             return;
         }
         for (int i = downloadListeners.size() - 1; i >= 0; i--) {
-            downloadListeners.get(i).onIdle();
+            downloadListeners.get(i).onReset();
         }
     }
 

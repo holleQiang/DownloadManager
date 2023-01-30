@@ -4,10 +4,7 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.speed.SpeedRecord;
 import com.zhangqiang.downloadmanager.task.speed.SpeedSupport;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class DownloadTask implements SpeedSupport {
 
@@ -37,7 +34,7 @@ public abstract class DownloadTask implements SpeedSupport {
 
     public void reset() {
         cancel();
-        getDownloadListeners().notifyIdle();
+        getDownloadListeners().notifyReset();
     }
 
     public final void start() {
@@ -72,7 +69,7 @@ public abstract class DownloadTask implements SpeedSupport {
 
     public interface DownloadListener {
 
-        void onIdle();
+        void onReset();
 
         void onStart();
 

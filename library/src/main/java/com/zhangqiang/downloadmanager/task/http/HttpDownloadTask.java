@@ -187,7 +187,7 @@ public class HttpDownloadTask extends DownloadTask {
     private void initPartTask(HttpDownloadPartTask task) {
         task.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
-            public void onIdle() {
+            public void onReset() {
 
             }
 

@@ -10,6 +10,8 @@ public interface DownloadSupport {
 
     List<DownloadTask> loadDownloadTasks();
 
+    boolean isTaskRunning(DownloadTask downloadTask);
+
     DownloadTask createDownloadTask(DownloadRequest request);
 
     TaskInfo buildTaskInfo(DownloadTask downloadTask);
@@ -19,8 +21,6 @@ public interface DownloadSupport {
     boolean handleSpeedCompute(DownloadTask downloadTask);
 
     boolean isTaskIdle(DownloadTask downloadTask);
-
-    boolean isTaskRunning(DownloadTask downloadTask);
 
     void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile);
 }

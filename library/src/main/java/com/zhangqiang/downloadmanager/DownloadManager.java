@@ -212,7 +212,7 @@ public class DownloadManager {
         String id = downloadTask.getId();
         downloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
-            public void onIdle() {
+            public void onReset() {
                 getDownloadTaskListeners().notifyTaskStateChanged(id);
             }
 
