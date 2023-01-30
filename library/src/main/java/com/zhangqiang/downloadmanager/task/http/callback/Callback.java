@@ -14,7 +14,5 @@ public interface Callback {
 
     void onStartPartDownload();
 
-    void onPartTasksCreate(List<HttpDownloadPartTask> tasks);
-
     void onPartTaskFail(HttpDownloadPartTask task, Throwable e);
 }

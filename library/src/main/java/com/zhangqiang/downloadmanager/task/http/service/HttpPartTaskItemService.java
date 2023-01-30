@@ -7,6 +7,9 @@ import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskItemEntityDao;
 import com.zhangqiang.downloadmanager.db.entity.HttpPartTaskItemEntity;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskItemBean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class HttpPartTaskItemService {
 
     private final DBManager mDBManager;
@@ -56,5 +59,21 @@ public class HttpPartTaskItemService {
 
     public void remove(String id) {
         getHttpPartTaskItemEntityDao().deleteByKey(id);
+    }
+
+    public void remove(List<HttpPartTaskItemBean> items) {
+        String[] keys = new String[items.size()];
+        for (int i = 0; i < items.size(); i++) {
+            keys[i] = items.get(i).getId();
+        }
+        getHttpPartTaskItemEntityDao().deleteByKeyInTx(keys);
+    }
+
+    public void add(List<HttpPartTaskItemBean> items) {
+        List<HttpPartTaskItemEntity> entities = new ArrayList<>();
+        for (HttpPartTaskItemBean item : items) {
+            entities.add(beanToEntity(item));
+        }
+        getHttpPartTaskItemEntityDao().insertInTx(entities);
     }
 }

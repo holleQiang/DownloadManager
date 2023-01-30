@@ -41,15 +41,6 @@ public class Callbacks {
         }
     }
 
-    public synchronized void notifyPartTasksCreate(List<HttpDownloadPartTask> tasks){
-        if (callbacks == null) {
-            return;
-        }
-        for (int i = callbacks.size() - 1; i >= 0; i--) {
-            callbacks.get(i).onPartTasksCreate(tasks);
-        }
-    }
-
     public synchronized void notifyStartDefaultDownload(){
         if (callbacks == null) {
             return;

@@ -1,11 +1,11 @@
 package com.zhangqiang.downloadmanager.task.http.support;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.task.http.service.HttpDefaultTaskService;
 import com.zhangqiang.downloadmanager.task.http.service.HttpPartTaskItemService;
 import com.zhangqiang.downloadmanager.task.http.service.HttpPartTaskService;
@@ -77,11 +77,12 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public DownloadTask createDownloadTask(DownloadRequest request, String taskId) {
+    public DownloadTask createDownloadTask(DownloadRequest request) {
         if (!support(request)) {
             return null;
         }
         HttpTaskBean httpTaskBean = new HttpTaskBean();
+        String taskId = UUID.randomUUID().toString();
         httpTaskBean.setId(taskId);
         httpTaskBean.setSaveDir(request.getSaveDir());
         httpTaskBean.setThreadSize(request.getThreadSize());
@@ -96,10 +97,10 @@ public class HttpDownloadSupport implements DownloadSupport {
 
         InternalTask httpDownloadTask = new InternalTask(taskId,
                 mHttpEngine,
-                request.getUrl(),
-                request.getSaveDir(),
-                request.getFileName(),
-                request.getThreadSize(),
+                httpTaskBean.getUrl(),
+                httpTaskBean.getSaveDir(),
+                httpTaskBean.getFileName(),
+                httpTaskBean.getThreadSize(),
                 new HttpPartTaskFactoryImpl(httpTaskBean)
         );
         configHttpDownloadTask(httpTaskBean, httpDownloadTask);
@@ -150,7 +151,7 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public boolean isTaskDownloading(DownloadTask downloadTask) {
+    public boolean isTaskRunning(DownloadTask downloadTask) {
         HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
         int state = httpTaskBean.getState();
         return state == HttpTaskBean.STATE_START
@@ -163,7 +164,7 @@ public class HttpDownloadSupport implements DownloadSupport {
         HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
         mHttpTaskService.remove(httpTaskBean.getId());
         try {
-            FileUtils.deleteFileIfExists(new File(httpTaskBean.getSaveDir(),httpTaskBean.getFileName()));
+            FileUtils.deleteFileIfExists(new File(httpTaskBean.getSaveDir(), httpTaskBean.getFileName()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -173,7 +174,7 @@ public class HttpDownloadSupport implements DownloadSupport {
             if (httpDefaultTask != null) {
                 mHttpDefaultTaskService.remove(httpDefaultTask.getId());
             }
-        }else if(type == HttpTaskBean.TYPE_PART){
+        } else if (type == HttpTaskBean.TYPE_PART) {
             HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTask();
             mHttpPartTaskService.remove(httpPartTask.getId());
             List<HttpPartTaskItemBean> items = httpPartTask.getItems();
@@ -241,23 +242,6 @@ public class HttpDownloadSupport implements DownloadSupport {
                 }
                 httpTaskBean.setState(HttpTaskBean.STATE_WAITING_CHILDREN_TASK);
                 mHttpTaskService.update(httpTaskBean);
-            }
-
-            @Override
-            public void onPartTasksCreate(List<HttpDownloadPartTask> tasks) {
-                HttpPartTaskBean httpPartTaskBean = httpTaskBean.getHttpPartTask();
-
-                List<HttpPartTaskItemBean> itemBeans = httpPartTaskBean.getItems();
-                if (itemBeans == null) {
-                    itemBeans = new ArrayList<>();
-                    for (HttpDownloadPartTask partTask : tasks) {
-                        InternalPartTask internalPartTask = (InternalPartTask) partTask;
-                        HttpPartTaskItemBean httpPartTaskItemBean = internalPartTask.httpPartTaskItemBean;
-                        itemBeans.add(httpPartTaskItemBean);
-                    }
-                    httpPartTaskBean.setItems(itemBeans);
-                    mHttpPartTaskService.update(httpPartTaskBean);
-                }
             }
 
             @Override
@@ -341,44 +325,80 @@ public class HttpDownloadSupport implements DownloadSupport {
         }
 
         @Override
-        public HttpDownloadPartTask onCreateHttpPartTask(String url, long start, long end, String filePath) {
-            HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTask();
-            if (httpPartTask != null) {
-                List<HttpPartTaskItemBean> items = httpPartTask.getItems();
-                if (items != null) {
+        public List<HttpDownloadPartTask> onCreateHttpPartTask(String url, PartInfo partInfo) {
+            ArrayList<HttpDownloadPartTask> partTasks = new ArrayList<>();
+            List<PartInfo.PartFile> partFiles = partInfo.getPartFiles();
+            HttpPartTaskBean httpPartTaskBean = httpTaskBean.getHttpPartTask();
+            List<HttpPartTaskItemBean> items = httpPartTaskBean.getItems();
+            if (items != null && items.size() == partFiles.size()) {
+                // recover from record
+                for (PartInfo.PartFile partFile : partFiles) {
+                    long start = partFile.getStart();
+                    long end = partFile.getEnd();
+                    String filePath = partFile.getFile().getAbsolutePath();
+
+                    HttpPartTaskItemBean historyPartItemBean = null;
                     for (HttpPartTaskItemBean httpPartTaskItemBean : items) {
-                        if (httpPartTaskItemBean.getFilePath().equals(filePath)) {
-                            InternalPartTask internalPartTask = new InternalPartTask(httpPartTaskItemBean.getId(),
-                                    mHttpEngine,
-                                    url,
-                                    start,
-                                    httpPartTaskItemBean.getCurrentPosition(),
-                                    end,
-                                    filePath);
-                            internalPartTask.httpPartTaskItemBean = httpPartTaskItemBean;
-                            return internalPartTask;
+                        if (httpPartTaskItemBean.getFilePath().equals(filePath)
+                                && httpPartTaskItemBean.getStartPosition() == start
+                                && httpPartTaskItemBean.getEndPosition() == end) {
+                            historyPartItemBean = httpPartTaskItemBean;
                         }
                     }
+                    if (historyPartItemBean != null) {
+                        InternalPartTask internalPartTask = new InternalPartTask(historyPartItemBean.getId(),
+                                mHttpEngine,
+                                url,
+                                historyPartItemBean.getStartPosition(),
+                                historyPartItemBean.getCurrentPosition(),
+                                historyPartItemBean.getEndPosition(),
+                                historyPartItemBean.getFilePath());
+                        internalPartTask.httpPartTaskItemBean = historyPartItemBean;
+                        partTasks.add(internalPartTask);
+                    } else {
+                        break;
+                    }
+                }
+                if (partTasks.size() == partFiles.size()) {
+                    return partTasks;
+                } else {
+                    //recover fail ,remove invalid record
+                    httpPartTaskBean.setItems(null);
+                    mHttpPartTaskService.update(httpPartTaskBean);
+                    mHttpPartTaskItemService.remove(items);
                 }
             }
-            HttpPartTaskItemBean httpPartTaskItemBean = new HttpPartTaskItemBean();
-            httpPartTaskItemBean.setId(UUID.randomUUID().toString());
-            httpPartTaskItemBean.setCreateTime(new Date());
-            httpPartTaskItemBean.setState(HttpPartTaskItemBean.STATE_IDLE);
-            httpPartTaskItemBean.setFilePath(filePath);
-            httpPartTaskItemBean.setStartPosition(start);
-            httpPartTaskItemBean.setCurrentPosition(start);
-            httpPartTaskItemBean.setEndPosition(end);
-            mHttpPartTaskItemService.add(httpPartTaskItemBean);
-            InternalPartTask partTask = new InternalPartTask(httpPartTaskItemBean.getId(),
-                    mHttpEngine,
-                    url,
-                    start,
-                    start,
-                    end,
-                    filePath);
-            partTask.httpPartTaskItemBean = httpPartTaskItemBean;
-            return partTask;
+            //create new part task
+            items = new ArrayList<>();
+            for (PartInfo.PartFile partFile : partFiles) {
+                long start = partFile.getStart();
+                long end = partFile.getEnd();
+                String filePath = partFile.getFile().getAbsolutePath();
+
+                HttpPartTaskItemBean httpPartTaskItemBean = new HttpPartTaskItemBean();
+                httpPartTaskItemBean.setId(UUID.randomUUID().toString());
+                httpPartTaskItemBean.setCreateTime(new Date());
+                httpPartTaskItemBean.setState(HttpPartTaskItemBean.STATE_IDLE);
+                httpPartTaskItemBean.setFilePath(filePath);
+                httpPartTaskItemBean.setStartPosition(start);
+                httpPartTaskItemBean.setCurrentPosition(start);
+                httpPartTaskItemBean.setEndPosition(end);
+                items.add(httpPartTaskItemBean);
+
+                InternalPartTask partTask = new InternalPartTask(httpPartTaskItemBean.getId(),
+                        mHttpEngine,
+                        url,
+                        start,
+                        start,
+                        end,
+                        filePath);
+                partTask.httpPartTaskItemBean = httpPartTaskItemBean;
+                partTasks.add(partTask);
+            }
+            httpPartTaskBean.setItems(items);
+            mHttpPartTaskService.update(httpPartTaskBean);
+            mHttpPartTaskItemService.add(items);
+            return partTasks;
         }
     }
 }

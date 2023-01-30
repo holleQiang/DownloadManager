@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListeners;
@@ -15,11 +14,10 @@ import com.zhangqiang.downloadmanager.task.http.support.HttpDownloadSupport;
 import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
-import java.io.File;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadManager {
@@ -87,7 +85,7 @@ public class DownloadManager {
                         tail = downloadRecord;
                     }
                     incrementTaskSize();
-                    if (downloadSupport.isTaskDownloading(downloadTask)) {
+                    if (downloadSupport.isTaskRunning(downloadTask)) {
                         downloadRecord.downloadTask.start();
                     }
                 }
@@ -102,8 +100,7 @@ public class DownloadManager {
         DownloadSupport target = null;
         DownloadTask downloadTask = null;
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            String taskId = UUID.randomUUID().toString();
-            downloadTask = downloadSupport.createDownloadTask(request, taskId);
+            downloadTask = downloadSupport.createDownloadTask(request);
             if (downloadTask != null) {
                 target = downloadSupport;
             }
@@ -412,6 +409,4 @@ public class DownloadManager {
             this.downloadSupport = downloadSupport;
         }
     }
-
-
 }

@@ -13,6 +13,7 @@ import com.zhangqiang.downloadmanager.task.http.engine.HttpRequest;
 import com.zhangqiang.downloadmanager.task.http.engine.HttpResponse;
 import com.zhangqiang.downloadmanager.task.http.part.HttpDownloadPartTask;
 import com.zhangqiang.downloadmanager.task.http.part.HttpPartTaskFactory;
+import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.task.http.range.RangePart;
 import com.zhangqiang.downloadmanager.task.http.utils.HttpUtils;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * creator : zhangqing.jason@bytedance.com
  * date : 2021-06-01
  */
-public class HttpDownloadTask extends DownloadTask{
+public class HttpDownloadTask extends DownloadTask {
 
     public static final String TAG = HttpDownloadTask.class.getSimpleName();
     private final String mUrl;
@@ -76,7 +77,7 @@ public class HttpDownloadTask extends DownloadTask{
         getCallbacks().notifyStartGenerateInfo();
         HttpRequest.Builder builder = new HttpRequest.Builder()
                 .setUrl(mUrl);
-        HttpUtils.setRangeParams(builder,0);
+        HttpUtils.setRangeParams(builder, 0);
         mGetInfoTask = mHttpEngine.get(builder
                 .build(), new Callback() {
             @Override
@@ -147,7 +148,7 @@ public class HttpDownloadTask extends DownloadTask{
             dispatchFail(new DownloadException(DownloadException.PARSE_PART_FAIL, "cannot parse range part"));
             return;
         }
-        List<HttpDownloadPartTask> partTasks = new ArrayList<>();
+        List<PartInfo.PartFile> partFiles = new ArrayList<>();
         int threadSize = mThreadSize;
         final long total = rangePart.getTotal();
         long eachDownload = total / threadSize;
@@ -158,26 +159,25 @@ public class HttpDownloadTask extends DownloadTask{
             if (i == threadSize - 1) {
                 end += resetDownload - 1;
             }
-            File saveFile = new File(saveDir, mFileName+"_"+threadSize+"_"+i);
+            File saveFile = new File(saveDir, mFileName + "_" + threadSize + "_" + i);
 
-            HttpDownloadPartTask task = mHttpPartTaskFactory.onCreateHttpPartTask(mUrl,start,end,saveFile.getAbsolutePath());
-            initPartTask(task);
-            partTasks.add(task);
+            partFiles.add(new PartInfo.PartFile(start, end, saveFile));
         }
+        List<HttpDownloadPartTask> partTasks = mHttpPartTaskFactory.onCreateHttpPartTask(mUrl, new PartInfo(partFiles));
         if (partTasks.isEmpty()) {
             dispatchFail(new DownloadException(DownloadException.PARAM_ERROR, "part task empty by error param"));
             return;
         }
         LogUtils.i(TAG, "多任务创建完成。。。");
-        getCallbacks().notifyPartTasksCreate(partTasks);
-        if(mPartTasks != null){
+        if (mPartTasks != null) {
             throw new IllegalArgumentException("---------------");
         }
-        if(isStarted()){
+        if (isStarted()) {
             mPartTasks = partTasks;
             LogUtils.i(TAG, "开始启动多任务。。。");
             for (int i = 0; i < partTasks.size(); i++) {
                 HttpDownloadPartTask partTask = partTasks.get(i);
+                initPartTask(partTask);
                 partTask.start();
             }
             LogUtils.i(TAG, "启动多任务成功。。。");
@@ -205,8 +205,8 @@ public class HttpDownloadTask extends DownloadTask{
             @Override
             public void onFail(DownloadException e) {
                 cancelAllRunningPartTasks();
-                dispatchFail(new DownloadException(DownloadException.PART_FAIL, "子任务失败："+task.getFilePath()));
-                getCallbacks().notifyPartTaskFail(task,e);
+                dispatchFail(new DownloadException(DownloadException.PART_FAIL, "子任务失败：" + task.getFilePath()));
+                getCallbacks().notifyPartTaskFail(task, e);
             }
 
             @Override
@@ -249,7 +249,7 @@ public class HttpDownloadTask extends DownloadTask{
         if (mPartTasks != null) {
             int totalLength = 0;
             for (HttpDownloadPartTask mPartTask : mPartTasks) {
-                totalLength+= mPartTask.getCurrentLength();
+                totalLength += mPartTask.getCurrentLength();
             }
             return totalLength;
         }
@@ -267,7 +267,7 @@ public class HttpDownloadTask extends DownloadTask{
             task.cancel();
         }
         mPartTasks = null;
-        LogUtils.i(TAG,"==cancel耗时======="+(System.currentTimeMillis()-l));
+        LogUtils.i(TAG, "==cancel耗时=======" + (System.currentTimeMillis() - l));
     }
 
     private void handAllTaskFinish() {

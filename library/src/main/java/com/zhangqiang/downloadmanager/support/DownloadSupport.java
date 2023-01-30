@@ -10,7 +10,7 @@ public interface DownloadSupport {
 
     List<DownloadTask> loadDownloadTasks();
 
-    DownloadTask createDownloadTask(DownloadRequest request, String taskId);
+    DownloadTask createDownloadTask(DownloadRequest request);
 
     TaskInfo buildTaskInfo(DownloadTask downloadTask);
 
@@ -18,7 +18,7 @@ public interface DownloadSupport {
 
     boolean isTaskIdle(DownloadTask downloadTask);
 
-    boolean isTaskDownloading(DownloadTask downloadTask);
+    boolean isTaskRunning(DownloadTask downloadTask);
 
     void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile);
 }
