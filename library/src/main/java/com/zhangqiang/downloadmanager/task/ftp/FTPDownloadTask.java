@@ -2,6 +2,8 @@ package com.zhangqiang.downloadmanager.task.ftp;
 
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 
+import org.apache.commons.net.ftp.FTPClient;
+
 public class FTPDownloadTask extends DownloadTask {
 
     public FTPDownloadTask(String id) {
@@ -10,7 +12,7 @@ public class FTPDownloadTask extends DownloadTask {
 
     @Override
     protected void onStart() {
-
+        FTPClient ftpClient = new FTPClient();
     }
 
     @Override

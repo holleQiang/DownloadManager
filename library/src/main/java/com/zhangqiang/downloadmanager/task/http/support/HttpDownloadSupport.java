@@ -23,6 +23,7 @@ import com.zhangqiang.downloadmanager.task.http.engine.HttpEngine;
 import com.zhangqiang.downloadmanager.task.http.engine.okhttp.OkHttpEngine;
 import com.zhangqiang.downloadmanager.task.http.part.HttpDownloadPartTask;
 import com.zhangqiang.downloadmanager.task.http.part.HttpPartTaskFactory;
+import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
@@ -114,7 +115,7 @@ public class HttpDownloadSupport implements DownloadSupport {
 
 
     @Override
-    public void handleSyncTaskProgress(DownloadTask downloadTask) {
+    public boolean handleProgressSync(DownloadTask downloadTask) {
         InternalTask internalTask = (InternalTask) downloadTask;
         HttpTaskBean httpTaskBean = internalTask.httpTaskBean;
         int httpTaskType = httpTaskBean.getType();
@@ -126,12 +127,14 @@ public class HttpDownloadSupport implements DownloadSupport {
             if (oldLength != newLength) {
                 httpDefaultTask.setCurrentLength(newLength);
                 mHttpDefaultTaskService.update(httpDefaultTask);
+                return true;
             }
         } else if (httpTaskType == HttpTaskBean.TYPE_PART) {
-            List<? extends DownloadTask> partRecords = downloadTask.getChildTasks();
+            List<? extends DownloadTask> partRecords = internalTask.getPartTasks();
             if (partRecords == null) {
-                return;
+                return false;
             }
+            boolean changed = false;
             for (DownloadTask httpDownloadPartTask : partRecords) {
                 long newLength = httpDownloadPartTask.getCurrentLength();
                 HttpPartTaskItemBean httpPartTaskItemBean = ((InternalPartTask) httpDownloadPartTask).httpPartTaskItemBean;
@@ -139,9 +142,27 @@ public class HttpDownloadSupport implements DownloadSupport {
                 if (newLength != oldLength) {
                     httpPartTaskItemBean.setCurrentPosition(httpDownloadPartTask.getCurrentLength() + httpPartTaskItemBean.getStartPosition());
                     mHttpPartTaskItemService.update(httpPartTaskItemBean);
+                    changed = true;
                 }
+                return changed;
             }
         }
+        return false;
+    }
+
+    @Override
+    public boolean handleSpeedCompute(DownloadTask downloadTask) {
+        if (SpeedUtils.computeSpeed(downloadTask)) {
+
+            List<HttpDownloadPartTask> partTasks = ((HttpDownloadTask) downloadTask).getPartTasks();
+            if (partTasks != null && !partTasks.isEmpty()) {
+                for (DownloadTask childTask : partTasks) {
+                    SpeedUtils.computeSpeed(childTask);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override

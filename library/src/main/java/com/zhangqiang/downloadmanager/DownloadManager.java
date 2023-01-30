@@ -11,7 +11,6 @@ import com.zhangqiang.downloadmanager.listeners.DownloadTaskListeners;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.support.HttpDownloadSupport;
-import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 
@@ -300,11 +299,8 @@ public class DownloadManager {
     }
 
     private synchronized void syncTaskProgress(DownloadRecord record) {
-        DownloadTask downloadTask = record.downloadTask;
-        long currentLength = downloadTask.getCurrentLength();
-        if (record.lastLength != currentLength) {
-            record.lastLength = currentLength;
-            record.downloadSupport.handleSyncTaskProgress(record.downloadTask);
+        boolean changed = record.downloadSupport.handleProgressSync(record.downloadTask);
+        if(changed){
             getDownloadTaskListeners().notifyTaskProgressChanged(record.downloadTask.getId());
         }
     }
@@ -360,14 +356,8 @@ public class DownloadManager {
     private synchronized void computeTaskSpeed(DownloadRecord record) {
 
         DownloadTask downloadTask = record.downloadTask;
-        if (SpeedUtils.computeSpeed(downloadTask)) {
-
-            List<? extends DownloadTask> childTasks = downloadTask.getChildTasks();
-            if (childTasks != null && !childTasks.isEmpty()) {
-                for (DownloadTask childTask : childTasks) {
-                    SpeedUtils.computeSpeed(childTask);
-                }
-            }
+        boolean changed = record.downloadSupport.handleSpeedCompute(downloadTask);
+        if(changed){
             getDownloadTaskListeners().notifyTaskSpeedChanged(record.downloadTask.getId());
         }
     }
@@ -400,11 +390,9 @@ public class DownloadManager {
         private final DownloadTask downloadTask;
         private final TaskInfo taskInfo;
         private final DownloadSupport downloadSupport;
-        private long lastLength;
 
         public DownloadRecord(DownloadTask downloadTask, TaskInfo taskInfo, DownloadSupport downloadSupport) {
             this.downloadTask = downloadTask;
-            this.lastLength = downloadTask.getCurrentLength();
             this.taskInfo = taskInfo;
             this.downloadSupport = downloadSupport;
         }

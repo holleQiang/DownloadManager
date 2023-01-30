@@ -70,14 +70,6 @@ public abstract class DownloadTask implements SpeedSupport {
         getDownloadListeners().notifyFail(e);
     }
 
-    public List<? extends DownloadTask> getChildTasks() {
-        return null;
-    }
-
-    public List<String> getFilePaths() {
-        return null;
-    }
-
     public interface DownloadListener {
 
         void onIdle();

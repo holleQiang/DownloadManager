@@ -14,7 +14,9 @@ public interface DownloadSupport {
 
     TaskInfo buildTaskInfo(DownloadTask downloadTask);
 
-    void handleSyncTaskProgress(DownloadTask downloadTask);
+    boolean handleProgressSync(DownloadTask downloadTask);
+
+    boolean handleSpeedCompute(DownloadTask downloadTask);
 
     boolean isTaskIdle(DownloadTask downloadTask);
 

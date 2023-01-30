@@ -2,9 +2,11 @@ package com.zhangqiang.downloadmanager.task.http.support;
 
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.http.HttpDownloadTask;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskBean;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskItemBean;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpTaskBean;
+import com.zhangqiang.downloadmanager.task.http.part.HttpDownloadPartTask;
 import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 
 import java.util.List;
@@ -121,9 +123,9 @@ public class TaskInfoImpl implements TaskInfo {
 
     @Override
     public long getPartSpeed(int partIndex) {
-        List<? extends DownloadTask> childTasks = downloadTask.getChildTasks();
-        if (childTasks != null && partIndex < childTasks.size()) {
-            return SpeedUtils.getSpeed(childTasks.get(partIndex));
+        List<HttpDownloadPartTask> partTasks = ((HttpDownloadTask) downloadTask).getPartTasks();
+        if (partTasks != null && partIndex < partTasks.size()) {
+            return SpeedUtils.getSpeed(partTasks.get(partIndex));
         }
         return 0;
     }

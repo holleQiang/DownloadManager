@@ -224,11 +224,6 @@ public class HttpDownloadTask extends DownloadTask {
         cancelAllRunningPartTasks();
     }
 
-    @Override
-    public List<? extends DownloadTask> getChildTasks() {
-        return mPartTasks;
-    }
-
     private String makeFileName(HttpResponse httpResponse) {
         String fileName = mTargetFileName;
         if (TextUtils.isEmpty(fileName)) {
@@ -339,5 +334,9 @@ public class HttpDownloadTask extends DownloadTask {
 
     public Callbacks getCallbacks() {
         return mCallbacks;
+    }
+
+    public List<HttpDownloadPartTask> getPartTasks() {
+        return mPartTasks;
     }
 }
