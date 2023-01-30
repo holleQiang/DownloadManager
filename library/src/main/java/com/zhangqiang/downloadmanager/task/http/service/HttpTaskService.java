@@ -38,6 +38,7 @@ public class HttpTaskService {
     public List<HttpTaskBean> getHttpTasks() {
 
         List<HttpTaskEntity> httpTaskEntities = getHttpTaskEntityDao().queryBuilder()
+                .orderDesc(HttpTaskEntityDao.Properties.CreateTime)
                 .list();
         if (httpTaskEntities == null) {
             return null;

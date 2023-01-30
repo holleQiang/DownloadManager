@@ -3,13 +3,14 @@ package com.zhangqiang.sample.ui;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
@@ -24,8 +25,6 @@ import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,12 +52,6 @@ public class DownloadManageFragment extends BaseFragment {
         List<Cell> cellList = new ArrayList<>();
         List<TaskInfo> allTask = DownloadManager.getInstance(getContext()).getTaskList();
         if (allTask != null && !allTask.isEmpty()) {
-            Collections.sort(allTask,new Comparator<TaskInfo>() {
-                @Override
-                public int compare(TaskInfo o1, TaskInfo o2) {
-                    return (int) (o2.getCreateTime() - o1.getCreateTime());
-                }
-            });
             for (int i = 0; i < allTask.size(); i++) {
                 cellList.add(makeCell(allTask.get(i)));
             }

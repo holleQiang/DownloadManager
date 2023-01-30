@@ -10,6 +10,7 @@ import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListeners;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.ftp.support.FTPDownloadSupport;
 import com.zhangqiang.downloadmanager.task.http.support.HttpDownloadSupport;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
@@ -53,6 +54,7 @@ public class DownloadManager {
         Context applicationContext = context.getApplicationContext();
         mDownloadSupportList = new ArrayList<>();
         mDownloadSupportList.add(new HttpDownloadSupport(applicationContext));
+        mDownloadSupportList.add(new FTPDownloadSupport());
         HandlerThread mMonitorThread = new HandlerThread("download_monitor_thread");
         mMonitorThread.start();
         mMonitorHandler = new Handler(mMonitorThread.getLooper(), new Handler.Callback() {
@@ -97,17 +99,19 @@ public class DownloadManager {
     private DownloadRecord makeDownloadRecord(DownloadRequest request) {
 
         DownloadSupport target = null;
-        DownloadTask downloadTask = null;
+        DownloadTask targetTask = null;
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            downloadTask = downloadSupport.createDownloadTask(request);
+            DownloadTask downloadTask = downloadSupport.createDownloadTask(request);
             if (downloadTask != null) {
                 target = downloadSupport;
+                targetTask = downloadTask;
+                break;
             }
         }
-        if (downloadTask == null) {
+        if (target == null) {
             throw new IllegalArgumentException("download task cannot be null");
         }
-        return makeDownloadRecord(target, downloadTask);
+        return makeDownloadRecord(target, targetTask);
     }
 
     private DownloadRecord makeDownloadRecord(DownloadSupport downloadSupport, DownloadTask downloadTask) {
@@ -120,25 +124,11 @@ public class DownloadManager {
 
     public synchronized String enqueue(DownloadRequest request) {
 
-        if (TextUtils.isEmpty(request.getUrl())
-                || TextUtils.isEmpty(request.getSaveDir())
-                || request.getThreadSize() < 1) {
-            return null;
-        }
-
-        DownloadRecord prev = null;
-        DownloadRecord curr = mRecordHead;
-        while (curr != null) {
-            prev = curr;
-            curr = curr.next;
-        }
-
         DownloadRecord record = makeDownloadRecord(request);
-        if (prev == null) {
-            this.mRecordHead = record;
-        } else {
-            prev.next = record;
+        if (this.mRecordHead != null) {
+            record.next = mRecordHead;
         }
+        this.mRecordHead = record;
         incrementTaskSize();
         String taskId = record.downloadTask.getId();
         getDownloadTaskListeners().notifyTaskAdded(taskId);
@@ -300,7 +290,7 @@ public class DownloadManager {
 
     private synchronized void syncTaskProgress(DownloadRecord record) {
         boolean changed = record.downloadSupport.handleProgressSync(record.downloadTask);
-        if(changed){
+        if (changed) {
             getDownloadTaskListeners().notifyTaskProgressChanged(record.downloadTask.getId());
         }
     }
@@ -357,7 +347,7 @@ public class DownloadManager {
 
         DownloadTask downloadTask = record.downloadTask;
         boolean changed = record.downloadSupport.handleSpeedCompute(downloadTask);
-        if(changed){
+        if (changed) {
             getDownloadTaskListeners().notifyTaskSpeedChanged(record.downloadTask.getId());
         }
     }

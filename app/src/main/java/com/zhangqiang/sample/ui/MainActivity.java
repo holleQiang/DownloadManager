@@ -3,6 +3,7 @@ package com.zhangqiang.sample.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 
+import com.zhangqiang.downloadmanager.DownloadManager;
+import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
 import com.zhangqiang.qrcodescan.QRCodeScanActivity;
@@ -20,6 +23,7 @@ import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
+import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
@@ -28,6 +32,7 @@ import com.zhangqiang.sample.utils.WebViewUtils;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
@@ -64,6 +69,18 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
+
+        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
+        FTPDownloadRequest request = new FTPDownloadRequest.Builder()
+                .setHost("10.93.45.211")
+                .setPort(21)
+                .setUserName("mobile")
+                .setPassword("test")
+                .setFtpDir("/test")
+                .setFtpFileName("utils.ts")
+                .setSaveDir(dirFile.getAbsolutePath())
+                .build();
+        DownloadManager.getInstance(this).enqueue(request);
     }
 
     @Override

@@ -11,6 +11,7 @@ import android.widget.Toast;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
+import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 
@@ -76,7 +77,9 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
                 if (taskInfo != null) {
                     DownloadManager.getInstance(context).deleteTask(taskId, true);
-                    DownloadRequest request = new DownloadRequest.Builder(taskInfo.getUrl(), taskInfo.getSaveDir())
+                    DownloadRequest request = new HttpDownloadRequest.Builder()
+                            .setUrl(taskInfo.getUrl())
+                            .setSaveDir(taskInfo.getSaveDir())
                             .setThreadSize(taskInfo.getThreadCount())
                             .setFileName(taskInfo.getFileName())
                             .build();

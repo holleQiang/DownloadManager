@@ -13,6 +13,7 @@ import android.widget.EditText;
 
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.DownloadRequest;
+import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.manager.SettingsManager;
@@ -72,8 +73,10 @@ public class CreateTaskDialog extends BaseDialogFragment {
                 return;
             }
             File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-            DownloadRequest request = new DownloadRequest.Builder(url, dirFile.getAbsolutePath())
+            DownloadRequest request = new HttpDownloadRequest.Builder()
+                    .setUrl(url)
                     .setThreadSize(Integer.parseInt(etThreadSize.getText().toString()))
+                    .setSaveDir(dirFile.getAbsolutePath())
                     .setFileName(etSaveName.getText().toString().trim())
                     .build();
             DownloadManager.getInstance(getContext()).enqueue(request);

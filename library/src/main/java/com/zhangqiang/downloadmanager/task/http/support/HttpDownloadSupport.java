@@ -6,6 +6,7 @@ import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
+import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.task.http.service.HttpDefaultTaskService;
 import com.zhangqiang.downloadmanager.task.http.service.HttpPartTaskItemService;
 import com.zhangqiang.downloadmanager.task.http.service.HttpPartTaskService;
@@ -51,11 +52,6 @@ public class HttpDownloadSupport implements DownloadSupport {
         mHttpPartTaskItemService = new HttpPartTaskItemService(context);
     }
 
-    private boolean support(DownloadRequest request) {
-        String url = request.getUrl();
-        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
-    }
-
     @Override
     public List<DownloadTask> loadDownloadTasks() {
         List<HttpTaskBean> httpTaskBeans = mHttpTaskService.getHttpTasks();
@@ -79,19 +75,19 @@ public class HttpDownloadSupport implements DownloadSupport {
 
     @Override
     public DownloadTask createDownloadTask(DownloadRequest request) {
-        if (!support(request)) {
+        if (!(request instanceof HttpDownloadRequest)) {
             return null;
         }
+        HttpDownloadRequest httpDownloadRequest = (HttpDownloadRequest) request;
         HttpTaskBean httpTaskBean = new HttpTaskBean();
         String taskId = UUID.randomUUID().toString();
         httpTaskBean.setId(taskId);
         httpTaskBean.setSaveDir(request.getSaveDir());
-        httpTaskBean.setThreadSize(request.getThreadSize());
-        httpTaskBean.setUrl(request.getUrl());
+        httpTaskBean.setThreadSize(httpDownloadRequest.getThreadSize());
+        httpTaskBean.setUrl(httpDownloadRequest.getUrl());
         httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
         httpTaskBean.setType(HttpTaskBean.TYPE_UNKNOWN);
         httpTaskBean.setFileName(request.getFileName());
-        httpTaskBean.setThreadSize(request.getThreadSize());
         httpTaskBean.setCreateTime(new Date());
 
         mHttpTaskService.add(httpTaskBean);
