@@ -69,18 +69,6 @@ public class MainActivity extends BaseActivity {
                 return false;
             }
         });
-
-        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-        FTPDownloadRequest request = new FTPDownloadRequest.Builder()
-                .setHost("10.93.45.211")
-                .setPort(21)
-                .setUserName("mobile")
-                .setPassword("test")
-                .setFtpDir("/test")
-                .setFtpFileName("utils.ts")
-                .setSaveDir(dirFile.getAbsolutePath())
-                .build();
-        DownloadManager.getInstance(this).enqueue(request);
     }
 
     @Override
