@@ -283,15 +283,18 @@ public class DownloadManager {
     private synchronized void syncTasksProgress() {
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
-            syncTaskProgress(curr);
+            if (curr.downloadTask.isStarted()) {
+                syncTaskProgress(curr);
+            }
             curr = curr.next;
         }
     }
 
     private synchronized void syncTaskProgress(DownloadRecord record) {
-        boolean changed = record.downloadSupport.handleProgressSync(record.downloadTask);
+        DownloadTask downloadTask = record.downloadTask;
+        boolean changed = record.downloadSupport.handleProgressSync(downloadTask);
         if (changed) {
-            getDownloadTaskListeners().notifyTaskProgressChanged(record.downloadTask.getId());
+            getDownloadTaskListeners().notifyTaskProgressChanged(downloadTask.getId());
         }
     }
 
