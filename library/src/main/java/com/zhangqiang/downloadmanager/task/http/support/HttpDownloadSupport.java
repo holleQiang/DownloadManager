@@ -88,6 +88,7 @@ public class HttpDownloadSupport implements DownloadSupport {
         httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
         httpTaskBean.setType(HttpTaskBean.TYPE_UNKNOWN);
         httpTaskBean.setFileName(request.getFileName());
+        httpTaskBean.setTargetFileName(request.getFileName());
         httpTaskBean.setCreateTime(new Date());
 
         mHttpTaskService.add(httpTaskBean);

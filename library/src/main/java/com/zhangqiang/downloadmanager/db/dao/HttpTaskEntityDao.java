@@ -28,14 +28,15 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         public final static Property Url = new Property(1, String.class, "url", false, "URL");
         public final static Property SaveDir = new Property(2, String.class, "saveDir", false, "SAVE_DIR");
         public final static Property FileName = new Property(3, String.class, "fileName", false, "FILE_NAME");
-        public final static Property ContentLength = new Property(4, long.class, "contentLength", false, "CONTENT_LENGTH");
-        public final static Property ContentType = new Property(5, String.class, "contentType", false, "CONTENT_TYPE");
-        public final static Property CreateTime = new Property(6, java.util.Date.class, "createTime", false, "CREATE_TIME");
-        public final static Property ThreadSize = new Property(7, int.class, "threadSize", false, "THREAD_SIZE");
-        public final static Property State = new Property(8, int.class, "state", false, "STATE");
-        public final static Property ErrorMsg = new Property(9, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property Type = new Property(10, int.class, "type", false, "TYPE");
-        public final static Property ChildId = new Property(11, String.class, "childId", false, "CHILD_ID");
+        public final static Property TargetFileName = new Property(4, String.class, "targetFileName", false, "TARGET_FILE_NAME");
+        public final static Property ContentLength = new Property(5, long.class, "contentLength", false, "CONTENT_LENGTH");
+        public final static Property ContentType = new Property(6, String.class, "contentType", false, "CONTENT_TYPE");
+        public final static Property CreateTime = new Property(7, java.util.Date.class, "createTime", false, "CREATE_TIME");
+        public final static Property ThreadSize = new Property(8, int.class, "threadSize", false, "THREAD_SIZE");
+        public final static Property State = new Property(9, int.class, "state", false, "STATE");
+        public final static Property ErrorMsg = new Property(10, String.class, "errorMsg", false, "ERROR_MSG");
+        public final static Property Type = new Property(11, int.class, "type", false, "TYPE");
+        public final static Property ChildId = new Property(12, String.class, "childId", false, "CHILD_ID");
     }
 
 
@@ -55,14 +56,15 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
                 "\"URL\" TEXT NOT NULL ," + // 1: url
                 "\"SAVE_DIR\" TEXT NOT NULL ," + // 2: saveDir
                 "\"FILE_NAME\" TEXT NOT NULL ," + // 3: fileName
-                "\"CONTENT_LENGTH\" INTEGER NOT NULL ," + // 4: contentLength
-                "\"CONTENT_TYPE\" TEXT," + // 5: contentType
-                "\"CREATE_TIME\" INTEGER NOT NULL ," + // 6: createTime
-                "\"THREAD_SIZE\" INTEGER NOT NULL ," + // 7: threadSize
-                "\"STATE\" INTEGER NOT NULL ," + // 8: state
-                "\"ERROR_MSG\" TEXT," + // 9: errorMsg
-                "\"TYPE\" INTEGER NOT NULL ," + // 10: type
-                "\"CHILD_ID\" TEXT);"); // 11: childId
+                "\"TARGET_FILE_NAME\" TEXT," + // 4: targetFileName
+                "\"CONTENT_LENGTH\" INTEGER NOT NULL ," + // 5: contentLength
+                "\"CONTENT_TYPE\" TEXT," + // 6: contentType
+                "\"CREATE_TIME\" INTEGER NOT NULL ," + // 7: createTime
+                "\"THREAD_SIZE\" INTEGER NOT NULL ," + // 8: threadSize
+                "\"STATE\" INTEGER NOT NULL ," + // 9: state
+                "\"ERROR_MSG\" TEXT," + // 10: errorMsg
+                "\"TYPE\" INTEGER NOT NULL ," + // 11: type
+                "\"CHILD_ID\" TEXT);"); // 12: childId
     }
 
     /** Drops the underlying database table. */
@@ -82,25 +84,30 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         stmt.bindString(2, entity.getUrl());
         stmt.bindString(3, entity.getSaveDir());
         stmt.bindString(4, entity.getFileName());
-        stmt.bindLong(5, entity.getContentLength());
+ 
+        String targetFileName = entity.getTargetFileName();
+        if (targetFileName != null) {
+            stmt.bindString(5, targetFileName);
+        }
+        stmt.bindLong(6, entity.getContentLength());
  
         String contentType = entity.getContentType();
         if (contentType != null) {
-            stmt.bindString(6, contentType);
+            stmt.bindString(7, contentType);
         }
-        stmt.bindLong(7, entity.getCreateTime().getTime());
-        stmt.bindLong(8, entity.getThreadSize());
-        stmt.bindLong(9, entity.getState());
+        stmt.bindLong(8, entity.getCreateTime().getTime());
+        stmt.bindLong(9, entity.getThreadSize());
+        stmt.bindLong(10, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(10, errorMsg);
+            stmt.bindString(11, errorMsg);
         }
-        stmt.bindLong(11, entity.getType());
+        stmt.bindLong(12, entity.getType());
  
         String childId = entity.getChildId();
         if (childId != null) {
-            stmt.bindString(12, childId);
+            stmt.bindString(13, childId);
         }
     }
 
@@ -115,25 +122,30 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         stmt.bindString(2, entity.getUrl());
         stmt.bindString(3, entity.getSaveDir());
         stmt.bindString(4, entity.getFileName());
-        stmt.bindLong(5, entity.getContentLength());
+ 
+        String targetFileName = entity.getTargetFileName();
+        if (targetFileName != null) {
+            stmt.bindString(5, targetFileName);
+        }
+        stmt.bindLong(6, entity.getContentLength());
  
         String contentType = entity.getContentType();
         if (contentType != null) {
-            stmt.bindString(6, contentType);
+            stmt.bindString(7, contentType);
         }
-        stmt.bindLong(7, entity.getCreateTime().getTime());
-        stmt.bindLong(8, entity.getThreadSize());
-        stmt.bindLong(9, entity.getState());
+        stmt.bindLong(8, entity.getCreateTime().getTime());
+        stmt.bindLong(9, entity.getThreadSize());
+        stmt.bindLong(10, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(10, errorMsg);
+            stmt.bindString(11, errorMsg);
         }
-        stmt.bindLong(11, entity.getType());
+        stmt.bindLong(12, entity.getType());
  
         String childId = entity.getChildId();
         if (childId != null) {
-            stmt.bindString(12, childId);
+            stmt.bindString(13, childId);
         }
     }
 
@@ -149,14 +161,15 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
             cursor.getString(offset + 1), // url
             cursor.getString(offset + 2), // saveDir
             cursor.getString(offset + 3), // fileName
-            cursor.getLong(offset + 4), // contentLength
-            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // contentType
-            new java.util.Date(cursor.getLong(offset + 6)), // createTime
-            cursor.getInt(offset + 7), // threadSize
-            cursor.getInt(offset + 8), // state
-            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // errorMsg
-            cursor.getInt(offset + 10), // type
-            cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11) // childId
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // targetFileName
+            cursor.getLong(offset + 5), // contentLength
+            cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // contentType
+            new java.util.Date(cursor.getLong(offset + 7)), // createTime
+            cursor.getInt(offset + 8), // threadSize
+            cursor.getInt(offset + 9), // state
+            cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10), // errorMsg
+            cursor.getInt(offset + 11), // type
+            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12) // childId
         );
         return entity;
     }
@@ -167,14 +180,15 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         entity.setUrl(cursor.getString(offset + 1));
         entity.setSaveDir(cursor.getString(offset + 2));
         entity.setFileName(cursor.getString(offset + 3));
-        entity.setContentLength(cursor.getLong(offset + 4));
-        entity.setContentType(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
-        entity.setCreateTime(new java.util.Date(cursor.getLong(offset + 6)));
-        entity.setThreadSize(cursor.getInt(offset + 7));
-        entity.setState(cursor.getInt(offset + 8));
-        entity.setErrorMsg(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
-        entity.setType(cursor.getInt(offset + 10));
-        entity.setChildId(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
+        entity.setTargetFileName(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setContentLength(cursor.getLong(offset + 5));
+        entity.setContentType(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
+        entity.setCreateTime(new java.util.Date(cursor.getLong(offset + 7)));
+        entity.setThreadSize(cursor.getInt(offset + 8));
+        entity.setState(cursor.getInt(offset + 9));
+        entity.setErrorMsg(cursor.isNull(offset + 10) ? null : cursor.getString(offset + 10));
+        entity.setType(cursor.getInt(offset + 11));
+        entity.setChildId(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
      }
     
     @Override

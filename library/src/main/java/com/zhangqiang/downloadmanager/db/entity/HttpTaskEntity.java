@@ -24,10 +24,14 @@ public class HttpTaskEntity {
     @NotNull
     private String saveDir;
     /**
-     * 文件名称，如果指定了会使用固定的名称
+     * 文件名称
      */
     @NotNull
     private String fileName;
+    /**
+     * 指定的文件名称
+     */
+    private String targetFileName;
     /**
      * 文件长度
      */
@@ -53,15 +57,16 @@ public class HttpTaskEntity {
      * 子任务id
      */
     private String childId;
-    @Generated(hash = 1886720444)
+    @Generated(hash = 385428988)
     public HttpTaskEntity(String id, @NotNull String url, @NotNull String saveDir,
-            @NotNull String fileName, long contentLength, String contentType,
-            @NotNull Date createTime, int threadSize, int state, String errorMsg,
-            int type, String childId) {
+            @NotNull String fileName, String targetFileName, long contentLength,
+            String contentType, @NotNull Date createTime, int threadSize, int state,
+            String errorMsg, int type, String childId) {
         this.id = id;
         this.url = url;
         this.saveDir = saveDir;
         this.fileName = fileName;
+        this.targetFileName = targetFileName;
         this.contentLength = contentLength;
         this.contentType = contentType;
         this.createTime = createTime;
@@ -145,6 +150,12 @@ public class HttpTaskEntity {
     }
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
+    }
+    public String getTargetFileName() {
+        return this.targetFileName;
+    }
+    public void setTargetFileName(String targetFileName) {
+        this.targetFileName = targetFileName;
     }
 
 }

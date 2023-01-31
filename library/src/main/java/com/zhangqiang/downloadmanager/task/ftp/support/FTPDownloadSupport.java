@@ -25,17 +25,18 @@ public class FTPDownloadSupport implements DownloadSupport {
     @Override
     public DownloadTask createDownloadTask(DownloadRequest request) {
         if(request instanceof FTPDownloadRequest){
-            FTPDownloadRequest ftpDownloadRequest = (FTPDownloadRequest) request;
+            FTPDownloadRequest ftpRequest = (FTPDownloadRequest) request;
             String taskId = UUID.randomUUID().toString();
+            FTPTaskBean ftpTaskBean = new FTPTaskBean();
             FTPDownloadTask ftpDownloadTask = new FTPDownloadTask(taskId,
-                    ftpDownloadRequest.getHost(),
-                    ftpDownloadRequest.getPort(),
-                    ftpDownloadRequest.getUserName(),
-                    ftpDownloadRequest.getPassword(),
-                    ftpDownloadRequest.getFtpDir(),
-                    ftpDownloadRequest.getFtpFileName(),
-                    ftpDownloadRequest.getSaveDir(),
-                    ftpDownloadRequest.getFileName());
+                    ftpRequest.getHost(),
+                    ftpRequest.getPort(),
+                    ftpRequest.getUserName(),
+                    ftpRequest.getPassword(),
+                    ftpRequest.getFtpDir(),
+                    ftpRequest.getFtpFileName(),
+                    ftpRequest.getSaveDir(),
+                    ftpRequest.getFileName());
             ftpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
                 @Override
                 public void onReset() {

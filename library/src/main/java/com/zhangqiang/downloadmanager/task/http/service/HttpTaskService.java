@@ -56,6 +56,7 @@ public class HttpTaskService {
             httpTaskBean.setState(httpTaskEntity.getState());
             httpTaskBean.setErrorMsg(httpTaskEntity.getErrorMsg());
             httpTaskBean.setThreadSize(httpTaskEntity.getThreadSize());
+            httpTaskBean.setTargetFileName(httpTaskEntity.getTargetFileName());
             int httpTaskType = httpTaskEntity.getType();
             httpTaskBean.setType(httpTaskType);
             String childId = httpTaskEntity.getChildId();
@@ -89,6 +90,7 @@ public class HttpTaskService {
         httpTaskEntity.setContentType(httpTaskBean.getContentType());
         httpTaskEntity.setFileName(httpTaskBean.getFileName());
         httpTaskEntity.setErrorMsg(httpTaskBean.getErrorMsg());
+        httpTaskEntity.setTargetFileName(httpTaskBean.getTargetFileName());
         int type = httpTaskBean.getType();
         httpTaskEntity.setType(type);
         if (type == HttpTaskBean.TYPE_DEFAULT) {

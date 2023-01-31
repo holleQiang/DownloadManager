@@ -46,6 +46,7 @@ public class HttpTaskBean {
     private String url;
     private String saveDir;
     private String fileName;
+    private String targetFileName;
     private long contentLength;
     private String contentType;
     private Date createTime;
@@ -162,6 +163,15 @@ public class HttpTaskBean {
 
     public HttpTaskBean setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
+        return this;
+    }
+
+    public String getTargetFileName() {
+        return targetFileName;
+    }
+
+    public HttpTaskBean setTargetFileName(String targetFileName) {
+        this.targetFileName = targetFileName;
         return this;
     }
 }
