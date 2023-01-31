@@ -138,6 +138,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         if (data.getContentLength() == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (data.getContentLength() <= data.getCurrentLength()) {
+
             if (data.getState() == TaskInfo.STATE_COMPLETE) {
                 resetTimeStr = "已完成";
             } else {

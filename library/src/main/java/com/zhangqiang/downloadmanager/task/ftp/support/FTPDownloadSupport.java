@@ -11,6 +11,8 @@ import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.ftp.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.task.ftp.bean.FTPTaskBean;
+import com.zhangqiang.downloadmanager.task.ftp.callback.Callback;
+import com.zhangqiang.downloadmanager.task.ftp.callback.ResourceInfo;
 import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
 import com.zhangqiang.downloadmanager.task.ftp.service.FTPTaskService;
 import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
@@ -119,6 +121,13 @@ public class FTPDownloadSupport implements DownloadSupport {
                 ftpTaskService.updateFtpTask(ftpTaskBean);
             }
         });
+        ftpDownloadTask.getCallbacks().addCallback(new Callback() {
+            @Override
+            public void onResourceInfoReady(ResourceInfo resourceInfo) {
+                ftpTaskBean.setContentLength(resourceInfo.getContentLength());
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+        });
         return ftpDownloadTask;
     }
 
@@ -154,7 +163,7 @@ public class FTPDownloadSupport implements DownloadSupport {
 
             @Override
             public long getContentLength() {
-                return 0;
+                return ftpTaskBean.getContentLength();
             }
 
             @Override
@@ -248,6 +257,7 @@ public class FTPDownloadSupport implements DownloadSupport {
     @Override
     public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
         FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
+        ftpTaskService.removeFtpTask(ftpTaskBean);
         File file = new File(ftpTaskBean.getSaveDir(), ftpTaskBean.getFileName());
         try {
             FileUtils.deleteFileIfExists(file);

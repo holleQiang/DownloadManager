@@ -4,6 +4,8 @@ import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.ftp.callback.Callbacks;
+import com.zhangqiang.downloadmanager.task.ftp.callback.ResourceInfo;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
@@ -32,6 +34,8 @@ public class FTPDownloadTask extends DownloadTask {
     private Thread thread;
     private FTPClient ftpClient;
     private long currentLength;
+
+    private final Callbacks callbacks = new Callbacks();
 
     public FTPDownloadTask(String host, int port, String userName, String password, String ftpDir, String ftpFileName, String saveDir, String fileName) {
         this.host = host;
@@ -79,38 +83,43 @@ public class FTPDownloadTask extends DownloadTask {
                         dispatchFail(new DownloadException(1002, "change dir fail"));
                         return;
                     }
+                    FTPFile targetFtpFile = null;
                     FTPFile[] ftpFiles = ftpClient.listFiles();
                     if (ftpFiles != null && ftpFiles.length > 0) {
                         for (FTPFile ftpFile : ftpFiles) {
                             LogUtils.i(TAG, "========ftp file:" + ftpFile.getName());
                             if (Objects.equals(ftpFile.getName(), ftpFileName)) {
-                                boolean setFileTypeSuccess = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-                                if (setFileTypeSuccess) {
-                                    LogUtils.i(TAG, "========ftp set file success");
-                                } else {
-                                    dispatchFail(new DownloadException(1003, "set file type fail"));
-                                    return;
-                                }
-                                //continue download
-                                ftpClient.setRestartOffset(0);
-                                InputStream inputStream = ftpClient.retrieveFileStream(ftpFileName);
-                                String targetFileName = fileName;
-                                if (TextUtils.isEmpty(targetFileName)) {
-                                    targetFileName = ftpFileName;
-                                }
-                                FileUtils.writeToFileFrom(inputStream, new File(saveDir, targetFileName), 0, new FileUtils.WriteFileListener() {
-                                    @Override
-                                    public void onWriteFile(byte[] buffer, int offset, int len) {
-                                        currentLength += len;
-                                    }
-                                });
-                                LogUtils.i(TAG, "========ftp 下载成功");
-                                dispatchComplete();
-                                return;
+                                targetFtpFile = ftpFile;
                             }
                         }
                     }
-                    dispatchFail(new DownloadException(1004, "file not exists"));
+                    if(targetFtpFile == null){
+                        dispatchFail(new DownloadException(1004, "file not exists"));
+                        return;
+                    }
+                    ResourceInfo resourceInfo = new ResourceInfo(targetFtpFile.getSize());
+                    getCallbacks().notifyResourceInfoReady(resourceInfo);
+                    boolean setFileTypeSuccess = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                    if (setFileTypeSuccess) {
+                        LogUtils.i(TAG, "========ftp set file success");
+                    } else {
+                        dispatchFail(new DownloadException(1003, "set file type fail"));
+                        return;
+                    }
+                    //continue download
+                    ftpClient.setRestartOffset(currentLength);
+                    InputStream inputStream = ftpClient.retrieveFileStream(ftpFileName);
+                    FileUtils.writeToFileFrom(inputStream,
+                            new File(saveDir, fileName),
+                            currentLength,
+                            new FileUtils.WriteFileListener() {
+                                @Override
+                                public void onWriteFile(byte[] buffer, int offset, int len) {
+                                    currentLength += len;
+                                }
+                            });
+                    LogUtils.i(TAG, "========ftp 下载成功");
+                    dispatchComplete();
                 } catch (IOException e) {
                     e.printStackTrace();
                     dispatchFail(new DownloadException(1000, e));
@@ -146,4 +155,7 @@ public class FTPDownloadTask extends DownloadTask {
         return currentLength;
     }
 
+    public Callbacks getCallbacks() {
+        return callbacks;
+    }
 }

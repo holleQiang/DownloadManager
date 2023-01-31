@@ -39,6 +39,7 @@ public class FTPTaskService {
         ftpTaskEntity.setCurrentLength(ftpTaskBean.getCurrentLength());
         ftpTaskEntity.setState(ftpTaskBean.getState());
         ftpTaskEntity.setErrorMsg(ftpTaskBean.getErrorMsg());
+        ftpTaskEntity.setContentLength(ftpTaskBean.getContentLength());
         return ftpTaskEntity;
     }
 
@@ -63,6 +64,7 @@ public class FTPTaskService {
                 ftpTaskBean.setCurrentLength(entity.getCurrentLength());
                 ftpTaskBean.setState(entity.getState());
                 ftpTaskBean.setErrorMsg(entity.getErrorMsg());
+                ftpTaskBean.setContentLength(entity.getContentLength());
                 ftpTaskBeans.add(ftpTaskBean);
             }
             return ftpTaskBeans;

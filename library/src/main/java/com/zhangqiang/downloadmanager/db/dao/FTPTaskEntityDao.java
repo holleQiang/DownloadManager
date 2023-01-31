@@ -35,9 +35,10 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         public final static Property FileName = new Property(8, String.class, "fileName", false, "FILE_NAME");
         public final static Property TargetFileName = new Property(9, String.class, "targetFileName", false, "TARGET_FILE_NAME");
         public final static Property CurrentLength = new Property(10, long.class, "currentLength", false, "CURRENT_LENGTH");
-        public final static Property State = new Property(11, int.class, "state", false, "STATE");
-        public final static Property ErrorMsg = new Property(12, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property CreateTime = new Property(13, java.util.Date.class, "createTime", false, "CREATE_TIME");
+        public final static Property ContentLength = new Property(11, long.class, "contentLength", false, "CONTENT_LENGTH");
+        public final static Property State = new Property(12, int.class, "state", false, "STATE");
+        public final static Property ErrorMsg = new Property(13, String.class, "errorMsg", false, "ERROR_MSG");
+        public final static Property CreateTime = new Property(14, java.util.Date.class, "createTime", false, "CREATE_TIME");
     }
 
 
@@ -64,9 +65,10 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
                 "\"FILE_NAME\" TEXT," + // 8: fileName
                 "\"TARGET_FILE_NAME\" TEXT," + // 9: targetFileName
                 "\"CURRENT_LENGTH\" INTEGER NOT NULL ," + // 10: currentLength
-                "\"STATE\" INTEGER NOT NULL ," + // 11: state
-                "\"ERROR_MSG\" TEXT," + // 12: errorMsg
-                "\"CREATE_TIME\" INTEGER);"); // 13: createTime
+                "\"CONTENT_LENGTH\" INTEGER NOT NULL ," + // 11: contentLength
+                "\"STATE\" INTEGER NOT NULL ," + // 12: state
+                "\"ERROR_MSG\" TEXT," + // 13: errorMsg
+                "\"CREATE_TIME\" INTEGER);"); // 14: createTime
     }
 
     /** Drops the underlying database table. */
@@ -125,16 +127,17 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             stmt.bindString(10, targetFileName);
         }
         stmt.bindLong(11, entity.getCurrentLength());
-        stmt.bindLong(12, entity.getState());
+        stmt.bindLong(12, entity.getContentLength());
+        stmt.bindLong(13, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(13, errorMsg);
+            stmt.bindString(14, errorMsg);
         }
  
         java.util.Date createTime = entity.getCreateTime();
         if (createTime != null) {
-            stmt.bindLong(14, createTime.getTime());
+            stmt.bindLong(15, createTime.getTime());
         }
     }
 
@@ -188,16 +191,17 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             stmt.bindString(10, targetFileName);
         }
         stmt.bindLong(11, entity.getCurrentLength());
-        stmt.bindLong(12, entity.getState());
+        stmt.bindLong(12, entity.getContentLength());
+        stmt.bindLong(13, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(13, errorMsg);
+            stmt.bindString(14, errorMsg);
         }
  
         java.util.Date createTime = entity.getCreateTime();
         if (createTime != null) {
-            stmt.bindLong(14, createTime.getTime());
+            stmt.bindLong(15, createTime.getTime());
         }
     }
 
@@ -220,9 +224,10 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // fileName
             cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // targetFileName
             cursor.getLong(offset + 10), // currentLength
-            cursor.getInt(offset + 11), // state
-            cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12), // errorMsg
-            cursor.isNull(offset + 13) ? null : new java.util.Date(cursor.getLong(offset + 13)) // createTime
+            cursor.getLong(offset + 11), // contentLength
+            cursor.getInt(offset + 12), // state
+            cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13), // errorMsg
+            cursor.isNull(offset + 14) ? null : new java.util.Date(cursor.getLong(offset + 14)) // createTime
         );
         return entity;
     }
@@ -240,9 +245,10 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         entity.setFileName(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
         entity.setTargetFileName(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
         entity.setCurrentLength(cursor.getLong(offset + 10));
-        entity.setState(cursor.getInt(offset + 11));
-        entity.setErrorMsg(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
-        entity.setCreateTime(cursor.isNull(offset + 13) ? null : new java.util.Date(cursor.getLong(offset + 13)));
+        entity.setContentLength(cursor.getLong(offset + 11));
+        entity.setState(cursor.getInt(offset + 12));
+        entity.setErrorMsg(cursor.isNull(offset + 13) ? null : cursor.getString(offset + 13));
+        entity.setCreateTime(cursor.isNull(offset + 14) ? null : new java.util.Date(cursor.getLong(offset + 14)));
      }
     
     @Override

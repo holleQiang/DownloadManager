@@ -21,6 +21,7 @@ public class FTPTaskBean {
     private String targetFileName;
 
     private long currentLength;
+    private long contentLength;
     private int state = STATE_IDLE;
     private String errorMsg;
     private Date createTime;
@@ -148,6 +149,15 @@ public class FTPTaskBean {
 
     public FTPTaskBean setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public long getContentLength() {
+        return contentLength;
+    }
+
+    public FTPTaskBean setContentLength(long contentLength) {
+        this.contentLength = contentLength;
         return this;
     }
 }
