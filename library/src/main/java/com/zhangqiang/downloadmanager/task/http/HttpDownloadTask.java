@@ -54,14 +54,12 @@ public class HttpDownloadTask extends DownloadTask {
     private Cancelable mGetInfoTask;
     private String mFileName = null;
 
-    public HttpDownloadTask(String id,
-                            HttpEngine httpEngine,
+    public HttpDownloadTask(HttpEngine httpEngine,
                             String url,
                             String saveDir,
                             String targetFileName,
                             int threadSize,
                             HttpPartTaskFactory httpPartTaskFactory) {
-        super(id);
         this.mUrl = url;
         this.mSaveDir = saveDir;
         this.mTargetFileName = targetFileName;

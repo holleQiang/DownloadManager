@@ -33,8 +33,7 @@ public class FTPDownloadTask extends DownloadTask {
     private FTPClient ftpClient;
     private long currentLength;
 
-    public FTPDownloadTask(String id, String host, int port, String userName, String password, String ftpDir, String ftpFileName, String saveDir, String fileName) {
-        super(id);
+    public FTPDownloadTask(String host, int port, String userName, String password, String ftpDir, String ftpFileName, String saveDir, String fileName) {
         this.host = host;
         this.port = port;
         this.userName = userName;

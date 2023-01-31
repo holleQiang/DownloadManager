@@ -11,17 +11,12 @@ public interface DownloadSupport {
     /**
      * load task from local
      */
-    List<DownloadTask> loadDownloadTasks();
-
-    /**
-     * if task is running before shut down，it will be auto start when reopen
-     */
-    boolean isTaskRunning(DownloadTask downloadTask);
+    List<LocalTask> loadLocalTasks();
 
     /**
      * create download task by request
      */
-    DownloadTask createDownloadTask(DownloadRequest request);
+    DownloadTask createDownloadTask(String id, DownloadRequest request);
 
     /**
      * create task info getter

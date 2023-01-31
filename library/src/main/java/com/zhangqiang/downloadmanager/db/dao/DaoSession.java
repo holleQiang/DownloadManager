@@ -8,11 +8,13 @@ import org.greenrobot.greendao.database.Database;
 import org.greenrobot.greendao.identityscope.IdentityScopeType;
 import org.greenrobot.greendao.internal.DaoConfig;
 
+import com.zhangqiang.downloadmanager.db.entity.FTPTaskEntity;
 import com.zhangqiang.downloadmanager.db.entity.HttpDefaultTaskEntity;
 import com.zhangqiang.downloadmanager.db.entity.HttpPartTaskEntity;
 import com.zhangqiang.downloadmanager.db.entity.HttpPartTaskItemEntity;
 import com.zhangqiang.downloadmanager.db.entity.HttpTaskEntity;
 
+import com.zhangqiang.downloadmanager.db.dao.FTPTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpDefaultTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskItemEntityDao;
@@ -27,11 +29,13 @@ import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
  */
 public class DaoSession extends AbstractDaoSession {
 
+    private final DaoConfig fTPTaskEntityDaoConfig;
     private final DaoConfig httpDefaultTaskEntityDaoConfig;
     private final DaoConfig httpPartTaskEntityDaoConfig;
     private final DaoConfig httpPartTaskItemEntityDaoConfig;
     private final DaoConfig httpTaskEntityDaoConfig;
 
+    private final FTPTaskEntityDao fTPTaskEntityDao;
     private final HttpDefaultTaskEntityDao httpDefaultTaskEntityDao;
     private final HttpPartTaskEntityDao httpPartTaskEntityDao;
     private final HttpPartTaskItemEntityDao httpPartTaskItemEntityDao;
@@ -40,6 +44,9 @@ public class DaoSession extends AbstractDaoSession {
     public DaoSession(Database db, IdentityScopeType type, Map<Class<? extends AbstractDao<?, ?>>, DaoConfig>
             daoConfigMap) {
         super(db);
+
+        fTPTaskEntityDaoConfig = daoConfigMap.get(FTPTaskEntityDao.class).clone();
+        fTPTaskEntityDaoConfig.initIdentityScope(type);
 
         httpDefaultTaskEntityDaoConfig = daoConfigMap.get(HttpDefaultTaskEntityDao.class).clone();
         httpDefaultTaskEntityDaoConfig.initIdentityScope(type);
@@ -53,11 +60,13 @@ public class DaoSession extends AbstractDaoSession {
         httpTaskEntityDaoConfig = daoConfigMap.get(HttpTaskEntityDao.class).clone();
         httpTaskEntityDaoConfig.initIdentityScope(type);
 
+        fTPTaskEntityDao = new FTPTaskEntityDao(fTPTaskEntityDaoConfig, this);
         httpDefaultTaskEntityDao = new HttpDefaultTaskEntityDao(httpDefaultTaskEntityDaoConfig, this);
         httpPartTaskEntityDao = new HttpPartTaskEntityDao(httpPartTaskEntityDaoConfig, this);
         httpPartTaskItemEntityDao = new HttpPartTaskItemEntityDao(httpPartTaskItemEntityDaoConfig, this);
         httpTaskEntityDao = new HttpTaskEntityDao(httpTaskEntityDaoConfig, this);
 
+        registerDao(FTPTaskEntity.class, fTPTaskEntityDao);
         registerDao(HttpDefaultTaskEntity.class, httpDefaultTaskEntityDao);
         registerDao(HttpPartTaskEntity.class, httpPartTaskEntityDao);
         registerDao(HttpPartTaskItemEntity.class, httpPartTaskItemEntityDao);
@@ -65,10 +74,15 @@ public class DaoSession extends AbstractDaoSession {
     }
     
     public void clear() {
+        fTPTaskEntityDaoConfig.clearIdentityScope();
         httpDefaultTaskEntityDaoConfig.clearIdentityScope();
         httpPartTaskEntityDaoConfig.clearIdentityScope();
         httpPartTaskItemEntityDaoConfig.clearIdentityScope();
         httpTaskEntityDaoConfig.clearIdentityScope();
+    }
+
+    public FTPTaskEntityDao getFTPTaskEntityDao() {
+        return fTPTaskEntityDao;
     }
 
     public HttpDefaultTaskEntityDao getHttpDefaultTaskEntityDao() {

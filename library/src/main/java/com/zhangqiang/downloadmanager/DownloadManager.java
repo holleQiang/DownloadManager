@@ -4,11 +4,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListeners;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
+import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.ftp.support.FTPDownloadSupport;
 import com.zhangqiang.downloadmanager.task.http.support.HttpDownloadSupport;
@@ -18,6 +18,7 @@ import com.zhangqiang.downloadmanager.utils.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadManager {
@@ -54,7 +55,7 @@ public class DownloadManager {
         Context applicationContext = context.getApplicationContext();
         mDownloadSupportList = new ArrayList<>();
         mDownloadSupportList.add(new HttpDownloadSupport(applicationContext));
-        mDownloadSupportList.add(new FTPDownloadSupport());
+        mDownloadSupportList.add(new FTPDownloadSupport(applicationContext));
         HandlerThread mMonitorThread = new HandlerThread("download_monitor_thread");
         mMonitorThread.start();
         mMonitorHandler = new Handler(mMonitorThread.getLooper(), new Handler.Callback() {
@@ -74,11 +75,11 @@ public class DownloadManager {
 
         DownloadRecord tail = mRecordHead;
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            List<DownloadTask> downloadTasks = downloadSupport.loadDownloadTasks();
-            if (downloadTasks != null && !downloadTasks.isEmpty()) {
-                for (DownloadTask downloadTask : downloadTasks) {
+            List<LocalTask> localTasks = downloadSupport.loadLocalTasks();
+            if (localTasks != null && !localTasks.isEmpty()) {
+                for (LocalTask localTask : localTasks) {
 
-                    DownloadRecord downloadRecord = makeDownloadRecord(downloadSupport, downloadTask);
+                    DownloadRecord downloadRecord = makeDownloadRecord(localTask.getId(),downloadSupport, localTask.getDownloadTask());
                     if (tail == null) {
                         tail = mRecordHead = downloadRecord;
                     } else {
@@ -86,7 +87,7 @@ public class DownloadManager {
                         tail = downloadRecord;
                     }
                     incrementTaskSize();
-                    if (downloadSupport.isTaskRunning(downloadTask)) {
+                    if (localTask.isRunning()) {
                         downloadRecord.downloadTask.start();
                     }
                 }
@@ -100,8 +101,9 @@ public class DownloadManager {
 
         DownloadSupport target = null;
         DownloadTask targetTask = null;
+        String id = UUID.randomUUID().toString();
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            DownloadTask downloadTask = downloadSupport.createDownloadTask(request);
+            DownloadTask downloadTask = downloadSupport.createDownloadTask(id,request);
             if (downloadTask != null) {
                 target = downloadSupport;
                 targetTask = downloadTask;
@@ -111,13 +113,17 @@ public class DownloadManager {
         if (target == null) {
             throw new IllegalArgumentException("download task cannot be null");
         }
-        return makeDownloadRecord(target, targetTask);
+        return makeDownloadRecord(id,target, targetTask);
     }
 
-    private DownloadRecord makeDownloadRecord(DownloadSupport downloadSupport, DownloadTask downloadTask) {
+    private DownloadRecord makeDownloadRecord(String id,
+                                              DownloadSupport downloadSupport,
+                                              DownloadTask downloadTask) {
 
         TaskInfo taskInfo = downloadSupport.buildTaskInfo(downloadTask);
-        DownloadRecord downloadRecord = new DownloadRecord(downloadTask, taskInfo, downloadSupport);
+        DownloadRecord downloadRecord = new DownloadRecord(id, downloadTask,
+                taskInfo,
+                downloadSupport);
         configDownloadRecord(downloadRecord);
         return downloadRecord;
     }
@@ -130,7 +136,7 @@ public class DownloadManager {
         }
         this.mRecordHead = record;
         incrementTaskSize();
-        String taskId = record.downloadTask.getId();
+        String taskId = record.id;
         getDownloadTaskListeners().notifyTaskAdded(taskId);
         tryStartIdleTask();
         return taskId;
@@ -143,7 +149,7 @@ public class DownloadManager {
     public synchronized void start(String id) {
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
-            if (Objects.equals(curr.downloadTask.getId(), id)) {
+            if (Objects.equals(curr.id, id)) {
                 DownloadTask downloadTask = curr.downloadTask;
                 if (!downloadTask.isStarted()) {
                     downloadTask.reset();
@@ -158,7 +164,7 @@ public class DownloadManager {
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
             DownloadTask downloadTask = curr.downloadTask;
-            if (Objects.equals(downloadTask.getId(), id)) {
+            if (Objects.equals(curr.id, id)) {
                 if (downloadTask.isStarted()) {
                     downloadTask.cancel();
                 }
@@ -175,7 +181,7 @@ public class DownloadManager {
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
             DownloadTask downloadTask = curr.downloadTask;
-            String taskId = downloadTask.getId();
+            String taskId = curr.id;
             if (Objects.equals(id, taskId)) {
 
                 downloadTask.cancel();
@@ -199,7 +205,7 @@ public class DownloadManager {
 
     private void configDownloadRecord(final DownloadRecord record) {
         DownloadTask downloadTask = record.downloadTask;
-        String id = downloadTask.getId();
+        String id = record.id;
         downloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
             public void onReset() {
@@ -272,7 +278,7 @@ public class DownloadManager {
     public synchronized TaskInfo getTaskInfo(String id) {
         DownloadRecord curr = mRecordHead;
         while (curr != null) {
-            if (Objects.equals(curr.downloadTask.getId(), id)) {
+            if (Objects.equals(curr.id, id)) {
                 return curr.taskInfo;
             }
             curr = curr.next;
@@ -294,7 +300,7 @@ public class DownloadManager {
         DownloadTask downloadTask = record.downloadTask;
         boolean changed = record.downloadSupport.handleProgressSync(downloadTask);
         if (changed) {
-            getDownloadTaskListeners().notifyTaskProgressChanged(downloadTask.getId());
+            getDownloadTaskListeners().notifyTaskProgressChanged(record.id);
         }
     }
 
@@ -351,7 +357,7 @@ public class DownloadManager {
         DownloadTask downloadTask = record.downloadTask;
         boolean changed = record.downloadSupport.handleSpeedCompute(downloadTask);
         if (changed) {
-            getDownloadTaskListeners().notifyTaskSpeedChanged(record.downloadTask.getId());
+            getDownloadTaskListeners().notifyTaskSpeedChanged(record.id);
         }
     }
 
@@ -379,12 +385,17 @@ public class DownloadManager {
 
     private final static class DownloadRecord {
 
+        private final String id;
         private DownloadRecord next;
         private final DownloadTask downloadTask;
         private final TaskInfo taskInfo;
         private final DownloadSupport downloadSupport;
 
-        public DownloadRecord(DownloadTask downloadTask, TaskInfo taskInfo, DownloadSupport downloadSupport) {
+        public DownloadRecord(String id,
+                              DownloadTask downloadTask,
+                              TaskInfo taskInfo,
+                              DownloadSupport downloadSupport) {
+            this.id = id;
             this.downloadTask = downloadTask;
             this.taskInfo = taskInfo;
             this.downloadSupport = downloadSupport;

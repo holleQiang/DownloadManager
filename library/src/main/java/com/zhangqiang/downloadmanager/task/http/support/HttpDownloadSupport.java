@@ -5,6 +5,7 @@ import android.content.Context;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.task.http.service.HttpDefaultTaskService;
@@ -53,28 +54,26 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public List<DownloadTask> loadDownloadTasks() {
+    public List<LocalTask> loadLocalTasks() {
         List<HttpTaskBean> httpTaskBeans = mHttpTaskService.getHttpTasks();
         if (httpTaskBeans == null || httpTaskBeans.isEmpty()) {
             return null;
         }
-        List<DownloadTask> downloadTasks = new ArrayList<>();
+        List<LocalTask> downloadTasks = new ArrayList<>();
         for (HttpTaskBean httpTaskBean : httpTaskBeans) {
-            InternalTask httpDownloadTask = new InternalTask(httpTaskBean.getId(),
-                    mHttpEngine,
-                    httpTaskBean.getUrl(),
-                    httpTaskBean.getSaveDir(),
-                    httpTaskBean.getFileName(),
-                    httpTaskBean.getThreadSize(),
-                    new HttpPartTaskFactoryImpl(httpTaskBean));
-            configHttpDownloadTask(httpTaskBean, httpDownloadTask);
-            downloadTasks.add(httpDownloadTask);
+            int state = httpTaskBean.getState();
+            boolean isRunning = state == HttpTaskBean.STATE_START
+                    || state == HttpTaskBean.STATE_GENERATING_INFO
+                    || state == HttpTaskBean.STATE_WAITING_CHILDREN_TASK;
+            downloadTasks.add(new LocalTask(httpTaskBean.getId(),
+                    configHttpDownloadTask(httpTaskBean),
+                    isRunning));
         }
         return downloadTasks;
     }
 
     @Override
-    public DownloadTask createDownloadTask(DownloadRequest request) {
+    public DownloadTask createDownloadTask(String id, DownloadRequest request) {
         if (!(request instanceof HttpDownloadRequest)) {
             return null;
         }
@@ -93,16 +92,7 @@ public class HttpDownloadSupport implements DownloadSupport {
 
         mHttpTaskService.add(httpTaskBean);
 
-        InternalTask httpDownloadTask = new InternalTask(taskId,
-                mHttpEngine,
-                httpTaskBean.getUrl(),
-                httpTaskBean.getSaveDir(),
-                httpTaskBean.getFileName(),
-                httpTaskBean.getThreadSize(),
-                new HttpPartTaskFactoryImpl(httpTaskBean)
-        );
-        configHttpDownloadTask(httpTaskBean, httpDownloadTask);
-        return httpDownloadTask;
+        return configHttpDownloadTask(httpTaskBean);
     }
 
     @Override
@@ -169,15 +159,6 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public boolean isTaskRunning(DownloadTask downloadTask) {
-        HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
-        int state = httpTaskBean.getState();
-        return state == HttpTaskBean.STATE_START
-                || state == HttpTaskBean.STATE_GENERATING_INFO
-                || state == HttpTaskBean.STATE_WAITING_CHILDREN_TASK;
-    }
-
-    @Override
     public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
         HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
         mHttpTaskService.remove(httpTaskBean.getId());
@@ -209,7 +190,15 @@ public class HttpDownloadSupport implements DownloadSupport {
         }
     }
 
-    private void configHttpDownloadTask(HttpTaskBean httpTaskBean, InternalTask httpDownloadTask) {
+    private DownloadTask configHttpDownloadTask(HttpTaskBean httpTaskBean) {
+        InternalTask httpDownloadTask = new InternalTask(
+                mHttpEngine,
+                httpTaskBean.getUrl(),
+                httpTaskBean.getSaveDir(),
+                httpTaskBean.getFileName(),
+                httpTaskBean.getThreadSize(),
+                new HttpPartTaskFactoryImpl(httpTaskBean)
+        );
         httpDownloadTask.httpTaskBean = httpTaskBean;
         httpDownloadTask.getCallbacks().addCallback(new Callback() {
 
@@ -302,20 +291,21 @@ public class HttpDownloadSupport implements DownloadSupport {
                 mHttpTaskService.update(httpTaskBean);
             }
         });
+        return httpDownloadTask;
     }
 
     private static class InternalTask extends HttpDownloadTask {
 
         private HttpTaskBean httpTaskBean;
 
-        public InternalTask(String id,
-                            HttpEngine httpEngine,
-                            String url,
-                            String saveDir,
-                            String targetFileName,
-                            int threadSize,
-                            HttpPartTaskFactory httpPartTaskFactory) {
-            super(id, httpEngine, url, saveDir, targetFileName, threadSize, httpPartTaskFactory);
+        public InternalTask(
+                HttpEngine httpEngine,
+                String url,
+                String saveDir,
+                String targetFileName,
+                int threadSize,
+                HttpPartTaskFactory httpPartTaskFactory) {
+            super(httpEngine, url, saveDir, targetFileName, threadSize, httpPartTaskFactory);
         }
     }
 
@@ -323,14 +313,13 @@ public class HttpDownloadSupport implements DownloadSupport {
 
         private HttpPartTaskItemBean httpPartTaskItemBean;
 
-        public InternalPartTask(String id,
-                                HttpEngine httpEngine,
+        public InternalPartTask(HttpEngine httpEngine,
                                 String url,
                                 long fromPosition,
                                 long currentPosition,
                                 long toPosition,
                                 String filePath) {
-            super(id, httpEngine, url, fromPosition, currentPosition, toPosition, filePath);
+            super(httpEngine, url, fromPosition, currentPosition, toPosition, filePath);
         }
     }
 
@@ -364,7 +353,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                         }
                     }
                     if (historyPartItemBean != null) {
-                        InternalPartTask internalPartTask = new InternalPartTask(historyPartItemBean.getId(),
+                        InternalPartTask internalPartTask = new InternalPartTask(
                                 mHttpEngine,
                                 url,
                                 historyPartItemBean.getStartPosition(),
@@ -403,7 +392,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 httpPartTaskItemBean.setEndPosition(end);
                 items.add(httpPartTaskItemBean);
 
-                InternalPartTask partTask = new InternalPartTask(httpPartTaskItemBean.getId(),
+                InternalPartTask partTask = new InternalPartTask(
                         mHttpEngine,
                         url,
                         start,

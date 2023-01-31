@@ -1,5 +1,7 @@
 package com.zhangqiang.downloadmanager.task.ftp.bean;
 
+import java.util.Date;
+
 public class FTPTaskBean {
     public static final int STATE_IDLE = 0;
     public static final int STATE_DOWNLOADING = 1;
@@ -10,14 +12,27 @@ public class FTPTaskBean {
     private String id;
     private String host;
     private int port;
+    private String userName;
+    private String password;
     private String ftpDir;
     private String ftpFileName;
     private String saveDir;
     private String fileName;
     private String targetFileName;
 
+    private long currentLength;
     private int state = STATE_IDLE;
     private String errorMsg;
+    private Date createTime;
+
+    public String getId() {
+        return id;
+    }
+
+    public FTPTaskBean setId(String id) {
+        this.id = id;
+        return this;
+    }
 
     public int getState() {
         return state;
@@ -97,6 +112,42 @@ public class FTPTaskBean {
 
     public FTPTaskBean setTargetFileName(String targetFileName) {
         this.targetFileName = targetFileName;
+        return this;
+    }
+
+    public long getCurrentLength() {
+        return currentLength;
+    }
+
+    public FTPTaskBean setCurrentLength(long currentLength) {
+        this.currentLength = currentLength;
+        return this;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public FTPTaskBean setCreateTime(Date createTime) {
+        this.createTime = createTime;
+        return this;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public FTPTaskBean setUserName(String userName) {
+        this.userName = userName;
+        return this;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public FTPTaskBean setPassword(String password) {
+        this.password = password;
         return this;
     }
 }

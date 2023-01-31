@@ -1,82 +1,135 @@
 package com.zhangqiang.downloadmanager.task.ftp.support;
 
+import android.content.Context;
+import android.text.TextUtils;
+
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
+import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.ftp.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.task.ftp.bean.FTPTaskBean;
 import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
+import com.zhangqiang.downloadmanager.task.ftp.service.FTPTaskService;
+import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
+import com.zhangqiang.downloadmanager.utils.FileUtils;
 
-import java.util.HashMap;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 public class FTPDownloadSupport implements DownloadSupport {
 
-    private final HashMap<String, FTPTaskBean> ftpTaskBeanHashMap = new HashMap<>();
+    private final FTPTaskService ftpTaskService;
 
-    @Override
-    public List<DownloadTask> loadDownloadTasks() {
-        return null;
+    public FTPDownloadSupport(Context context) {
+        ftpTaskService = new FTPTaskService(context);
     }
 
     @Override
-    public DownloadTask createDownloadTask(DownloadRequest request) {
-        if(request instanceof FTPDownloadRequest){
-            FTPDownloadRequest ftpRequest = (FTPDownloadRequest) request;
-            String taskId = UUID.randomUUID().toString();
-            FTPTaskBean ftpTaskBean = new FTPTaskBean();
-            FTPDownloadTask ftpDownloadTask = new FTPDownloadTask(taskId,
-                    ftpRequest.getHost(),
-                    ftpRequest.getPort(),
-                    ftpRequest.getUserName(),
-                    ftpRequest.getPassword(),
-                    ftpRequest.getFtpDir(),
-                    ftpRequest.getFtpFileName(),
-                    ftpRequest.getSaveDir(),
-                    ftpRequest.getFileName());
-            ftpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
-                @Override
-                public void onReset() {
-                    ftpTaskBeanHashMap.get(taskId).setState(FTPTaskBean.STATE_IDLE);
-                }
-
-                @Override
-                public void onStart() {
-                    ftpTaskBeanHashMap.get(taskId).setState(FTPTaskBean.STATE_DOWNLOADING);
-                }
-
-                @Override
-                public void onComplete() {
-                    ftpTaskBeanHashMap.get(taskId).setState(FTPTaskBean.STATE_SUCCESS);
-                }
-
-                @Override
-                public void onFail(DownloadException e) {
-                    FTPTaskBean ftpTaskBean = ftpTaskBeanHashMap.get(taskId);
-                    ftpTaskBean.setErrorMsg(e.getMessage());
-                    ftpTaskBean.setState(FTPTaskBean.STATE_FAIL);
-                }
-
-                @Override
-                public void onCancel() {
-                    ftpTaskBeanHashMap.get(taskId).setState(FTPTaskBean.STATE_CANCEL);
-                }
-            });
-            ftpTaskBeanHashMap.put(taskId,new FTPTaskBean());
-            return ftpDownloadTask;
+    public List<LocalTask> loadLocalTasks() {
+        List<FTPTaskBean> ftpTasks = ftpTaskService.getFtpTasks();
+        if (ftpTasks != null) {
+            List<LocalTask> localTasks = new ArrayList<>();
+            for (FTPTaskBean ftpTask : ftpTasks) {
+                localTasks.add(new LocalTask(ftpTask.getId(),
+                        createTask(ftpTask),
+                        ftpTask.getState() == FTPTaskBean.STATE_DOWNLOADING));
+            }
+            return localTasks;
         }
         return null;
     }
 
     @Override
+    public DownloadTask createDownloadTask(String id, DownloadRequest request) {
+        if(request instanceof FTPDownloadRequest){
+            FTPDownloadRequest ftpRequest = (FTPDownloadRequest) request;
+            FTPTaskBean ftpTaskBean = new FTPTaskBean();
+            ftpTaskBean.setId(id);
+            ftpTaskBean.setHost(ftpRequest.getHost());
+            ftpTaskBean.setPort(ftpRequest.getPort());
+            ftpTaskBean.setUserName(ftpRequest.getUserName());
+            ftpTaskBean.setPassword(ftpRequest.getPassword());
+            ftpTaskBean.setFtpDir(ftpRequest.getFtpDir());
+            String ftpFileName = ftpRequest.getFtpFileName();
+            ftpTaskBean.setFtpFileName(ftpFileName);
+            ftpTaskBean.setSaveDir(ftpRequest.getSaveDir());
+            String fileName = ftpRequest.getFileName();
+            ftpTaskBean.setTargetFileName(fileName);
+            if(!TextUtils.isEmpty(fileName)){
+                ftpTaskBean.setFileName(fileName);
+            }else {
+                ftpTaskBean.setFileName(ftpTaskBean.getFtpFileName());
+            }
+            ftpTaskBean.setState(FTPTaskBean.STATE_IDLE);
+            ftpTaskBean.setCreateTime(new Date());
+            ftpTaskBean.setCurrentLength(0);
+
+            ftpTaskService.addFtpTask(ftpTaskBean);
+            return createTask(ftpTaskBean);
+        }
+        return null;
+    }
+
+    private DownloadTask createTask(FTPTaskBean ftpTaskBean) {
+        InternalTask ftpDownloadTask = new InternalTask(
+                ftpTaskBean.getHost(),
+                ftpTaskBean.getPort(),
+                ftpTaskBean.getUserName(),
+                ftpTaskBean.getPassword(),
+                ftpTaskBean.getFtpDir(),
+                ftpTaskBean.getFtpFileName(),
+                ftpTaskBean.getSaveDir(),
+                ftpTaskBean.getFileName());
+        ftpDownloadTask.ftpTaskBean = ftpTaskBean;
+        ftpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
+            @Override
+            public void onReset() {
+                ftpTaskBean.setState(FTPTaskBean.STATE_IDLE);
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+
+            @Override
+            public void onStart() {
+                ftpTaskBean.setState(FTPTaskBean.STATE_DOWNLOADING);
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+
+            @Override
+            public void onComplete() {
+                ftpTaskBean.setState(FTPTaskBean.STATE_SUCCESS);
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+
+            @Override
+            public void onFail(DownloadException e) {
+                ftpTaskBean.setErrorMsg(e.getMessage());
+                ftpTaskBean.setState(FTPTaskBean.STATE_FAIL);
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+
+            @Override
+            public void onCancel() {
+                ftpTaskBean.setState(FTPTaskBean.STATE_CANCEL);
+                ftpTaskService.updateFtpTask(ftpTaskBean);
+            }
+        });
+        return ftpDownloadTask;
+    }
+
+    @Override
     public TaskInfo buildTaskInfo(DownloadTask downloadTask) {
+        InternalTask internalTask = (InternalTask) downloadTask;
+        FTPTaskBean ftpTaskBean = internalTask.ftpTaskBean;
         return new TaskInfo() {
             @Override
             public String getId() {
-                return downloadTask.getId();
+                return ftpTaskBean.getId();
             }
 
             @Override
@@ -86,17 +139,17 @@ public class FTPDownloadSupport implements DownloadSupport {
 
             @Override
             public String getSaveDir() {
-                return null;
+                return ftpTaskBean.getSaveDir();
             }
 
             @Override
             public String getFileName() {
-                return null;
+                return ftpTaskBean.getFileName();
             }
 
             @Override
             public long getCurrentLength() {
-                return downloadTask.getCurrentLength();
+                return ftpTaskBean.getCurrentLength();
             }
 
             @Override
@@ -106,7 +159,6 @@ public class FTPDownloadSupport implements DownloadSupport {
 
             @Override
             public int getState() {
-                FTPTaskBean ftpTaskBean = ftpTaskBeanHashMap.get(downloadTask.getId());
                 int state = ftpTaskBean.getState();
                 if(state == FTPTaskBean.STATE_IDLE){
                     return STATE_IDLE;
@@ -129,12 +181,11 @@ public class FTPDownloadSupport implements DownloadSupport {
 
             @Override
             public long getCreateTime() {
-                return 0;
+                return ftpTaskBean.getCreateTime().getTime();
             }
 
             @Override
             public String getErrorMsg() {
-                FTPTaskBean ftpTaskBean = ftpTaskBeanHashMap.get(downloadTask.getId());
                 return ftpTaskBean.getErrorMsg();
             }
 
@@ -145,7 +196,7 @@ public class FTPDownloadSupport implements DownloadSupport {
 
             @Override
             public long getSpeed() {
-                return 0;
+                return SpeedUtils.getSpeed(downloadTask);
             }
 
             @Override
@@ -172,26 +223,44 @@ public class FTPDownloadSupport implements DownloadSupport {
 
     @Override
     public boolean handleProgressSync(DownloadTask downloadTask) {
+        FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
+        long currentLength = downloadTask.getCurrentLength();
+        long oldLength = ftpTaskBean.getCurrentLength();
+        if(oldLength != currentLength){
+            ftpTaskBean.setCurrentLength(currentLength);
+            ftpTaskService.updateFtpTask(ftpTaskBean);
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean handleSpeedCompute(DownloadTask downloadTask) {
-        return false;
+        return SpeedUtils.computeSpeed(downloadTask);
     }
 
     @Override
     public boolean isTaskIdle(DownloadTask downloadTask) {
-        return ftpTaskBeanHashMap.get(downloadTask.getId()).getState() == FTPTaskBean.STATE_IDLE;
-    }
-
-    @Override
-    public boolean isTaskRunning(DownloadTask downloadTask) {
-        return ftpTaskBeanHashMap.get(downloadTask.getId()).getState() == FTPTaskBean.STATE_DOWNLOADING;
+        FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
+        return ftpTaskBean.getState() == FTPTaskBean.STATE_IDLE;
     }
 
     @Override
     public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
+        FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
+        File file = new File(ftpTaskBean.getSaveDir(), ftpTaskBean.getFileName());
+        try {
+            FileUtils.deleteFileIfExists(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private static class InternalTask extends FTPDownloadTask{
+       private  FTPTaskBean ftpTaskBean;
+
+        public InternalTask(String host, int port, String userName, String password, String ftpDir, String ftpFileName, String saveDir, String fileName) {
+            super(host, port, userName, password, ftpDir, ftpFileName, saveDir, fileName);
+        }
     }
 }

@@ -35,14 +35,12 @@ public class HttpDownloadPartTask extends DownloadTask {
     private Cancelable mHttpTask;
     private final HttpEngine mHttpEngine;
 
-    public HttpDownloadPartTask(String id,
-                                HttpEngine httpEngine,
+    public HttpDownloadPartTask(HttpEngine httpEngine,
                                 String url,
                                 long fromPosition,
                                 long currentPosition,
                                 long toPosition,
                                 String filePath) {
-        super(id);
         this.mHttpEngine = httpEngine;
         this.url = url;
         this.fromPosition = fromPosition;

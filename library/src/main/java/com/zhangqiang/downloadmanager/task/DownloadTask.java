@@ -11,15 +11,6 @@ public abstract class DownloadTask implements SpeedSupport {
     private final DownloadListeners downloadListeners = new DownloadListeners();
     private final AtomicBoolean mStarted = new AtomicBoolean(false);
     private final SpeedRecord speedRecord = new SpeedRecord();
-    private final String id;
-
-    public DownloadTask(String id) {
-        this.id = id;
-    }
-
-    public String getId() {
-        return id;
-    }
 
     protected abstract void onStart();
 
