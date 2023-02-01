@@ -1,6 +1,5 @@
 package com.zhangqiang.downloadmanager.task.http.support;
 
-import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.http.HttpDownloadTask;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskBean;
@@ -11,12 +10,13 @@ import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 
 import java.util.List;
 
-public class TaskInfoImpl implements TaskInfo {
+public class HttpTaskInfoImpl implements HttpTaskInfo {
 
     private final HttpTaskBean httpTaskBean;
     private final DownloadTask downloadTask;
+    private final Listeners listeners = new Listeners();
 
-    public TaskInfoImpl(HttpTaskBean httpTaskBean, DownloadTask downloadTask) {
+    public HttpTaskInfoImpl(HttpTaskBean httpTaskBean, DownloadTask downloadTask) {
         this.httpTaskBean = httpTaskBean;
         this.downloadTask = downloadTask;
     }
@@ -154,5 +154,19 @@ public class TaskInfoImpl implements TaskInfo {
             }
         }
         return 0;
+    }
+
+    @Override
+    public void addListener(Listener listener) {
+        listeners.addListener(listener);
+    }
+
+    @Override
+    public void removeListener(Listener listener) {
+        listeners.removeListener(listener);
+    }
+
+    public Listeners getListeners() {
+        return listeners;
     }
 }

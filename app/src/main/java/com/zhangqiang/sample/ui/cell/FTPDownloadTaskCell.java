@@ -1,137 +1,132 @@
 package com.zhangqiang.sample.ui.cell;
 
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
-
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 
-import com.zhangqiang.celladapter.CellRVAdapter;
-import com.zhangqiang.celladapter.cell.Cell;
+import androidx.fragment.app.FragmentManager;
+
 import com.zhangqiang.celladapter.cell.MultiCell;
-import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
+import com.zhangqiang.downloadmanager.task.ftp.support.FTPTaskInfo;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
-import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.IntentUtils;
-import com.zhangqiang.sample.utils.ResourceUtils;
-import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
-public class DownloadTaskCell extends MultiCell<TaskInfo> {
+public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
 
-    private static final String TAG = "DownloadTaskCell";
+    private static final String TAG = FTPDownloadTaskCell.class.getSimpleName();
     private final FragmentManager fragmentManager;
-    private boolean showPartInfo;
 
-    public DownloadTaskCell(TaskInfo data, FragmentManager fragmentManager) {
-        super(R.layout.item_download, data, null);
+    public FTPDownloadTaskCell(FTPTaskInfo data, FragmentManager fragmentManager) {
+        super(R.layout.item_download_ftp, data,null);
         this.fragmentManager = fragmentManager;
     }
 
-
     @Override
-    protected void onBindViewHolder(final ViewHolder viewHolder) {
+    protected void onBindViewHolder(ViewHolder viewHolder) {
         super.onBindViewHolder(viewHolder);
-        final Context context = viewHolder.getView().getContext();
-        final TaskInfo entity = getData();
-
+        View view = viewHolder.getView();
+        final Context context = view.getContext();
+        final FTPTaskInfo ftpTaskInfo = getData();
         updateState(viewHolder);
         updateInfo(viewHolder);
         updateProgress(viewHolder);
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int status = entity.getState();
+                int status = ftpTaskInfo.getState();
                 LogUtils.i(TAG,"------------State:"+status);
-                if (status == TaskInfo.STATE_FAIL || status == TaskInfo.STATE_PAUSE) {
-                    DownloadManager.getInstance(context).start(entity.getId());
-                } else if (status == TaskInfo.STATE_DOWNLOADING) {
-                    DownloadManager.getInstance(context).pause(entity.getId());
-                } else if (status == TaskInfo.STATE_COMPLETE) {
-                    File file = new File(entity.getSaveDir(), entity.getFileName());
-                    IntentUtils.openFile(v.getContext(), file, entity.getContentType());
+                if (status == FTPTaskInfo.STATE_FAIL || status == FTPTaskInfo.STATE_PAUSE) {
+                    DownloadManager.getInstance(context).start(ftpTaskInfo.getId());
+                } else if (status == FTPTaskInfo.STATE_DOWNLOADING) {
+                    DownloadManager.getInstance(context).pause(ftpTaskInfo.getId());
+                } else if (status == FTPTaskInfo.STATE_COMPLETE) {
+                    File file = new File(ftpTaskInfo.getSaveDir(), ftpTaskInfo.getFileName());
+                    IntentUtils.openFile(v.getContext(), file, ftpTaskInfo.getContentType());
                 }
             }
         });
         updateSpeed(viewHolder);
-        viewHolder.getView().setOnLongClickListener(new View.OnLongClickListener() {
+        view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(final View v) {
-                TaskOperationDialog dialog = TaskOperationDialog.newInstance(getData().getId());
+                TaskOperationDialog dialog = TaskOperationDialog.newInstance(ftpTaskInfo.getId());
                 dialog.show(fragmentManager, "task_operate_dialog");
                 return true;
             }
         });
-        viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, null);
-        viewHolder.setChecked(R.id.cb_show_part_info, showPartInfo);
-        viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                showPartInfo = isChecked;
-                updatePartInfo(viewHolder);
-            }
-        });
-        updatePartInfo(viewHolder);
-    }
 
-    private void updatePartInfo(ViewHolder viewHolder) {
-        RecyclerView rvPartInfo = viewHolder.getView(R.id.rv_part_info);
-        Context context = viewHolder.getView().getContext();
-        if (showPartInfo) {
-            rvPartInfo.setLayoutManager(new LinearLayoutManager(context));
-            CellRVAdapter adapter = new CellRVAdapter();
-            adapter.setDataList(makePartCells());
-            rvPartInfo.setAdapter(adapter);
-        } else {
-            rvPartInfo.setAdapter(null);
+        Object tag = view.getTag();
+        if (tag != null) {
+            view.removeOnAttachStateChangeListener((View.OnAttachStateChangeListener) tag);
         }
-        if (rvPartInfo.getItemDecorationCount() <= 0) {
-            int attrColor = ResourceUtils.getAttrColor(context, R.attr.colorAccent);
-            ColorDrawable dividerDrawable = new ColorDrawable(attrColor);
-            dividerDrawable.setBounds(0, 0, 0, ScreenUtils.dp2Px(context, 1));
-            rvPartInfo.addItemDecoration(new LinearRVDivider(dividerDrawable));
-        }
-    }
-
-    private List<Cell> makePartCells() {
-        List<Cell> cells = new ArrayList<>();
-        final TaskInfo taskInfo = getData();
-        int partCount = taskInfo.getPartCount();
-        for (int i = 0; i < partCount; i++) {
-
-            cells.add(new MultiCell<>(R.layout.item_part_info, i, new ViewHolderBinder<Integer>() {
+        View.OnAttachStateChangeListener onAttachStateChangeListener = new View.OnAttachStateChangeListener() {
+            final FTPTaskInfo.Listener listener = new FTPTaskInfo.Listener() {
                 @Override
-                public void onBind(ViewHolder viewHolder, Integer i) {
-                    long partSpeed = taskInfo.getPartSpeed(i);
-                    final long partContentLength = taskInfo.getPartContentLength(i);
-                    final long partCurrentLength = taskInfo.getPartCurrentLength(i);
-                    viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(partCurrentLength) + "/" + StringUtils.formatFileLength(partContentLength));
-                    viewHolder.setProgress(R.id.pb_progress, (int) ((float) partCurrentLength / partContentLength * 100));
-                    viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(partSpeed) + "/s");
-                    viewHolder.setText(R.id.tv_part_index, String.valueOf(i));
+                public void onStateChanged() {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateState();
+                        }
+                    });
                 }
-            }));
-        }
-        return cells;
+
+                @Override
+                public void onInfoReady() {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateInfo();
+                        }
+                    });
+                }
+
+                @Override
+                public void onProgressChanged() {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateProgress();
+                        }
+                    });
+                }
+
+                @Override
+                public void onSpeedChanged() {
+                    view.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateSpeed();
+                        }
+                    });
+                }
+            };
+
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                ftpTaskInfo.addListener(listener);
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                ftpTaskInfo.removeListener(listener);
+            }
+        };
+        view.addOnAttachStateChangeListener(onAttachStateChangeListener);
+        view.setTag(onAttachStateChangeListener);
     }
 
     private void updateSpeed(ViewHolder viewHolder) {
-        TaskInfo data = getData();
+        FTPTaskInfo data = getData();
         viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
 
         String resetTimeStr;
@@ -139,7 +134,7 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (data.getContentLength() <= data.getCurrentLength()) {
 
-            if (data.getState() == TaskInfo.STATE_COMPLETE) {
+            if (data.getState() == FTPTaskInfo.STATE_COMPLETE) {
                 resetTimeStr = "已完成";
             } else {
                 resetTimeStr = "剩余时间：0秒";
@@ -169,33 +164,32 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             @Override
             public void onBind(ViewHolder viewHolder) {
                 updateSpeed(viewHolder);
-                updatePartInfo(viewHolder);
             }
         });
     }
 
     private void updateState(ViewHolder viewHolder) {
-        TaskInfo data = getData();
+        FTPTaskInfo data = getData();
 
         int status = data.getState();
-        if (status == TaskInfo.STATE_IDLE) {
+        if (status == FTPTaskInfo.STATE_IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == TaskInfo.STATE_DOWNLOADING) {
+        } else if (status == FTPTaskInfo.STATE_DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
-        } else if (status == TaskInfo.STATE_COMPLETE) {
+        } else if (status == FTPTaskInfo.STATE_COMPLETE) {
             viewHolder.setText(R.id.bt_state, R.string.open);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == TaskInfo.STATE_FAIL) {
+        } else if (status == FTPTaskInfo.STATE_FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
             changeVisibleByError(viewHolder, true);
             viewHolder.setText(R.id.tv_error, data.getErrorMsg());
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == TaskInfo.STATE_PAUSE) {
+        } else if (status == FTPTaskInfo.STATE_PAUSE) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
@@ -214,7 +208,6 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
         viewHolder.setVisibility(R.id.tv_speed, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
         viewHolder.setVisibility(R.id.tv_rest_time, isError ? View.INVISIBLE : View.VISIBLE);
-        viewHolder.setVisibility(R.id.cb_show_part_info, isError ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void updateProgress(ViewHolder viewHolder) {
@@ -233,7 +226,6 @@ public class DownloadTaskCell extends MultiCell<TaskInfo> {
             @Override
             public void onBind(ViewHolder viewHolder) {
                 updateProgress(viewHolder);
-                updatePartInfo(viewHolder);
             }
         });
     }

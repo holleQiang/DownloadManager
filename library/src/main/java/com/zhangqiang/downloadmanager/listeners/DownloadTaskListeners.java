@@ -6,30 +6,6 @@ import java.util.List;
 public class DownloadTaskListeners {
     private List<DownloadTaskListener> downloadTaskListeners;
 
-    public synchronized void notifyTaskStateChanged(String id){
-        if (downloadTaskListeners != null) {
-            for (int i = 0; i < downloadTaskListeners.size(); i++) {
-                downloadTaskListeners.get(i).onTaskStateChanged(id);
-            }
-        }
-    }
-
-    public synchronized void notifyTaskInfoChanged(String id) {
-        if (downloadTaskListeners != null) {
-            for (int i = downloadTaskListeners.size() - 1; i >= 0; i--) {
-                downloadTaskListeners.get(i).onTaskInfoChanged(id);
-            }
-        }
-    }
-
-    public synchronized void notifyTaskProgressChanged(String id){
-        if (downloadTaskListeners != null) {
-            for (int i = downloadTaskListeners.size() - 1; i >= 0; i--) {
-                downloadTaskListeners.get(i).onTaskProgressChanged(id);
-            }
-        }
-    }
-
     public synchronized void addDownloadTaskListener(DownloadTaskListener listener) {
         if (downloadTaskListeners == null) {
             downloadTaskListeners = new ArrayList<>();
@@ -45,14 +21,6 @@ public class DownloadTaskListeners {
             return;
         }
         downloadTaskListeners.remove(listener);
-    }
-
-    public synchronized void notifyTaskSpeedChanged(String id) {
-        if (downloadTaskListeners != null) {
-            for (int i = downloadTaskListeners.size() - 1; i >= 0; i--) {
-                downloadTaskListeners.get(i).onTaskSpeedChanged(id);
-            }
-        }
     }
 
     public synchronized void notifyTaskRemoved(String id) {

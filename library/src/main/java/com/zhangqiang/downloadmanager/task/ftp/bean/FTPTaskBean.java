@@ -22,6 +22,7 @@ public class FTPTaskBean {
 
     private long currentLength;
     private long contentLength;
+    private String contentType;
     private int state = STATE_IDLE;
     private String errorMsg;
     private Date createTime;
@@ -158,6 +159,15 @@ public class FTPTaskBean {
 
     public FTPTaskBean setContentLength(long contentLength) {
         this.contentLength = contentLength;
+        return this;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public FTPTaskBean setContentType(String contentType) {
+        this.contentType = contentType;
         return this;
     }
 }

@@ -11,7 +11,10 @@ import android.widget.Toast;
 import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
+import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
+import com.zhangqiang.downloadmanager.task.ftp.support.FTPTaskInfo;
 import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
+import com.zhangqiang.downloadmanager.task.http.support.HttpTaskInfo;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 
@@ -63,25 +66,41 @@ public class TaskOperationDialog extends BaseDialogFragment {
             @Override
             public void onClick(View v) {
                 TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
-                if (taskInfo == null) {
-                    return;
+                if (taskInfo instanceof HttpTaskInfo) {
+                    HttpTaskInfo httpTaskInfo = (HttpTaskInfo) taskInfo;
+                    copy(context, httpTaskInfo.getUrl());
+                    Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
+                    getDialog().dismiss();
                 }
-                copy(context, taskInfo.getUrl());
-                Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
-                getDialog().dismiss();
             }
         });
         view.findViewById(R.id.bt_restart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
-                if (taskInfo != null) {
+                if (taskInfo instanceof HttpTaskInfo) {
+                    HttpTaskInfo httpTaskInfo = (HttpTaskInfo) taskInfo;
                     DownloadManager.getInstance(context).deleteTask(taskId, true);
                     DownloadRequest request = new HttpDownloadRequest.Builder()
-                            .setUrl(taskInfo.getUrl())
-                            .setSaveDir(taskInfo.getSaveDir())
-                            .setThreadSize(taskInfo.getThreadCount())
-                            .setFileName(taskInfo.getFileName())
+                            .setUrl(httpTaskInfo.getUrl())
+                            .setSaveDir(httpTaskInfo.getSaveDir())
+                            .setThreadSize(httpTaskInfo.getThreadCount())
+                            .setFileName(httpTaskInfo.getFileName())
+                            .build();
+                    DownloadManager.getInstance(context).enqueue(request);
+                    getDialog().dismiss();
+                }else if(taskInfo instanceof FTPTaskInfo){
+                    FTPTaskInfo ftpTaskInfo = (FTPTaskInfo) taskInfo;
+                    DownloadManager.getInstance(context).deleteTask(taskId, true);
+                    DownloadRequest request = new FTPDownloadRequest.Builder()
+                            .setHost(ftpTaskInfo.getHost())
+                            .setPort(ftpTaskInfo.getPort())
+                            .setSaveDir(ftpTaskInfo.getSaveDir())
+                            .setFileName(ftpTaskInfo.getFileName())
+                            .setFtpDir(ftpTaskInfo.getFtpDir())
+                            .setFtpFileName(ftpTaskInfo.getFtpFileName())
+                            .setUserName(ftpTaskInfo.getUserName())
+                            .setPassword(ftpTaskInfo.getPassword())
                             .build();
                     DownloadManager.getInstance(context).enqueue(request);
                     getDialog().dismiss();

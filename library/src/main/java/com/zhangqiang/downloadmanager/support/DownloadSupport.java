@@ -16,32 +16,27 @@ public interface DownloadSupport {
     /**
      * create download task by request
      */
-    DownloadTask createDownloadTask(String id, DownloadRequest request);
-
-    /**
-     * create task info getter
-     */
-    TaskInfo buildTaskInfo(DownloadTask downloadTask);
+    DownloadBundle createDownloadBundle(String id, DownloadRequest request);
 
     /**
      * sync progress info
      * @return notify progress update when true
      */
-    boolean handleProgressSync(DownloadTask downloadTask);
+    void handleProgressSync(DownloadBundle downloadBundle);
     /**
      * compute speed of task
      * @return notify speed update when true
      */
-    boolean handleSpeedCompute(DownloadTask downloadTask);
+    void handleSpeedCompute(DownloadBundle downloadBundle);
 
     /**
      * if task is idle and active task size is legal，task will be start
      * @return true is task is idle
      */
-    boolean isTaskIdle(DownloadTask downloadTask);
+    boolean isTaskIdle(DownloadBundle downloadBundle);
 
     /**
      * task is remove from queue
      */
-    void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile);
+    void handleDeleteTask(DownloadBundle downloadBundle, boolean deleteFile);
 }

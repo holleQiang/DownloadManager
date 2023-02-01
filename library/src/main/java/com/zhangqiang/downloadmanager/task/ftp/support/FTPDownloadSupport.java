@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.support.DownloadBundle;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
 import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
@@ -15,6 +16,7 @@ import com.zhangqiang.downloadmanager.task.ftp.callback.Callback;
 import com.zhangqiang.downloadmanager.task.ftp.callback.ResourceInfo;
 import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
 import com.zhangqiang.downloadmanager.task.ftp.service.FTPTaskService;
+import com.zhangqiang.downloadmanager.task.http.support.HttpTaskInfo;
 import com.zhangqiang.downloadmanager.task.speed.SpeedUtils;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
@@ -40,7 +42,7 @@ public class FTPDownloadSupport implements DownloadSupport {
             for (FTPTaskBean ftpTask : ftpTasks) {
                 localTasks.add(new LocalTask(ftpTask.getId(),
                         createTask(ftpTask),
-                        ftpTask.getState() == FTPTaskBean.STATE_DOWNLOADING));
+                         ftpTask.getState() == FTPTaskBean.STATE_DOWNLOADING));
             }
             return localTasks;
         }
@@ -48,7 +50,7 @@ public class FTPDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public DownloadTask createDownloadTask(String id, DownloadRequest request) {
+    public DownloadBundle createDownloadBundle(String id, DownloadRequest request) {
         if(request instanceof FTPDownloadRequest){
             FTPDownloadRequest ftpRequest = (FTPDownloadRequest) request;
             FTPTaskBean ftpTaskBean = new FTPTaskBean();
@@ -78,7 +80,7 @@ public class FTPDownloadSupport implements DownloadSupport {
         return null;
     }
 
-    private DownloadTask createTask(FTPTaskBean ftpTaskBean) {
+    private DownloadBundle createTask(FTPTaskBean ftpTaskBean) {
         InternalTask ftpDownloadTask = new InternalTask(
                 ftpTaskBean.getHost(),
                 ftpTaskBean.getPort(),
@@ -88,24 +90,28 @@ public class FTPDownloadSupport implements DownloadSupport {
                 ftpTaskBean.getFtpFileName(),
                 ftpTaskBean.getSaveDir(),
                 ftpTaskBean.getFileName());
+        FTPTaskInfoImpl taskInfo = new FTPTaskInfoImpl(ftpTaskBean, ftpDownloadTask);
         ftpDownloadTask.ftpTaskBean = ftpTaskBean;
         ftpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
             public void onReset() {
                 ftpTaskBean.setState(FTPTaskBean.STATE_IDLE);
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onStart() {
                 ftpTaskBean.setState(FTPTaskBean.STATE_DOWNLOADING);
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onComplete() {
                 ftpTaskBean.setState(FTPTaskBean.STATE_SUCCESS);
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
@@ -113,149 +119,61 @@ public class FTPDownloadSupport implements DownloadSupport {
                 ftpTaskBean.setErrorMsg(e.getMessage());
                 ftpTaskBean.setState(FTPTaskBean.STATE_FAIL);
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onCancel() {
                 ftpTaskBean.setState(FTPTaskBean.STATE_CANCEL);
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
         });
         ftpDownloadTask.getCallbacks().addCallback(new Callback() {
             @Override
             public void onResourceInfoReady(ResourceInfo resourceInfo) {
                 ftpTaskBean.setContentLength(resourceInfo.getContentLength());
+                ftpTaskBean.setContentType(resourceInfo.getContentType());
                 ftpTaskService.updateFtpTask(ftpTaskBean);
+                taskInfo.getListeners().notifyInfoReady();
             }
         });
-        return ftpDownloadTask;
+        return new DownloadBundle(ftpDownloadTask,taskInfo);
     }
 
     @Override
-    public TaskInfo buildTaskInfo(DownloadTask downloadTask) {
-        InternalTask internalTask = (InternalTask) downloadTask;
-        FTPTaskBean ftpTaskBean = internalTask.ftpTaskBean;
-        return new TaskInfo() {
-            @Override
-            public String getId() {
-                return ftpTaskBean.getId();
-            }
-
-            @Override
-            public String getUrl() {
-                return null;
-            }
-
-            @Override
-            public String getSaveDir() {
-                return ftpTaskBean.getSaveDir();
-            }
-
-            @Override
-            public String getFileName() {
-                return ftpTaskBean.getFileName();
-            }
-
-            @Override
-            public long getCurrentLength() {
-                return ftpTaskBean.getCurrentLength();
-            }
-
-            @Override
-            public long getContentLength() {
-                return ftpTaskBean.getContentLength();
-            }
-
-            @Override
-            public int getState() {
-                int state = ftpTaskBean.getState();
-                if(state == FTPTaskBean.STATE_IDLE){
-                    return STATE_IDLE;
-                }else if(state == FTPTaskBean.STATE_DOWNLOADING){
-                    return STATE_DOWNLOADING;
-                }else if(state == FTPTaskBean.STATE_SUCCESS){
-                    return STATE_COMPLETE;
-                }else if(state == FTPTaskBean.STATE_FAIL){
-                    return STATE_FAIL;
-                }else if(state == FTPTaskBean.STATE_CANCEL){
-                    return STATE_PAUSE;
-                }
-                return 0;
-            }
-
-            @Override
-            public String getContentType() {
-                return null;
-            }
-
-            @Override
-            public long getCreateTime() {
-                return ftpTaskBean.getCreateTime().getTime();
-            }
-
-            @Override
-            public String getErrorMsg() {
-                return ftpTaskBean.getErrorMsg();
-            }
-
-            @Override
-            public int getThreadCount() {
-                return 0;
-            }
-
-            @Override
-            public long getSpeed() {
-                return SpeedUtils.getSpeed(downloadTask);
-            }
-
-            @Override
-            public int getPartCount() {
-                return 0;
-            }
-
-            @Override
-            public long getPartSpeed(int partIndex) {
-                return 0;
-            }
-
-            @Override
-            public long getPartCurrentLength(int partIndex) {
-                return 0;
-            }
-
-            @Override
-            public long getPartContentLength(int partIndex) {
-                return 0;
-            }
-        };
-    }
-
-    @Override
-    public boolean handleProgressSync(DownloadTask downloadTask) {
+    public void handleProgressSync(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
+        FTPTaskInfoImpl taskInfo = ((FTPTaskInfoImpl) downloadBundle.getTaskInfo());
         FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
         long currentLength = downloadTask.getCurrentLength();
         long oldLength = ftpTaskBean.getCurrentLength();
         if(oldLength != currentLength){
             ftpTaskBean.setCurrentLength(currentLength);
             ftpTaskService.updateFtpTask(ftpTaskBean);
-            return true;
+            taskInfo.getListeners().notifyProgressChanged();
         }
-        return false;
     }
 
     @Override
-    public boolean handleSpeedCompute(DownloadTask downloadTask) {
-        return SpeedUtils.computeSpeed(downloadTask);
+    public void handleSpeedCompute(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
+        FTPTaskInfoImpl taskInfo = (FTPTaskInfoImpl) downloadBundle.getTaskInfo();
+        if (SpeedUtils.computeSpeed(downloadTask)) {
+            taskInfo.getListeners().notifySeedChanged();
+        }
     }
 
     @Override
-    public boolean isTaskIdle(DownloadTask downloadTask) {
+    public boolean isTaskIdle(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
         FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
         return ftpTaskBean.getState() == FTPTaskBean.STATE_IDLE;
     }
 
     @Override
-    public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
+    public void handleDeleteTask(DownloadBundle downloadBundle, boolean deleteFile) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
         FTPTaskBean ftpTaskBean = ((InternalTask) downloadTask).ftpTaskBean;
         ftpTaskService.removeFtpTask(ftpTaskBean);
         File file = new File(ftpTaskBean.getSaveDir(), ftpTaskBean.getFileName());

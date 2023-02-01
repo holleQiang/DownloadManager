@@ -16,6 +16,8 @@ import org.apache.commons.net.ftp.FTPFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 import java.util.Objects;
 
 public class FTPDownloadTask extends DownloadTask {
@@ -93,11 +95,12 @@ public class FTPDownloadTask extends DownloadTask {
                             }
                         }
                     }
-                    if(targetFtpFile == null){
+                    if (targetFtpFile == null) {
                         dispatchFail(new DownloadException(1004, "file not exists"));
                         return;
                     }
-                    ResourceInfo resourceInfo = new ResourceInfo(targetFtpFile.getSize());
+                    ResourceInfo resourceInfo = new ResourceInfo(targetFtpFile.getSize(),
+                            URLConnection.getFileNameMap().getContentTypeFor(fileName));
                     getCallbacks().notifyResourceInfoReady(resourceInfo);
                     boolean setFileTypeSuccess = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     if (setFileTypeSuccess) {
@@ -157,5 +160,13 @@ public class FTPDownloadTask extends DownloadTask {
 
     public Callbacks getCallbacks() {
         return callbacks;
+    }
+
+    private static String encode(String ftpStr) {
+        try {
+            return new String(ftpStr.getBytes("utf-8"), "iso8859-1");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("encode ftr str fail:" + ftpStr);
+        }
     }
 }

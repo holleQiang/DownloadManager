@@ -1,13 +1,18 @@
 package com.zhangqiang.downloadmanager.task.ftp.callback;
 
 public class ResourceInfo {
-    private long contentLength;
-
-    public ResourceInfo(long contentLength) {
+    private final long contentLength;
+    private final String contentType;
+    public ResourceInfo(long contentLength, String contentType) {
         this.contentLength = contentLength;
+        this.contentType = contentType;
     }
 
     public long getContentLength() {
         return contentLength;
+    }
+
+    public String getContentType() {
+        return contentType;
     }
 }

@@ -7,6 +7,7 @@ import android.os.Message;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListeners;
+import com.zhangqiang.downloadmanager.support.DownloadBundle;
 import com.zhangqiang.downloadmanager.support.DownloadSupport;
 import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
@@ -79,7 +80,10 @@ public class DownloadManager {
             if (localTasks != null && !localTasks.isEmpty()) {
                 for (LocalTask localTask : localTasks) {
 
-                    DownloadRecord downloadRecord = makeDownloadRecord(localTask.getId(),downloadSupport, localTask.getDownloadTask());
+                    DownloadBundle downloadBundle = localTask.getDownloadBundle();
+                    DownloadRecord downloadRecord = makeDownloadRecord(localTask.getId(),
+                            downloadSupport,
+                            downloadBundle);
                     if (tail == null) {
                         tail = mRecordHead = downloadRecord;
                     } else {
@@ -100,29 +104,27 @@ public class DownloadManager {
     private DownloadRecord makeDownloadRecord(DownloadRequest request) {
 
         DownloadSupport target = null;
-        DownloadTask targetTask = null;
+        DownloadBundle targetBundle = null;
         String id = UUID.randomUUID().toString();
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            DownloadTask downloadTask = downloadSupport.createDownloadTask(id,request);
-            if (downloadTask != null) {
+            DownloadBundle downloadBundle = downloadSupport.createDownloadBundle(id,request);
+            if (downloadBundle != null) {
                 target = downloadSupport;
-                targetTask = downloadTask;
+                targetBundle = downloadBundle;
                 break;
             }
         }
         if (target == null) {
             throw new IllegalArgumentException("download task cannot be null");
         }
-        return makeDownloadRecord(id,target, targetTask);
+        return makeDownloadRecord(id,target, targetBundle);
     }
 
     private DownloadRecord makeDownloadRecord(String id,
                                               DownloadSupport downloadSupport,
-                                              DownloadTask downloadTask) {
+                                              DownloadBundle downloadBundle) {
 
-        TaskInfo taskInfo = downloadSupport.buildTaskInfo(downloadTask);
-        DownloadRecord downloadRecord = new DownloadRecord(id, downloadTask,
-                taskInfo,
+        DownloadRecord downloadRecord = new DownloadRecord(id, downloadBundle,
                 downloadSupport);
         configDownloadRecord(downloadRecord);
         return downloadRecord;
@@ -186,7 +188,7 @@ public class DownloadManager {
 
                 downloadTask.cancel();
 
-                curr.downloadSupport.handleDeleteTask(downloadTask, deleteFile);
+                curr.downloadSupport.handleDeleteTask(curr.downloadBundle, deleteFile);
                 if (prev == null) {
                     mRecordHead = curr.next;
                 } else {
@@ -209,13 +211,11 @@ public class DownloadManager {
         downloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
             @Override
             public void onReset() {
-                getDownloadTaskListeners().notifyTaskStateChanged(id);
             }
 
             @Override
             public void onStart() {
                 incrementActiveTaskSize();
-                getDownloadTaskListeners().notifyTaskStateChanged(id);
             }
 
             @Override
@@ -223,7 +223,6 @@ public class DownloadManager {
                 decrementActiveTaskSize();
                 syncTaskProgress(record);
                 computeTaskSpeed(record);
-                getDownloadTaskListeners().notifyTaskStateChanged(id);
             }
 
             @Override
@@ -232,7 +231,6 @@ public class DownloadManager {
                 decrementActiveTaskSize();
                 syncTaskProgress(record);
                 computeTaskSpeed(record);
-                getDownloadTaskListeners().notifyTaskStateChanged(id);
                 LogUtils.i(TAG, "=======onFail=======");
             }
 
@@ -241,7 +239,6 @@ public class DownloadManager {
                 decrementActiveTaskSize();
                 syncTaskProgress(record);
                 computeTaskSpeed(record);
-                getDownloadTaskListeners().notifyTaskStateChanged(id);
             }
         });
     }
@@ -264,7 +261,7 @@ public class DownloadManager {
         DownloadRecord curr = mRecordHead;
         while (curr != null && getActiveTaskSize() < maxRunningTaskCount) {
             DownloadTask downloadTask = curr.downloadTask;
-            if (curr.downloadSupport.isTaskIdle(downloadTask)) {
+            if (curr.downloadSupport.isTaskIdle(curr.downloadBundle)) {
                 downloadTask.start();
             }
             curr = curr.next;
@@ -297,11 +294,7 @@ public class DownloadManager {
     }
 
     private synchronized void syncTaskProgress(DownloadRecord record) {
-        DownloadTask downloadTask = record.downloadTask;
-        boolean changed = record.downloadSupport.handleProgressSync(downloadTask);
-        if (changed) {
-            getDownloadTaskListeners().notifyTaskProgressChanged(record.id);
-        }
+        record.downloadSupport.handleProgressSync(record.downloadBundle);
     }
 
     private synchronized void computeTasksSpeed() {
@@ -354,11 +347,7 @@ public class DownloadManager {
 
     private synchronized void computeTaskSpeed(DownloadRecord record) {
 
-        DownloadTask downloadTask = record.downloadTask;
-        boolean changed = record.downloadSupport.handleSpeedCompute(downloadTask);
-        if (changed) {
-            getDownloadTaskListeners().notifyTaskSpeedChanged(record.id);
-        }
+        record.downloadSupport.handleSpeedCompute(record.downloadBundle);
     }
 
 
@@ -383,21 +372,22 @@ public class DownloadManager {
         return taskInfoList;
     }
 
-    private final static class DownloadRecord {
+    private final static class DownloadRecord{
 
         private final String id;
         private DownloadRecord next;
+        private final DownloadBundle downloadBundle;
         private final DownloadTask downloadTask;
         private final TaskInfo taskInfo;
         private final DownloadSupport downloadSupport;
 
         public DownloadRecord(String id,
-                              DownloadTask downloadTask,
-                              TaskInfo taskInfo,
+                              DownloadBundle downloadBundle,
                               DownloadSupport downloadSupport) {
             this.id = id;
-            this.downloadTask = downloadTask;
-            this.taskInfo = taskInfo;
+            this.downloadTask = downloadBundle.getDownloadTask();
+            this.taskInfo = downloadBundle.getTaskInfo();
+            this.downloadBundle = downloadBundle;
             this.downloadSupport = downloadSupport;
         }
     }

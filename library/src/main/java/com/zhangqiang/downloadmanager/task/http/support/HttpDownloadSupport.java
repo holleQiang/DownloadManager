@@ -5,6 +5,7 @@ import android.content.Context;
 import com.zhangqiang.downloadmanager.DownloadRequest;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.exception.DownloadException;
+import com.zhangqiang.downloadmanager.support.DownloadBundle;
 import com.zhangqiang.downloadmanager.support.LocalTask;
 import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
@@ -73,7 +74,7 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
-    public DownloadTask createDownloadTask(String id, DownloadRequest request) {
+    public DownloadBundle createDownloadBundle(String id, DownloadRequest request) {
         if (!(request instanceof HttpDownloadRequest)) {
             return null;
         }
@@ -95,15 +96,13 @@ public class HttpDownloadSupport implements DownloadSupport {
         return configHttpDownloadTask(httpTaskBean);
     }
 
-    @Override
-    public TaskInfo buildTaskInfo(DownloadTask downloadTask) {
-        return new TaskInfoImpl(((InternalTask) downloadTask).httpTaskBean, downloadTask);
-    }
-
 
     @Override
-    public boolean handleProgressSync(DownloadTask downloadTask) {
+    public void handleProgressSync(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
+        TaskInfo taskInfo = downloadBundle.getTaskInfo();
         InternalTask internalTask = (InternalTask) downloadTask;
+        HttpTaskInfoImpl taskInfoImpl = (HttpTaskInfoImpl) taskInfo;
         HttpTaskBean httpTaskBean = internalTask.httpTaskBean;
         int httpTaskType = httpTaskBean.getType();
         HttpDownloadTask httpDownloadTask = (HttpDownloadTask) downloadTask;
@@ -114,12 +113,12 @@ public class HttpDownloadSupport implements DownloadSupport {
             if (oldLength != newLength) {
                 httpDefaultTask.setCurrentLength(newLength);
                 mHttpDefaultTaskService.update(httpDefaultTask);
-                return true;
+                taskInfoImpl.getListeners().notifyProgressChanged();
             }
         } else if (httpTaskType == HttpTaskBean.TYPE_PART) {
             List<? extends DownloadTask> partRecords = internalTask.getPartTasks();
             if (partRecords == null) {
-                return false;
+                return ;
             }
             boolean changed = false;
             for (DownloadTask httpDownloadPartTask : partRecords) {
@@ -131,14 +130,18 @@ public class HttpDownloadSupport implements DownloadSupport {
                     mHttpPartTaskItemService.update(httpPartTaskItemBean);
                     changed = true;
                 }
-                return changed;
+                if(changed){
+                    taskInfoImpl.getListeners().notifyProgressChanged();
+                }
             }
         }
-        return false;
     }
 
     @Override
-    public boolean handleSpeedCompute(DownloadTask downloadTask) {
+    public void handleSpeedCompute(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
+        TaskInfo taskInfo = downloadBundle.getTaskInfo();
+        HttpTaskInfoImpl taskInfoImpl = (HttpTaskInfoImpl) taskInfo;
         if (SpeedUtils.computeSpeed(downloadTask)) {
 
             List<HttpDownloadPartTask> partTasks = ((HttpDownloadTask) downloadTask).getPartTasks();
@@ -147,19 +150,20 @@ public class HttpDownloadSupport implements DownloadSupport {
                     SpeedUtils.computeSpeed(childTask);
                 }
             }
-            return true;
+            taskInfoImpl.getListeners().notifySeedChanged();
         }
-        return false;
     }
 
     @Override
-    public boolean isTaskIdle(DownloadTask downloadTask) {
+    public boolean isTaskIdle(DownloadBundle downloadBundle) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
         HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
         return httpTaskBean.getState() == HttpTaskBean.STATE_IDLE;
     }
 
     @Override
-    public void handleDeleteTask(DownloadTask downloadTask, boolean deleteFile) {
+    public void handleDeleteTask(DownloadBundle downloadBundle, boolean deleteFile) {
+        DownloadTask downloadTask = downloadBundle.getDownloadTask();
         HttpTaskBean httpTaskBean = ((InternalTask) downloadTask).httpTaskBean;
         mHttpTaskService.remove(httpTaskBean.getId());
         try {
@@ -190,7 +194,7 @@ public class HttpDownloadSupport implements DownloadSupport {
         }
     }
 
-    private DownloadTask configHttpDownloadTask(HttpTaskBean httpTaskBean) {
+    private DownloadBundle configHttpDownloadTask(HttpTaskBean httpTaskBean) {
         InternalTask httpDownloadTask = new InternalTask(
                 mHttpEngine,
                 httpTaskBean.getUrl(),
@@ -199,6 +203,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 httpTaskBean.getThreadSize(),
                 new HttpPartTaskFactoryImpl(httpTaskBean)
         );
+        HttpTaskInfoImpl taskInfo = new HttpTaskInfoImpl(httpTaskBean, httpDownloadTask);
         httpDownloadTask.httpTaskBean = httpTaskBean;
         httpDownloadTask.getCallbacks().addCallback(new Callback() {
 
@@ -206,6 +211,7 @@ public class HttpDownloadSupport implements DownloadSupport {
             public void onStartGenerateInfo() {
                 httpTaskBean.setState(HttpTaskBean.STATE_GENERATING_INFO);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
@@ -214,6 +220,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 httpTaskBean.setContentType(info.getContentType());
                 httpTaskBean.setContentLength(info.getContentLength());
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyInfoReady();
             }
 
             @Override
@@ -232,6 +239,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 }
                 httpTaskBean.setState(HttpTaskBean.STATE_WAITING_CHILDREN_TASK);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
@@ -249,6 +257,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 }
                 httpTaskBean.setState(HttpTaskBean.STATE_WAITING_CHILDREN_TASK);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
@@ -257,6 +266,7 @@ public class HttpDownloadSupport implements DownloadSupport {
                 httpPartTaskItemBean.setState(HttpPartTaskItemBean.STATE_FAIL);
                 httpPartTaskItemBean.setErrorMsg(e.getMessage());
                 mHttpPartTaskItemService.update(httpPartTaskItemBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
         });
         httpDownloadTask.addDownloadListener(new DownloadTask.DownloadListener() {
@@ -264,18 +274,21 @@ public class HttpDownloadSupport implements DownloadSupport {
             public void onReset() {
                 httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onStart() {
                 httpTaskBean.setState(HttpTaskBean.STATE_START);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onComplete() {
                 httpTaskBean.setState(HttpTaskBean.STATE_SUCCESS);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
@@ -283,15 +296,17 @@ public class HttpDownloadSupport implements DownloadSupport {
                 httpTaskBean.setState(HttpTaskBean.STATE_FAIL);
                 httpTaskBean.setErrorMsg(e.getMessage());
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
 
             @Override
             public void onCancel() {
                 httpTaskBean.setState(HttpTaskBean.STATE_CANCEL);
                 mHttpTaskService.update(httpTaskBean);
+                taskInfo.getListeners().notifyStateChanged();
             }
         });
-        return httpDownloadTask;
+        return new DownloadBundle(httpDownloadTask, taskInfo);
     }
 
     private static class InternalTask extends HttpDownloadTask {

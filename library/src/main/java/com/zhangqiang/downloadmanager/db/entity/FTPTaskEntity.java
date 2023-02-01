@@ -22,15 +22,17 @@ public class FTPTaskEntity {
     private String targetFileName;
 
     private long currentLength;
+    private String contentType;
     private long contentLength;
     private int state;
     private String errorMsg;
     private Date createTime;
-    @Generated(hash = 1011100681)
+    @Generated(hash = 1167128173)
     public FTPTaskEntity(String id, String host, int port, String userName,
             String password, String ftpDir, String ftpFileName, String saveDir,
             String fileName, String targetFileName, long currentLength,
-            long contentLength, int state, String errorMsg, Date createTime) {
+            String contentType, long contentLength, int state, String errorMsg,
+            Date createTime) {
         this.id = id;
         this.host = host;
         this.port = port;
@@ -42,6 +44,7 @@ public class FTPTaskEntity {
         this.fileName = fileName;
         this.targetFileName = targetFileName;
         this.currentLength = currentLength;
+        this.contentType = contentType;
         this.contentLength = contentLength;
         this.state = state;
         this.errorMsg = errorMsg;
@@ -139,5 +142,11 @@ public class FTPTaskEntity {
     }
     public void setContentLength(long contentLength) {
         this.contentLength = contentLength;
+    }
+    public String getContentType() {
+        return this.contentType;
+    }
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

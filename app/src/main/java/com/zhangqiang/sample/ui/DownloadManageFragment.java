@@ -18,9 +18,12 @@ import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.downloadmanager.TaskInfo;
 import com.zhangqiang.downloadmanager.listeners.DownloadTaskListener;
 import com.zhangqiang.downloadmanager.listeners.UIDownloadTaskListener;
+import com.zhangqiang.downloadmanager.task.ftp.support.FTPTaskInfo;
+import com.zhangqiang.downloadmanager.task.http.support.HttpTaskInfo;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
-import com.zhangqiang.sample.ui.cell.DownloadTaskCell;
+import com.zhangqiang.sample.ui.cell.FTPDownloadTaskCell;
+import com.zhangqiang.sample.ui.cell.HttpDownloadTaskCell;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
@@ -53,7 +56,8 @@ public class DownloadManageFragment extends BaseFragment {
         List<TaskInfo> allTask = DownloadManager.getInstance(getContext()).getTaskList();
         if (allTask != null && !allTask.isEmpty()) {
             for (int i = 0; i < allTask.size(); i++) {
-                cellList.add(makeCell(allTask.get(i)));
+                TaskInfo taskInfo = allTask.get(i);
+                cellList.add(makeCell(taskInfo));
             }
         }
         cellRVAdapter.setDataList(cellList);
@@ -74,51 +78,31 @@ public class DownloadManageFragment extends BaseFragment {
                 .removeDownloadTaskListener(onProgressChangedListener);
     }
 
-    private Cell makeCell(TaskInfo downloadTask) {
-
-        return new DownloadTaskCell(downloadTask, getChildFragmentManager());
+    private Cell makeCell(TaskInfo taskInfo) {
+        if(taskInfo instanceof HttpTaskInfo){
+            return new HttpDownloadTaskCell(((HttpTaskInfo) taskInfo), getChildFragmentManager());
+        }else if(taskInfo instanceof FTPTaskInfo){
+           return new FTPDownloadTaskCell(((FTPTaskInfo) taskInfo), getChildFragmentManager());
+        }
+        return null;
     }
 
     private final DownloadTaskListener onProgressChangedListener = new UIDownloadTaskListener() {
-        @Override
-        public void onTaskProgressChangedMain(String id) {
-            DownloadTaskCell cell = findCellByTaskId(id);
-            if (cell != null) {
-                cell.updateProgress();
-            }
-        }
-
-        @Override
-        protected void onTaskSpeedChangedMain(String id) {
-            DownloadTaskCell cell = findCellByTaskId(id);
-            if (cell != null) {
-                cell.updateSpeed();
-            }
-        }
-
-        @Override
-        public void onTaskInfoChangedMain(String id) {
-            DownloadTaskCell cell = findCellByTaskId(id);
-            if (cell != null) {
-                cell.updateInfo();
-            }
-        }
-
-        @Override
-        public void onTaskStateChangedMain(String id) {
-            DownloadTaskCell cell = findCellByTaskId(id);
-            if (cell != null) {
-                cell.updateState();
-            }
-        }
 
         @Override
         public void onTaskRemovedMain(String id) {
             int dataCount = cellRVAdapter.getDataCount();
             for (int i = dataCount - 1; i >= 0; i--) {
-                DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
-                TaskInfo taskEntity = cell.getData();
-                if (Objects.equals(taskEntity.getId(), id)) {
+                Cell cell =  cellRVAdapter.getDataAt(i);
+                String taskId = null;
+                if(cell instanceof HttpDownloadTaskCell){
+                    HttpTaskInfo taskInfo = ((HttpDownloadTaskCell) cell).getData();
+                    taskId = taskInfo.getId();
+                }else if(cell instanceof FTPDownloadTaskCell){
+                    FTPTaskInfo taskInfo = ((FTPDownloadTaskCell) cell).getData();
+                    taskId = taskInfo.getId();
+                }
+                if (Objects.equals(taskId, id)) {
                     cellRVAdapter.removeDataAtIndex(i);
                 }
             }
@@ -127,9 +111,7 @@ public class DownloadManageFragment extends BaseFragment {
         @Override
         public void onTaskAddedMain(String id) {
             TaskInfo task = DownloadManager.getInstance(getContext()).getTaskInfo(id);
-            if (task != null) {
-                cellRVAdapter.addDataAtFirst(makeCell(task));
-            }
+            cellRVAdapter.addDataAtFirst(makeCell(task));
         }
 
         @Override
@@ -137,16 +119,4 @@ public class DownloadManageFragment extends BaseFragment {
 
         }
     };
-
-    private DownloadTaskCell findCellByTaskId(String id) {
-        int dataCount = cellRVAdapter.getDataCount();
-        for (int i = 0; i < dataCount; i++) {
-            DownloadTaskCell cell = (DownloadTaskCell) cellRVAdapter.getDataAt(i);
-            TaskInfo taskEntity = cell.getData();
-            if (Objects.equals(taskEntity.getId(), id)) {
-                return cell;
-            }
-        }
-        return null;
-    }
 }
