@@ -391,6 +391,7 @@ public class Camera1 extends BaseCamera {
             mCamera = null;
             dispatchCameraClosed();
         }
+        isPictureCaptureInProgress.set(false);
     }
 
     /**

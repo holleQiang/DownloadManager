@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">MyFTP</string>
+    <string name="ip">ip</string>
+    <string name="ip_address">IP地址</string>
+    <string name="port">端口号</string>
+    <string name="please_input_port">请输入端口号</string>
+    <string name="please_input_host">请输入IP地址</string>
+    <string name="please_input_password">请输入密码</string>
+    <string name="password">密码</string>
+    <string name="please_input_user_name">请输入用户名</string>
+    <string name="user_name">用户名</string>
+    <string name="login">登录</string>
+</resources>

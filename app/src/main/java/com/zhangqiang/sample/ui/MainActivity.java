@@ -3,7 +3,6 @@ package com.zhangqiang.sample.ui;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -12,8 +11,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 
-import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.task.ftp.request.FTPDownloadRequest;
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
 import com.zhangqiang.qrcodescan.QRCodeScanActivity;
@@ -23,7 +20,6 @@ import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
-import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
@@ -32,7 +28,6 @@ import com.zhangqiang.sample.utils.WebViewUtils;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
@@ -79,6 +74,14 @@ public class MainActivity extends BaseActivity {
 //                .setFtpDir("/test")
 //                .setFtpFileName("utils.ts")
 //                .setSaveDir(dirFile.getAbsolutePath())
+//                .build();
+//        DownloadManager.getInstance(this).enqueue(request);
+
+
+//        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
+//        TorrentDownloadRequest request = new TorrentDownloadRequest.Builder()
+//                .setSaveDir(dirFile.getAbsolutePath())
+//                .setFileName("test")
 //                .build();
 //        DownloadManager.getInstance(this).enqueue(request);
     }

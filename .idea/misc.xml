@@ -4,6 +4,8 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="../../../../layout/custom_preview.xml" value="0.223602294921875" />
+        <entry key="app-myftp/src/main/res/layout/activity_login.xml" value="0.21927083333333333" />
+        <entry key="app-myftp/src/main/res/layout/activity_main.xml" value="0.17028985507246377" />
         <entry key="app/src/main/res/drawable/bt_download.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_nav_back.xml" value="0.2685" />
         <entry key="app/src/main/res/drawable/ic_nav_close.xml" value="0.226" />
@@ -13,6 +15,7 @@
         <entry key="app/src/main/res/layout/dialog_test.xml" value="0.17028985507246377" />
         <entry key="app/src/main/res/layout/item_download.xml" value="0.1" />
         <entry key="app/src/main/res/layout/item_download_ftp.xml" value="0.3752182006835938" />
+        <entry key="app/src/main/res/layout/item_download_torrent.xml" value="0.21927083333333333" />
         <entry key="app/src/main/res/layout/item_part_info.xml" value="0.31476449275362317" />
         <entry key="app/src/main/res/menu/menu_main.xml" value="0.21927083333333333" />
       </map>
