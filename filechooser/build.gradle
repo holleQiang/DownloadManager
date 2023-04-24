@@ -1,14 +1,11 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 30
-
+    compileSdkVersion rootProject.ext.versions.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.ext.versions.minSdkVersion
+        targetSdkVersion rootProject.ext.versions.targetSdkVersion
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -26,14 +23,14 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.3.0'
-    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.versions.appcompat}"
+    implementation "com.google.android.material:material:${rootProject.ext.versions.material}"
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation 'com.github.holleQiang:CellAdapter:1.1.4'
-    implementation 'com.github.holleQiang:PermissionRequestHelper:1.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation 'com.github.holleQiang:Options:1.0.2'
+    implementation "com.github.holleQiang:CellAdapter:${rootProject.ext.versions.CellAdapter}"
+    implementation "com.github.holleQiang:PermissionRequestHelper:${rootProject.ext.versions.PermissionRequestHelper}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.versions.constraintlayout}"
+    implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
 
 }

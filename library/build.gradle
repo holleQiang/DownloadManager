@@ -3,14 +3,11 @@ apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.github.dcendents.android-maven'
 
 android {
-    compileSdkVersion 30
-
+    compileSdkVersion rootProject.ext.versions.compileSdkVersion
 
     defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.ext.versions.minSdkVersion
+        targetSdkVersion rootProject.ext.versions.targetSdkVersion
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -40,10 +37,10 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
-    implementation 'org.greenrobot:greendao:3.3.0'
-    implementation 'io.github.yuweiguocn:GreenDaoUpgradeHelper:v2.2.1'
+    implementation "com.squareup.okhttp3:okhttp:${rootProject.ext.versions.okhttp}"
+    implementation "org.greenrobot:greendao:${rootProject.ext.versions.greendao}"
+    implementation "io.github.yuweiguocn:GreenDaoUpgradeHelper:${rootProject.ext.versions.GreenDaoUpgradeHelper}"
 
     /* FTP  */
-    implementation 'commons-net:commons-net:3.6'
+    implementation "commons-net:commons-net:${rootProject.ext.versions['commons-net']}"
 }

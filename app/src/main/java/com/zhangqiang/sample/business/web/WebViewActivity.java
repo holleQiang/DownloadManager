@@ -2,7 +2,9 @@ package com.zhangqiang.sample.business.web;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
@@ -11,6 +13,7 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import com.zhangqiang.sample.BuildConfig;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.web.image.ImageClickJSI;
@@ -27,6 +30,12 @@ public class WebViewActivity extends BaseActivity {
 
     private WebView mWebView;
     private ActivityWebViewBinding mActivityWebViewBinding;
+
+    static {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+        }
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -58,8 +67,10 @@ public class WebViewActivity extends BaseActivity {
         settings.setDatabaseEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setGeolocationEnabled(true);
+        settings.setSupportZoom(true);
+        settings.setUseWideViewPort(true);
         settings.setAllowFileAccessFromFileURLs(true);
-        ImageClickJSI.attachToWebView(getSupportFragmentManager(),mWebView);
+        ImageClickJSI.attachToWebView(getSupportFragmentManager(), mWebView);
         mWebView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -68,7 +79,7 @@ public class WebViewActivity extends BaseActivity {
                     if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE
                             || hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
                         String extra = hitTestResult.getExtra();
-                        CreateTaskDialog.createAndShow(getSupportFragmentManager(),extra);
+                        CreateTaskDialog.createAndShow(getSupportFragmentManager(), extra);
                     }
                 }
                 return false;
@@ -80,7 +91,7 @@ public class WebViewActivity extends BaseActivity {
 
     private void loadResource(String defaultUrl) {
         String urlFromIntent = getIntent().getStringExtra(WebViewUtils.INTENT_KEY_URL);
-        if(TextUtils.isEmpty(urlFromIntent)){
+        if (TextUtils.isEmpty(urlFromIntent)) {
             urlFromIntent = defaultUrl;
         }
         mWebView.loadUrl(urlFromIntent);

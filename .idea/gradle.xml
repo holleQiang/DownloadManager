@@ -19,6 +19,7 @@
             <option value="$PROJECT_DIR$/qrcode-core" />
             <option value="$PROJECT_DIR$/qrcode-scan" />
             <option value="$PROJECT_DIR$/template" />
+            <option value="$PROJECT_DIR$/webview" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -27,12 +27,9 @@ android {
 
 dependencies {
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.versions['kotlin-stdlib']}"
-    implementation "androidx.core:core-ktx:${rootProject.ext.versions['core-ktx']}"
     implementation "androidx.appcompat:appcompat:${rootProject.ext.versions.appcompat}"
     implementation "com.google.android.material:material:${rootProject.ext.versions.material}"
-    implementation project(path: ':qrcode-core')
     testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
