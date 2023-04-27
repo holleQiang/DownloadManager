@@ -28,19 +28,21 @@ dependencies {
     implementation "com.google.android.material:material:${rootProject.ext.versions.material}"
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.versions.constraintlayout}"
     implementation project(path: ':qrcode-core')
+    implementation project(path: ':webview')
     testImplementation 'junit:junit:4.13.2'
     implementation "com.github.holleQiang:VisibleHelper:${rootProject.ext.versions.VisibleHelper}"
     implementation "com.github.holleQiang:CellAdapter:${rootProject.ext.versions.CellAdapter}"
     implementation "com.github.holleQiang:ActivityStartHelper:${rootProject.ext.versions.ActivityStartHelper}"
     implementation "com.squareup.retrofit2:adapter-rxjava2:${rootProject.ext.versions['adapter-rxjava2']}"
     implementation "io.reactivex.rxjava2:rxandroid:${rootProject.ext.versions.rxandroid}"
+    implementation "com.tencent:mmkv-static:${rootProject.ext.versions['mmkv-static']}"
+    implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation project(path: ':library')
     implementation project(path: ':filechooser')
     implementation project(path: ':qrcode-scan')
-    implementation "com.tencent:mmkv-static:${rootProject.ext.versions['mmkv-static']}"
-    implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
+
 
 }

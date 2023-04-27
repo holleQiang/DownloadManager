@@ -1,9 +1,10 @@
-package com.zhangqiang.sample.business.web;
+package com.zhangqiang.web;
 
-import androidx.fragment.app.FragmentManager;
 import android.webkit.DownloadListener;
 
-import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import androidx.fragment.app.FragmentManager;
+
+import com.zhangqiang.web.export.WebInterface;
 
 /**
  * description :
@@ -20,6 +21,7 @@ public class DownloadListenerImpl implements DownloadListener {
 
     @Override
     public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-        CreateTaskDialog.createAndShow(fragmentManager,url);
+        WebInterface.downloadListeners.dispatchDownloadStart(url,userAgent,contentDisposition,mimetype,contentLength);
+//        CreateTaskDialog.createAndShow(fragmentManager,url);
     }
 }

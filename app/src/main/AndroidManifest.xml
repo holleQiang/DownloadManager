@@ -28,9 +28,6 @@
         </activity>
         <activity android:name=".business.settings.SettingsActivity" />
         <activity android:name=".ui.ChooseSaveDirActivity" />
-        <activity android:name=".business.web.WebViewActivity"
-            android:launchMode="singleInstance"
-            android:taskAffinity="${applicationId}.web"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

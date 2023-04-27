@@ -18,13 +18,13 @@ import com.zhangqiang.qrcodescan.QRCodeScanManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
-import com.zhangqiang.sample.business.web.WebViewActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
 import com.zhangqiang.sample.utils.WebViewUtils;
+import com.zhangqiang.web.WebViewActivity;
 
 import org.jetbrains.annotations.NotNull;
 

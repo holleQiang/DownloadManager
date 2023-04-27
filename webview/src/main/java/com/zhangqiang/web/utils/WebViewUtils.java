@@ -1,4 +1,4 @@
-package com.zhangqiang.sample.utils;
+package com.zhangqiang.web.utils;
 
 import android.content.Context;
 import android.content.Intent;

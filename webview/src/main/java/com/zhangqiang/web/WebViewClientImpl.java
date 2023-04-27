@@ -1,18 +1,18 @@
-package com.zhangqiang.sample.business.web;
+package com.zhangqiang.web;
 
 import android.net.Uri;
 import android.os.Build;
-
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.zhangqiang.sample.business.web.image.ImageClickJSI;
-import com.zhangqiang.sample.utils.IntentUtils;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+
+import com.zhangqiang.common.utils.IntentUtils;
+import com.zhangqiang.web.export.WebInterface;
+import com.zhangqiang.web.image.ImageClickMethod;
 
 /**
  * description :
@@ -59,6 +59,6 @@ public class WebViewClientImpl extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        ImageClickJSI.addImageClickListener(view);
+        WebInterface.javaScriptInterface.call(ImageClickMethod.METHOD_NAME);
     }
 }

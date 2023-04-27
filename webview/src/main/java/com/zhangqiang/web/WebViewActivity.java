@@ -1,25 +1,24 @@
-package com.zhangqiang.sample.business.web;
+package com.zhangqiang.web;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
-
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.Toast;
 
-import com.zhangqiang.sample.BuildConfig;
-import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.base.BaseActivity;
-import com.zhangqiang.sample.business.web.image.ImageClickJSI;
-import com.zhangqiang.sample.databinding.ActivityWebViewBinding;
-import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
-import com.zhangqiang.sample.utils.WebViewUtils;
+import androidx.annotation.Nullable;
+
+import com.zhangqiang.common.activity.BaseActivity;
+import com.zhangqiang.web.export.WebInterface;
+import com.zhangqiang.web.image.ImageClickMethod;
+import com.zhangqiang.web.utils.WebViewUtils;
+import com.zhangqiang.webview.BuildConfig;
+import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
+
 
 /**
  * description :
@@ -29,7 +28,6 @@ import com.zhangqiang.sample.utils.WebViewUtils;
 public class WebViewActivity extends BaseActivity {
 
     private WebView mWebView;
-    private ActivityWebViewBinding mActivityWebViewBinding;
 
     static {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -41,7 +39,7 @@ public class WebViewActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivityWebViewBinding = ActivityWebViewBinding.inflate(getLayoutInflater());
+        ActivityWebViewBinding mActivityWebViewBinding = ActivityWebViewBinding.inflate(getLayoutInflater());
         setContentView(mActivityWebViewBinding.getRoot());
         mActivityWebViewBinding.ivBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,7 +68,13 @@ public class WebViewActivity extends BaseActivity {
         settings.setSupportZoom(true);
         settings.setUseWideViewPort(true);
         settings.setAllowFileAccessFromFileURLs(true);
-        ImageClickJSI.attachToWebView(getSupportFragmentManager(), mWebView);
+        WebInterface.javaScriptInterface.registerHybridMethod(new ImageClickMethod(new ImageClickMethod.OnImageClickListener() {
+            @Override
+            public void onImageClick(String src) {
+                Toast.makeText(WebViewActivity.this, src, Toast.LENGTH_SHORT).show();
+            }
+        }));
+        WebInterface.javaScriptInterface.attachToWebView(mWebView);
         mWebView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -79,7 +83,7 @@ public class WebViewActivity extends BaseActivity {
                     if (hitTestResult.getType() == WebView.HitTestResult.IMAGE_TYPE
                             || hitTestResult.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
                         String extra = hitTestResult.getExtra();
-                        CreateTaskDialog.createAndShow(getSupportFragmentManager(), extra);
+//                        CreateTaskDialog.createAndShow(getSupportFragmentManager(), extra);
                     }
                 }
                 return false;
@@ -120,6 +124,7 @@ public class WebViewActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         mWebView.destroy();
+        WebInterface.javaScriptInterface.detachFromWebView();
     }
 
     @Override

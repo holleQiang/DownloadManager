@@ -1,4 +1,4 @@
-package com.zhangqiang.sample.business.web;
+package com.zhangqiang.web;
 
 import android.view.View;
 import android.webkit.WebChromeClient;
