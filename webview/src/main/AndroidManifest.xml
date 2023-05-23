@@ -3,7 +3,7 @@
     package="com.zhangqiang.webview">
 
     <application>
-        <activity android:name="com.zhangqiang.web.WebViewActivity"
+        <activity android:name="com.zhangqiang.web.activity.WebViewActivity"
             android:launchMode="singleInstance"
             android:taskAffinity="${applicationId}.web"/>
     </application>

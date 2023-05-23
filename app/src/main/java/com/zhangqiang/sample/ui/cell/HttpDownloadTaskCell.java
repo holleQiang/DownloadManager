@@ -65,7 +65,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpTaskInfo> {
                     DownloadManager.getInstance(context).pause(httpTaskInfo.getId());
                 } else if (status == HttpTaskInfo.STATE_COMPLETE) {
                     File file = new File(httpTaskInfo.getSaveDir(), httpTaskInfo.getFileName());
-                    IntentUtils.openFile(v.getContext(), file, httpTaskInfo.getContentType());
+                    IntentUtils.openFileSmart(v.getContext(), file, httpTaskInfo.getContentType());
                 }
             }
         });

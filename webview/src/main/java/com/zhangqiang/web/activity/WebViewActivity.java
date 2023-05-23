@@ -1,9 +1,10 @@
-package com.zhangqiang.web;
+package com.zhangqiang.web.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.View;
 import android.webkit.WebSettings;
@@ -13,11 +14,21 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.zhangqiang.common.activity.BaseActivity;
+import com.zhangqiang.web.WebContext;
 import com.zhangqiang.web.export.WebInterface;
+import com.zhangqiang.web.hybrid.ConsoleLogMonitorMethod;
+import com.zhangqiang.web.hybrid.DocumentLoadMonitorMethod;
+import com.zhangqiang.web.hybrid.RemoveElementByTagMethod;
 import com.zhangqiang.web.image.ImageClickMethod;
+import com.zhangqiang.web.log.WebLogger;
 import com.zhangqiang.web.utils.WebViewUtils;
+import com.zhangqiang.web.view.DownloadListenerImpl;
+import com.zhangqiang.web.view.WebChromeClientImpl;
+import com.zhangqiang.web.view.WebViewClientImpl;
 import com.zhangqiang.webview.BuildConfig;
 import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
+
+import java.util.Arrays;
 
 
 /**
@@ -28,6 +39,7 @@ import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
 public class WebViewActivity extends BaseActivity {
 
     private WebView mWebView;
+    private WebContext mWebContext;
 
     static {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -40,6 +52,13 @@ public class WebViewActivity extends BaseActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityWebViewBinding mActivityWebViewBinding = ActivityWebViewBinding.inflate(getLayoutInflater());
+        WebActivityContext webActivityContext = new WebActivityContext();
+        webActivityContext.activity = this;
+        webActivityContext.looper = Looper.myLooper();
+        webActivityContext.fragmentManager = getSupportFragmentManager();
+        webActivityContext.webView = mActivityWebViewBinding.mWebView;
+        webActivityContext.dispatchState(WebContext.STATE_WEB_VIEW_CREATE);
+        this.mWebContext = webActivityContext;
         setContentView(mActivityWebViewBinding.getRoot());
         mActivityWebViewBinding.ivBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,8 +74,8 @@ public class WebViewActivity extends BaseActivity {
         });
         mWebView = mActivityWebViewBinding.mWebView;
         mWebView.setWebChromeClient(new WebChromeClientImpl(mActivityWebViewBinding.pbProgress));
-        mWebView.setWebViewClient(new WebViewClientImpl());
-        mWebView.setDownloadListener(new DownloadListenerImpl(getSupportFragmentManager()));
+        mWebView.setWebViewClient(new WebViewClientImpl(this.mWebContext));
+        mWebView.setDownloadListener(new DownloadListenerImpl(this.mWebContext));
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setAllowContentAccess(true);
@@ -68,13 +87,7 @@ public class WebViewActivity extends BaseActivity {
         settings.setSupportZoom(true);
         settings.setUseWideViewPort(true);
         settings.setAllowFileAccessFromFileURLs(true);
-        WebInterface.javaScriptInterface.registerHybridMethod(new ImageClickMethod(new ImageClickMethod.OnImageClickListener() {
-            @Override
-            public void onImageClick(String src) {
-                Toast.makeText(WebViewActivity.this, src, Toast.LENGTH_SHORT).show();
-            }
-        }));
-        WebInterface.javaScriptInterface.attachToWebView(mWebView);
+        WebInterface.javaScriptInterface.attachToWebContext(mWebContext);
         mWebView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -124,7 +137,11 @@ public class WebViewActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         mWebView.destroy();
-        WebInterface.javaScriptInterface.detachFromWebView();
+        WebInterface.javaScriptInterface.detachFromWebContext();
+        mWebContext.dispatchState(WebContext.STATE_WEB_VIEW_DESTROY);
+        mWebContext.fragmentManager = null;
+        mWebContext.looper = null;
+        mWebContext.webView = null;
     }
 
     @Override

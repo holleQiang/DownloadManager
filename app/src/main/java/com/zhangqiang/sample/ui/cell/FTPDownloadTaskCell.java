@@ -50,7 +50,7 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
                     DownloadManager.getInstance(context).pause(ftpTaskInfo.getId());
                 } else if (status == FTPTaskInfo.STATE_COMPLETE) {
                     File file = new File(ftpTaskInfo.getSaveDir(), ftpTaskInfo.getFileName());
-                    IntentUtils.openFile(v.getContext(), file, ftpTaskInfo.getContentType());
+                    IntentUtils.openFileSmart(v.getContext(), file, ftpTaskInfo.getContentType());
                 }
             }
         });

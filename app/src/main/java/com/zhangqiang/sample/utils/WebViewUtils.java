@@ -3,7 +3,7 @@ package com.zhangqiang.sample.utils;
 import android.content.Context;
 import android.content.Intent;
 
-import com.zhangqiang.web.WebViewActivity;
+import com.zhangqiang.web.activity.WebViewActivity;
 
 public class WebViewUtils {
 

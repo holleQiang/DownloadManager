@@ -1,8 +1,7 @@
 package com.zhangqiang.web.image;
 
 import com.zhangqiang.web.hybrid.HybridMethod;
-import com.zhangqiang.web.hybrid.InvokeJSBuilder;
-import com.zhangqiang.web.hybrid.JavaScriptInterface;
+import com.zhangqiang.web.hybrid.CallbackJSBuilder;
 
 public class ImageClickMethod extends HybridMethod {
 
@@ -25,21 +24,21 @@ public class ImageClickMethod extends HybridMethod {
     }
 
     @Override
-    public String buildInvokeJS(InvokeJSBuilder builder) {
+    public String buildInvokeJS(CallbackJSBuilder builder) {
         //通过js代码找到标签为img的代码块，设置点击的监听方法与本地的openImage方法进行连接
-        InvokeJSBuilder.Options options = new InvokeJSBuilder.Options();
+        CallbackJSBuilder.Options options = new CallbackJSBuilder.Options();
         options.setLinePrefix("         ");
-        return "javascript:(function(){\n" +
+        return "(function(){\n" +
                 "   const imgElements = document.getElementsByTagName(\"img\");\n" +
                 "   for(var i=0;i<imgElements.length;i++){\n" +
                 "       const imgElement = imgElements[i];\n"+
                 "       imgElement.style['pointer-events']='auto';\n"+
                 "       imgElement.onclick=function(){\n" +
                 "       console.log(`---------${this.src}`);\n"+
-                builder.buildInvokeJS("this.src", options) +
+                builder.buildCallbackJS("this.src", options) +
                 "       }\n" +
                 "   };\n" +
-                "})()\n";
+                "})();";
     }
 
     public interface OnImageClickListener {

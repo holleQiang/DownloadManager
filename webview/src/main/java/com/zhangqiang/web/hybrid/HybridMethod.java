@@ -10,5 +10,10 @@ public abstract class HybridMethod {
 
     protected abstract void onJSCall(String arg);
 
-    public abstract String buildInvokeJS(InvokeJSBuilder builder);
+    public abstract String buildInvokeJS(CallbackJSBuilder callbackJSBuilder);
+
+    @Override
+    public String toString() {
+        return "HybridMethod: "+getMethodName();
+    }
 }

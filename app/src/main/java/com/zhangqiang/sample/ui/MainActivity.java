@@ -24,7 +24,7 @@ import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
 import com.zhangqiang.sample.utils.WebViewUtils;
-import com.zhangqiang.web.WebViewActivity;
+import com.zhangqiang.web.activity.WebViewActivity;
 
 import org.jetbrains.annotations.NotNull;
 

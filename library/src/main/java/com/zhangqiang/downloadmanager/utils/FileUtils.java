@@ -92,4 +92,15 @@ public class FileUtils {
         }
         return dirFile;
     }
+
+    public static String getFileFormat(String filepath) {
+        if (filepath == null) {
+            return null;
+        }
+        int index = filepath.lastIndexOf(".");
+        if (index == -1 || index == filepath.length() - 1) {
+            return null;
+        }
+        return filepath.substring(index + 1);
+    }
 }
