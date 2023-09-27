@@ -8,6 +8,8 @@ import java.util.List;
 
 public interface DownloadSupport {
 
+    boolean support(DownloadRequest request);
+
     /**
      * load task from local
      */

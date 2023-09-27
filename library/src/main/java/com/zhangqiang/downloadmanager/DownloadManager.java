@@ -22,6 +22,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * 负责任务管理
+ * 入队，出队，排队
+ */
 public class DownloadManager {
 
     public static final String TAG = DownloadManager.class.getSimpleName();
@@ -104,20 +108,21 @@ public class DownloadManager {
     private DownloadRecord makeDownloadRecord(DownloadRequest request) {
 
         DownloadSupport target = null;
-        DownloadBundle targetBundle = null;
-        String id = UUID.randomUUID().toString();
         for (DownloadSupport downloadSupport : mDownloadSupportList) {
-            DownloadBundle downloadBundle = downloadSupport.createDownloadBundle(id,request);
-            if (downloadBundle != null) {
+            if(downloadSupport.support(request)){
                 target = downloadSupport;
-                targetBundle = downloadBundle;
                 break;
             }
         }
         if (target == null) {
             throw new IllegalArgumentException("download task cannot be null");
         }
-        return makeDownloadRecord(id,target, targetBundle);
+        String id = UUID.randomUUID().toString();
+        DownloadBundle downloadBundle = target.createDownloadBundle(id,request);
+        if (downloadBundle == null) {
+            throw new IllegalArgumentException("download task cannot be null");
+        }
+        return makeDownloadRecord(id,target, downloadBundle);
     }
 
     private DownloadRecord makeDownloadRecord(String id,

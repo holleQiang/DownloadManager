@@ -55,6 +55,11 @@ public class HttpDownloadSupport implements DownloadSupport {
     }
 
     @Override
+    public boolean support(DownloadRequest request) {
+        return request instanceof HttpDownloadRequest;
+    }
+
+    @Override
     public List<LocalTask> loadLocalTasks() {
         List<HttpTaskBean> httpTaskBeans = mHttpTaskService.getHttpTasks();
         if (httpTaskBeans == null || httpTaskBeans.isEmpty()) {
