@@ -4,9 +4,8 @@ import com.zhangqiang.base.CurrentLengthOwner;
 import com.zhangqiang.downloadmanager.task.speed.SpeedHelper;
 import com.zhangqiang.downloadmanager.task.speed.SpeedSupport;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
-import com.zhangqiang.downloadmanager2.plugin.http.task.schedule.IntervalTask;
-import com.zhangqiang.downloadmanager2.plugin.http.task.schedule.Schedule;
-import com.zhangqiang.downloadmanager2.plugin.http.task.schedule.ScheduleCallback;
+import com.zhangqiang.downloadmanager2.schedule.IntervalTask;
+import com.zhangqiang.downloadmanager2.schedule.Schedule;
 import com.zhangqiang.downloadmanager2.task.DownloadTask;
 import com.zhangqiang.downloadmanager2.task.Status;
 

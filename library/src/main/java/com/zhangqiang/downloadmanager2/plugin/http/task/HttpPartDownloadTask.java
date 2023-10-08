@@ -19,7 +19,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-public class HttpPartDownloadTask  extends AbstractHttpDownloadTask {
+public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
 
     private final Context context;
     private final long startPosition;
@@ -48,13 +48,13 @@ public class HttpPartDownloadTask  extends AbstractHttpDownloadTask {
             public void setField(String key, String value) {
                 builder.header(key, value);
             }
-        }, getStartPosition()+getCurrentLength(),getEndPosition());
+        }, getStartPosition() + getCurrentLength(), getEndPosition());
         downloadCall = OKHttpClients.getDefault(context).newCall(builder.build());
         downloadCall.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if(call.isCanceled()){
-                   return;
+                if (call.isCanceled()) {
+                    return;
                 }
                 dispatchFail(e);
             }
@@ -64,30 +64,36 @@ public class HttpPartDownloadTask  extends AbstractHttpDownloadTask {
                 if (call.isCanceled()) {
                     return;
                 }
-                int code = response.code();
-                if(code == 200){
-                    throw new RuntimeException("resource does not support range download");
-                }
-                ResponseBody responseBody = response.body();
-                if (code == 206 && responseBody != null) {
+                try {
+                    int code = response.code();
+                    if (code == 200) {
+                        throw new RuntimeException("resource does not support range download");
+                    }
+                    ResponseBody responseBody = response.body();
+                    if (code == 206 && responseBody != null) {
 
-                    OkHttpResponse okHttpResponse = new OkHttpResponse(response);
-                    String fileName = HttpUtils.parseFileName(okHttpResponse);
-                    long contentLength = responseBody.contentLength();
-                    MediaType mediaType = responseBody.contentType();
-                    ResourceInfo resourceInfo = new ResourceInfo(fileName,
-                            contentLength,
-                            mediaType != null ? mediaType.toString() : null,
-                            okHttpResponse.getResponseCode());
-                    dispatchResourceInfoReady(resourceInfo);
+                        OkHttpResponse okHttpResponse = new OkHttpResponse(response);
+                        String fileName = HttpUtils.parseFileName(okHttpResponse);
+                        long contentLength = responseBody.contentLength();
+                        MediaType mediaType = responseBody.contentType();
+                        ResourceInfo resourceInfo = new ResourceInfo(fileName,
+                                contentLength,
+                                mediaType != null ? mediaType.toString() : null,
+                                okHttpResponse.getResponseCode());
+                        dispatchResourceInfoReady(resourceInfo);
 
-                    performSaveFile(responseBody.byteStream());
+                        performSaveFile(responseBody.byteStream());
 
-                    //保证100%进度回调
-                    dispatchProgressChange();
-                    dispatchSuccess();
-                } else {
-                    dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
+                        //保证100%进度回调
+                        dispatchProgressChange();
+                        dispatchSuccess();
+                    } else {
+                        dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
+                    }
+                } catch (Throwable e) {
+                    if (getStatus() != Status.CANCELED) {
+                        dispatchFail(e);
+                    }
                 }
             }
         });

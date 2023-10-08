@@ -258,10 +258,19 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
 
     private void deletePartFiles() {
         LogUtils.i(TAG, "删除临时文件....");
+        String dir = "";
         for (HttpPartDownloadTask partTask : partDownloadTasks) {
             File file = new File(partTask.getSaveDir(), partTask.getSaveFileName());
             if (!file.delete()) {
                 LogUtils.i(TAG, "删除临时文件失败");
+            }
+            dir = partTask.getSaveDir();
+        }
+        if(!TextUtils.isEmpty(dir)){
+            try {
+                FileUtils.deleteFileIfExists(new File(dir));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

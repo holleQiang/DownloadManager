@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager2.plugin.http.task.schedule;
+package com.zhangqiang.downloadmanager2.schedule;
 
 import android.os.Handler;
 import android.os.HandlerThread;

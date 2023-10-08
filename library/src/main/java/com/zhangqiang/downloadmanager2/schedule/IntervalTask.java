@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager2.plugin.http.task.schedule;
+package com.zhangqiang.downloadmanager2.schedule;
 
 public abstract class IntervalTask implements Runnable {
 
