@@ -23,6 +23,9 @@ public class HttpPartTaskService {
 
     public HttpPartTaskBean get(String id) {
         HttpPartTaskEntity partTaskEntity = getHttpPartTaskEntityDao().load(id);
+        if (partTaskEntity == null) {
+            return null;
+        }
         HttpPartTaskBean httpPartTask = new HttpPartTaskBean();
         httpPartTask.setState(partTaskEntity.getState());
         httpPartTask.setCreateTime(partTaskEntity.getCreateTime());

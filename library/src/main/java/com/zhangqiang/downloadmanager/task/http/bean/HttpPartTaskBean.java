@@ -26,7 +26,7 @@ public class HttpPartTaskBean {
     private String id;
     @State
     private int state;
-    private Date createTime;
+    private long createTime;
     private String errorMsg;
     private List<HttpPartTaskItemBean> items;
 
@@ -46,12 +46,13 @@ public class HttpPartTaskBean {
         this.state = state;
     }
 
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public HttpPartTaskBean setCreateTime(long createTime) {
         this.createTime = createTime;
+        return this;
     }
 
     public String getErrorMsg() {

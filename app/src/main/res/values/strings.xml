@@ -46,5 +46,6 @@
     <string name="qr_code_decode_fail">二维码识别失败</string>
     <string name="please_check_your_internet">请检查网络连接</string>
     <string name="cannot_found_app_to_process">无法找到处理的应用</string>
+    <string name="installed_plugin">已安装插件</string>
 
 </resources>

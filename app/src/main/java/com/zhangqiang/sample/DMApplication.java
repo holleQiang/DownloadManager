@@ -2,7 +2,6 @@ package com.zhangqiang.sample;
 
 import androidx.multidex.MultiDexApplication;
 
-import com.zhangqiang.downloadmanager.DownloadManager;
 import com.zhangqiang.sample.business.container.ContainerProcessorManager;
 import com.zhangqiang.sample.business.container.processor.HttpProcessor;
 import com.zhangqiang.sample.business.container.processor.QRCodeProcessor;
@@ -24,7 +23,7 @@ public class DMApplication extends MultiDexApplication {
                 .subscribe(new BaseObserver<Integer>() {
                     @Override
                     public void onNext(Integer integer) {
-                        getDownloadManager().setMaxRunningTaskCount(integer);
+//                        getDownloadManager().setMaxRunningTaskCount(integer);
                     }
                 });
         ContainerProcessorManager.getInstance().registerProcessor(new QRCodeProcessor());
@@ -48,7 +47,7 @@ public class DMApplication extends MultiDexApplication {
         return SettingsManager.getInstance();
     }
 
-    private DownloadManager getDownloadManager() {
-        return DownloadManager.getInstance(this);
-    }
+//    private DownloadManager getDownloadManager() {
+//        return DownloadManager.getInstance(this);
+//    }
 }

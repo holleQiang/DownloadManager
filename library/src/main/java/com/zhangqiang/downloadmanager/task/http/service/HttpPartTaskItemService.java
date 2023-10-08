@@ -24,10 +24,11 @@ public class HttpPartTaskItemService {
         httpPartTaskItem.setId(partTaskItemEntity.getId());
         httpPartTaskItem.setCreateTime(partTaskItemEntity.getCreateTime());
         httpPartTaskItem.setStartPosition(partTaskItemEntity.getStartPosition());
-        httpPartTaskItem.setCurrentPosition(partTaskItemEntity.getCurrentPosition());
+        httpPartTaskItem.setCurrentLength(partTaskItemEntity.getCurrentLength());
         httpPartTaskItem.setEndPosition(partTaskItemEntity.getEndPosition());
         httpPartTaskItem.setState(partTaskItemEntity.getState());
-        httpPartTaskItem.setFilePath(partTaskItemEntity.getFilePath());
+        httpPartTaskItem.setSaveDir(partTaskItemEntity.getSaveDir());
+        httpPartTaskItem.setSaveFileName(partTaskItemEntity.getSaveFileName());
         httpPartTaskItem.setErrorMsg(partTaskItemEntity.getErrorMsg());
         return httpPartTaskItem;
     }
@@ -47,11 +48,12 @@ public class HttpPartTaskItemService {
     private static HttpPartTaskItemEntity beanToEntity(HttpPartTaskItemBean item) {
         HttpPartTaskItemEntity itemEntity = new HttpPartTaskItemEntity();
         itemEntity.setId(item.getId());
-        itemEntity.setFilePath(item.getFilePath());
+        itemEntity.setSaveDir(item.getSaveDir());
+        itemEntity.setSaveFileName(item.getSaveFileName());
         itemEntity.setCreateTime(item.getCreateTime());
         itemEntity.setState(item.getState());
         itemEntity.setStartPosition(item.getStartPosition());
-        itemEntity.setCurrentPosition(item.getCurrentPosition());
+        itemEntity.setCurrentLength(item.getCurrentLength());
         itemEntity.setEndPosition(item.getEndPosition());
         itemEntity.setErrorMsg(item.getErrorMsg());
         return itemEntity;

@@ -25,13 +25,14 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
      */
     public static class Properties {
         public final static Property Id = new Property(0, String.class, "id", true, "ID");
-        public final static Property FilePath = new Property(1, String.class, "filePath", false, "FILE_PATH");
-        public final static Property StartPosition = new Property(2, long.class, "startPosition", false, "START_POSITION");
-        public final static Property CurrentPosition = new Property(3, long.class, "currentPosition", false, "CURRENT_POSITION");
-        public final static Property EndPosition = new Property(4, long.class, "endPosition", false, "END_POSITION");
-        public final static Property State = new Property(5, int.class, "state", false, "STATE");
-        public final static Property CreateTime = new Property(6, java.util.Date.class, "createTime", false, "CREATE_TIME");
-        public final static Property ErrorMsg = new Property(7, String.class, "errorMsg", false, "ERROR_MSG");
+        public final static Property SaveDir = new Property(1, String.class, "saveDir", false, "SAVE_DIR");
+        public final static Property SaveFileName = new Property(2, String.class, "saveFileName", false, "SAVE_FILE_NAME");
+        public final static Property StartPosition = new Property(3, long.class, "startPosition", false, "START_POSITION");
+        public final static Property CurrentLength = new Property(4, long.class, "currentLength", false, "CURRENT_LENGTH");
+        public final static Property EndPosition = new Property(5, long.class, "endPosition", false, "END_POSITION");
+        public final static Property State = new Property(6, int.class, "state", false, "STATE");
+        public final static Property CreateTime = new Property(7, long.class, "createTime", false, "CREATE_TIME");
+        public final static Property ErrorMsg = new Property(8, String.class, "errorMsg", false, "ERROR_MSG");
     }
 
 
@@ -48,13 +49,14 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"HTTP_PART_TASK_ITEM_ENTITY\" (" + //
                 "\"ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: id
-                "\"FILE_PATH\" TEXT NOT NULL ," + // 1: filePath
-                "\"START_POSITION\" INTEGER NOT NULL ," + // 2: startPosition
-                "\"CURRENT_POSITION\" INTEGER NOT NULL ," + // 3: currentPosition
-                "\"END_POSITION\" INTEGER NOT NULL ," + // 4: endPosition
-                "\"STATE\" INTEGER NOT NULL ," + // 5: state
-                "\"CREATE_TIME\" INTEGER NOT NULL ," + // 6: createTime
-                "\"ERROR_MSG\" TEXT);"); // 7: errorMsg
+                "\"SAVE_DIR\" TEXT NOT NULL ," + // 1: saveDir
+                "\"SAVE_FILE_NAME\" TEXT," + // 2: saveFileName
+                "\"START_POSITION\" INTEGER NOT NULL ," + // 3: startPosition
+                "\"CURRENT_LENGTH\" INTEGER NOT NULL ," + // 4: currentLength
+                "\"END_POSITION\" INTEGER NOT NULL ," + // 5: endPosition
+                "\"STATE\" INTEGER NOT NULL ," + // 6: state
+                "\"CREATE_TIME\" INTEGER NOT NULL ," + // 7: createTime
+                "\"ERROR_MSG\" TEXT);"); // 8: errorMsg
     }
 
     /** Drops the underlying database table. */
@@ -71,16 +73,21 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         if (id != null) {
             stmt.bindString(1, id);
         }
-        stmt.bindString(2, entity.getFilePath());
-        stmt.bindLong(3, entity.getStartPosition());
-        stmt.bindLong(4, entity.getCurrentPosition());
-        stmt.bindLong(5, entity.getEndPosition());
-        stmt.bindLong(6, entity.getState());
-        stmt.bindLong(7, entity.getCreateTime().getTime());
+        stmt.bindString(2, entity.getSaveDir());
+ 
+        String saveFileName = entity.getSaveFileName();
+        if (saveFileName != null) {
+            stmt.bindString(3, saveFileName);
+        }
+        stmt.bindLong(4, entity.getStartPosition());
+        stmt.bindLong(5, entity.getCurrentLength());
+        stmt.bindLong(6, entity.getEndPosition());
+        stmt.bindLong(7, entity.getState());
+        stmt.bindLong(8, entity.getCreateTime());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(8, errorMsg);
+            stmt.bindString(9, errorMsg);
         }
     }
 
@@ -92,16 +99,21 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         if (id != null) {
             stmt.bindString(1, id);
         }
-        stmt.bindString(2, entity.getFilePath());
-        stmt.bindLong(3, entity.getStartPosition());
-        stmt.bindLong(4, entity.getCurrentPosition());
-        stmt.bindLong(5, entity.getEndPosition());
-        stmt.bindLong(6, entity.getState());
-        stmt.bindLong(7, entity.getCreateTime().getTime());
+        stmt.bindString(2, entity.getSaveDir());
+ 
+        String saveFileName = entity.getSaveFileName();
+        if (saveFileName != null) {
+            stmt.bindString(3, saveFileName);
+        }
+        stmt.bindLong(4, entity.getStartPosition());
+        stmt.bindLong(5, entity.getCurrentLength());
+        stmt.bindLong(6, entity.getEndPosition());
+        stmt.bindLong(7, entity.getState());
+        stmt.bindLong(8, entity.getCreateTime());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(8, errorMsg);
+            stmt.bindString(9, errorMsg);
         }
     }
 
@@ -114,13 +126,14 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
     public HttpPartTaskItemEntity readEntity(Cursor cursor, int offset) {
         HttpPartTaskItemEntity entity = new HttpPartTaskItemEntity( //
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
-            cursor.getString(offset + 1), // filePath
-            cursor.getLong(offset + 2), // startPosition
-            cursor.getLong(offset + 3), // currentPosition
-            cursor.getLong(offset + 4), // endPosition
-            cursor.getInt(offset + 5), // state
-            new java.util.Date(cursor.getLong(offset + 6)), // createTime
-            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7) // errorMsg
+            cursor.getString(offset + 1), // saveDir
+            cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // saveFileName
+            cursor.getLong(offset + 3), // startPosition
+            cursor.getLong(offset + 4), // currentLength
+            cursor.getLong(offset + 5), // endPosition
+            cursor.getInt(offset + 6), // state
+            cursor.getLong(offset + 7), // createTime
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // errorMsg
         );
         return entity;
     }
@@ -128,13 +141,14 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
     @Override
     public void readEntity(Cursor cursor, HttpPartTaskItemEntity entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setFilePath(cursor.getString(offset + 1));
-        entity.setStartPosition(cursor.getLong(offset + 2));
-        entity.setCurrentPosition(cursor.getLong(offset + 3));
-        entity.setEndPosition(cursor.getLong(offset + 4));
-        entity.setState(cursor.getInt(offset + 5));
-        entity.setCreateTime(new java.util.Date(cursor.getLong(offset + 6)));
-        entity.setErrorMsg(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
+        entity.setSaveDir(cursor.getString(offset + 1));
+        entity.setSaveFileName(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
+        entity.setStartPosition(cursor.getLong(offset + 3));
+        entity.setCurrentLength(cursor.getLong(offset + 4));
+        entity.setEndPosition(cursor.getLong(offset + 5));
+        entity.setState(cursor.getInt(offset + 6));
+        entity.setCreateTime(cursor.getLong(offset + 7));
+        entity.setErrorMsg(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
      }
     
     @Override

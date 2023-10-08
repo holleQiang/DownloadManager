@@ -9,23 +9,22 @@ import androidx.fragment.app.FragmentManager;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
-import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.TaskInfo;
-import com.zhangqiang.downloadmanager.task.ftp.support.FTPTaskInfo;
+import com.zhangqiang.downloadmanager.task.ftp.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
+import com.zhangqiang.downloadmanager2.task.Status;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
 
-public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
+public class FTPDownloadTaskCell extends MultiCell<FTPDownloadTask> {
 
     private static final String TAG = FTPDownloadTaskCell.class.getSimpleName();
     private final FragmentManager fragmentManager;
 
-    public FTPDownloadTaskCell(FTPTaskInfo data, FragmentManager fragmentManager) {
+    public FTPDownloadTaskCell(FTPDownloadTask data, FragmentManager fragmentManager) {
         super(R.layout.item_download_ftp, data,null);
         this.fragmentManager = fragmentManager;
     }
@@ -35,22 +34,22 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
         super.onBindViewHolder(viewHolder);
         View view = viewHolder.getView();
         final Context context = view.getContext();
-        final FTPTaskInfo ftpTaskInfo = getData();
+        final FTPDownloadTask downloadTask = getData();
         updateState(viewHolder);
         updateInfo(viewHolder);
         updateProgress(viewHolder);
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int status = ftpTaskInfo.getState();
+                Status status = downloadTask.getStatus();
                 LogUtils.i(TAG,"------------State:"+status);
-                if (status == FTPTaskInfo.STATE_FAIL || status == FTPTaskInfo.STATE_PAUSE) {
-                    DownloadManager.getInstance(context).start(ftpTaskInfo.getId());
-                } else if (status == FTPTaskInfo.STATE_DOWNLOADING) {
-                    DownloadManager.getInstance(context).pause(ftpTaskInfo.getId());
-                } else if (status == FTPTaskInfo.STATE_COMPLETE) {
-                    File file = new File(ftpTaskInfo.getSaveDir(), ftpTaskInfo.getFileName());
-                    IntentUtils.openFileSmart(v.getContext(), file, ftpTaskInfo.getContentType());
+                if (status == Status.FAIL || status == Status.CANCELED) {
+                    downloadTask.start();
+                } else if (status == Status.DOWNLOADING) {
+                    downloadTask.cancel();
+                } else if (status == Status.SUCCESS) {
+                    File file = new File(downloadTask.getSaveDir(), downloadTask.getSaveFileName());
+                    IntentUtils.openFileSmart(v.getContext(), file, null);
                 }
             }
         });
@@ -58,8 +57,22 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(final View v) {
-                TaskOperationDialog dialog = TaskOperationDialog.newInstance(ftpTaskInfo.getId());
-                dialog.show(fragmentManager, "task_operate_dialog");
+                TaskOperationDialog.newInstance().setOperationListener(new TaskOperationDialog.OperationListener() {
+                    @Override
+                    public void onDelete() {
+
+                    }
+
+                    @Override
+                    public void onCopyLink() {
+
+                    }
+
+                    @Override
+                    public void onRestart() {
+
+                    }
+                }).show(fragmentManager, "task_operate_dialog");
                 return true;
             }
         });
@@ -69,56 +82,15 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
             view.removeOnAttachStateChangeListener((View.OnAttachStateChangeListener) tag);
         }
         View.OnAttachStateChangeListener onAttachStateChangeListener = new View.OnAttachStateChangeListener() {
-            final FTPTaskInfo.Listener listener = new FTPTaskInfo.Listener() {
-                @Override
-                public void onStateChanged() {
-                    view.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateState();
-                        }
-                    });
-                }
 
-                @Override
-                public void onInfoReady() {
-                    view.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateInfo();
-                        }
-                    });
-                }
-
-                @Override
-                public void onProgressChanged() {
-                    view.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateProgress();
-                        }
-                    });
-                }
-
-                @Override
-                public void onSpeedChanged() {
-                    view.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            updateSpeed();
-                        }
-                    });
-                }
-            };
 
             @Override
             public void onViewAttachedToWindow(View v) {
-                ftpTaskInfo.addListener(listener);
+
             }
 
             @Override
             public void onViewDetachedFromWindow(View v) {
-                ftpTaskInfo.removeListener(listener);
             }
         };
         view.addOnAttachStateChangeListener(onAttachStateChangeListener);
@@ -126,37 +98,37 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
     }
 
     private void updateSpeed(ViewHolder viewHolder) {
-        FTPTaskInfo data = getData();
-        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
-
-        String resetTimeStr;
-        if (data.getContentLength() == 0) {
-            resetTimeStr = "剩余时间：" + "未知";
-        } else if (data.getContentLength() <= data.getCurrentLength()) {
-
-            if (data.getState() == FTPTaskInfo.STATE_COMPLETE) {
-                resetTimeStr = "已完成";
-            } else {
-                resetTimeStr = "剩余时间：0秒";
-            }
-        } else if (data.getSpeed() == 0) {
-            resetTimeStr = "剩余时间：" + "未知";
-        } else {
-            long resetLength = data.getContentLength() - data.getCurrentLength();
-            long resetTime = resetLength / data.getSpeed();
-            if (resetTime <= 0) {
-                resetTimeStr = "剩余时间：0秒";
-            } else if (resetTime < 60) {
-                resetTimeStr = "剩余时间：" + resetTime + "秒";
-            } else if (resetTime < 60 * 60) {
-                resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
-            } else if (resetTime < 60 * 60 * 24) {
-                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
-            } else {
-                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
-            }
-        }
-        viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
+//        FTPDownloadTask data = getData();
+//        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(data.getSpeed()) + "/s");
+//
+//        String resetTimeStr;
+//        if (data.getContentLength() == 0) {
+//            resetTimeStr = "剩余时间：" + "未知";
+//        } else if (data.getContentLength() <= data.getCurrentLength()) {
+//
+//            if (data.getState() == FTPTaskInfo.STATE_COMPLETE) {
+//                resetTimeStr = "已完成";
+//            } else {
+//                resetTimeStr = "剩余时间：0秒";
+//            }
+//        } else if (data.getSpeed() == 0) {
+//            resetTimeStr = "剩余时间：" + "未知";
+//        } else {
+//            long resetLength = data.getContentLength() - data.getCurrentLength();
+//            long resetTime = resetLength / data.getSpeed();
+//            if (resetTime <= 0) {
+//                resetTimeStr = "剩余时间：0秒";
+//            } else if (resetTime < 60) {
+//                resetTimeStr = "剩余时间：" + resetTime + "秒";
+//            } else if (resetTime < 60 * 60) {
+//                resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
+//            } else if (resetTime < 60 * 60 * 24) {
+//                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
+//            } else {
+//                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
+//            }
+//        }
+//        viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
     }
 
     public void updateSpeed() {
@@ -169,27 +141,27 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
     }
 
     private void updateState(ViewHolder viewHolder) {
-        FTPTaskInfo data = getData();
+        FTPDownloadTask data = getData();
 
-        int status = data.getState();
-        if (status == FTPTaskInfo.STATE_IDLE) {
+        Status status = data.getStatus();
+        if (status == Status.IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == FTPTaskInfo.STATE_DOWNLOADING) {
+        } else if (status == Status.DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
-        } else if (status == FTPTaskInfo.STATE_COMPLETE) {
+        } else if (status == Status.SUCCESS) {
             viewHolder.setText(R.id.bt_state, R.string.open);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == FTPTaskInfo.STATE_FAIL) {
+        } else if (status == Status.FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
             changeVisibleByError(viewHolder, true);
-            viewHolder.setText(R.id.tv_error, data.getErrorMsg());
+            viewHolder.setText(R.id.tv_error, data.getErrorMessage());
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
-        } else if (status == FTPTaskInfo.STATE_PAUSE) {
+        } else if (status == Status.CANCELED) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
             changeVisibleByError(viewHolder, false);
             viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
@@ -197,8 +169,8 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
     }
 
     private void updateInfo(ViewHolder viewHolder) {
-        TaskInfo data = getData();
-        viewHolder.setText(R.id.tv_file_name, data.getFileName());
+        FTPDownloadTask data = getData();
+        viewHolder.setText(R.id.tv_file_name, data.getSaveFileName());
     }
 
     private void changeVisibleByError(ViewHolder viewHolder, boolean isError) {
@@ -211,13 +183,13 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
     }
 
     private void updateProgress(ViewHolder viewHolder) {
-        TaskInfo data = getData();
-        long currentLength = data.getCurrentLength();
-        long totalLength = data.getContentLength();
-        int progress = (int) ((float) currentLength / totalLength * 100);
-        viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
-        ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
-        progressBar.setProgress(progress);
+        FTPDownloadTask data = getData();
+//        long currentLength = data.getCurrentLength();
+//        long totalLength = data.getContentLength();
+//        int progress = (int) ((float) currentLength / totalLength * 100);
+//        viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
+//        ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
+//        progressBar.setProgress(progress);
     }
 
 
@@ -240,7 +212,7 @@ public class FTPDownloadTaskCell extends MultiCell<FTPTaskInfo> {
     }
 
     public void updateState() {
-        LogUtils.i(TAG,"======updateState========="+getData().getState());
+        LogUtils.i(TAG,"======updateState========="+getData().getStatus());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {

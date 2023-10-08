@@ -6,14 +6,21 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.zhangqiang.celladapter.CellRVAdapter;
+import com.zhangqiang.downloadmanager2.manager.DownloadManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
+import com.zhangqiang.sample.business.settings.plugins.PluginInfoCell;
 import com.zhangqiang.sample.databinding.ActivitySettingsBinding;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.ui.DownloadManager2Fragment;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class SettingsActivity extends BaseActivity {
@@ -43,7 +50,12 @@ public class SettingsActivity extends BaseActivity {
                         mBinding.etSaveDir.setText(s);
                     }
                 });
+
+        initialPluginInfo();
+
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -70,5 +82,18 @@ public class SettingsActivity extends BaseActivity {
     private boolean isValidDir(String saveDir) {
         Pattern pattern = Pattern.compile("[a-zA-Z0-9/]+");
         return pattern.matcher(saveDir).matches();
+    }
+
+    private void initialPluginInfo() {
+        CellRVAdapter pluginsAdapter = new CellRVAdapter();
+        mBinding.rvPlugins.setAdapter(pluginsAdapter);
+        mBinding.rvPlugins.setLayoutManager(new LinearLayoutManager(this));
+        DownloadManager downloadManager = DownloadManager2Fragment.downloadManager;
+        int pluginCount = downloadManager.getPluginCount();
+        List<PluginInfoCell> pluginInfoCells = new ArrayList<>();
+        for (int i = 0; i < pluginCount; i++) {
+            pluginInfoCells.add(new PluginInfoCell(downloadManager.getPluginAt(i)));
+        }
+        pluginsAdapter.setDataList(pluginInfoCells);
     }
 }

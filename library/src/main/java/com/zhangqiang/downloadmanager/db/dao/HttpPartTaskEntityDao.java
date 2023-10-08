@@ -26,7 +26,7 @@ public class HttpPartTaskEntityDao extends AbstractDao<HttpPartTaskEntity, Strin
     public static class Properties {
         public final static Property Id = new Property(0, String.class, "id", true, "ID");
         public final static Property State = new Property(1, int.class, "state", false, "STATE");
-        public final static Property CreateTime = new Property(2, java.util.Date.class, "createTime", false, "CREATE_TIME");
+        public final static Property CreateTime = new Property(2, long.class, "createTime", false, "CREATE_TIME");
         public final static Property ErrorMsg = new Property(3, String.class, "errorMsg", false, "ERROR_MSG");
         public final static Property ItemIds = new Property(4, String.class, "itemIds", false, "ITEM_IDS");
     }
@@ -66,7 +66,7 @@ public class HttpPartTaskEntityDao extends AbstractDao<HttpPartTaskEntity, Strin
             stmt.bindString(1, id);
         }
         stmt.bindLong(2, entity.getState());
-        stmt.bindLong(3, entity.getCreateTime().getTime());
+        stmt.bindLong(3, entity.getCreateTime());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
@@ -88,7 +88,7 @@ public class HttpPartTaskEntityDao extends AbstractDao<HttpPartTaskEntity, Strin
             stmt.bindString(1, id);
         }
         stmt.bindLong(2, entity.getState());
-        stmt.bindLong(3, entity.getCreateTime().getTime());
+        stmt.bindLong(3, entity.getCreateTime());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
@@ -111,7 +111,7 @@ public class HttpPartTaskEntityDao extends AbstractDao<HttpPartTaskEntity, Strin
         HttpPartTaskEntity entity = new HttpPartTaskEntity( //
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
             cursor.getInt(offset + 1), // state
-            new java.util.Date(cursor.getLong(offset + 2)), // createTime
+            cursor.getLong(offset + 2), // createTime
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // errorMsg
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) // itemIds
         );
@@ -122,7 +122,7 @@ public class HttpPartTaskEntityDao extends AbstractDao<HttpPartTaskEntity, Strin
     public void readEntity(Cursor cursor, HttpPartTaskEntity entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
         entity.setState(cursor.getInt(offset + 1));
-        entity.setCreateTime(new java.util.Date(cursor.getLong(offset + 2)));
+        entity.setCreateTime(cursor.getLong(offset + 2));
         entity.setErrorMsg(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setItemIds(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
      }

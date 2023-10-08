@@ -11,12 +11,11 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
-import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.DownloadRequest;
-import com.zhangqiang.downloadmanager.task.http.request.HttpDownloadRequest;
+import com.zhangqiang.downloadmanager2.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.ui.DownloadManager2Fragment;
 
 import java.io.File;
 
@@ -25,7 +24,8 @@ public class CreateTaskDialog extends BaseDialogFragment {
     private EditText etUrl;
     private EditText etThreadSize;
     private EditText etSaveName;
-    private String defaultUrl = "https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd";
+    private static final String DEBUG_URL = "https://imtt.dd.qq.com/16891/apk/847A5ED16C396C7767FF4987915AAB06.apk?fsname=com.qq.reader_7.5.8.666_174.apk&csr=1bbd";
+    private String defaultUrl;
 
    public static CreateTaskDialog createAndShow(FragmentManager fragmentManager, String url){
        CreateTaskDialog dialog = new CreateTaskDialog();
@@ -70,16 +70,17 @@ public class CreateTaskDialog extends BaseDialogFragment {
         if(requestCode == 1000 && grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             String url = etUrl.getText().toString().trim();
             if (TextUtils.isEmpty(url)) {
-                return;
+                url = defaultUrl;
+            }
+            if (TextUtils.isEmpty(url)) {
+                url = DEBUG_URL;
             }
             File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-            DownloadRequest request = new HttpDownloadRequest.Builder()
-                    .setUrl(url)
-                    .setThreadSize(Integer.parseInt(etThreadSize.getText().toString()))
-                    .setSaveDir(dirFile.getAbsolutePath())
-                    .setFileName(etSaveName.getText().toString().trim())
-                    .build();
-            DownloadManager.getInstance(getContext()).enqueue(request);
+            HttpDownloadRequest request = new HttpDownloadRequest(dirFile.getAbsolutePath(),
+                    etSaveName.getText().toString().trim(),
+                    url,
+                    Integer.parseInt(etThreadSize.getText().toString()));
+            DownloadManager2Fragment.downloadManager.enqueue(request);
             getDialog().dismiss();
         }
     }

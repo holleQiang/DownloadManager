@@ -68,7 +68,11 @@ public class DownloadService extends Service {
         int itemCount = clipData.getItemCount();
         for (int i = 0; i < itemCount; i++) {
             ClipData.Item item = clipData.getItemAt(i);
-            String text = item.getText().toString();
+            CharSequence sequence = item.getText();
+            if (sequence == null) {
+                continue;
+            }
+            String text = sequence.toString();
             Uri uri = Uri.parse(text);
             String scheme = uri.getScheme();
             if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {

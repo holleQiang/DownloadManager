@@ -24,14 +24,21 @@ public class HttpTaskEntity {
     @NotNull
     private String saveDir;
     /**
-     * 文件名称
+     * 服务器返回的文件名称
      */
-    @NotNull
     private String fileName;
+    /**
+     * 服务器相应的码
+     */
+    private int responseCode;
     /**
      * 指定的文件名称
      */
     private String targetFileName;
+    /**
+     * 实际保存的文件名
+     */
+    private String saveFileName;
     /**
      * 文件长度
      */
@@ -41,7 +48,7 @@ public class HttpTaskEntity {
      */
     private String contentType;
     @NotNull
-    private Date createTime;
+    private long createTime;
     private int threadSize;
     /**
      * 状态
@@ -57,16 +64,19 @@ public class HttpTaskEntity {
      * 子任务id
      */
     private String childId;
-    @Generated(hash = 385428988)
+    @Generated(hash = 160461520)
     public HttpTaskEntity(String id, @NotNull String url, @NotNull String saveDir,
-            @NotNull String fileName, String targetFileName, long contentLength,
-            String contentType, @NotNull Date createTime, int threadSize, int state,
-            String errorMsg, int type, String childId) {
+            String fileName, int responseCode, String targetFileName,
+            String saveFileName, long contentLength, String contentType,
+            long createTime, int threadSize, int state, String errorMsg, int type,
+            String childId) {
         this.id = id;
         this.url = url;
         this.saveDir = saveDir;
         this.fileName = fileName;
+        this.responseCode = responseCode;
         this.targetFileName = targetFileName;
+        this.saveFileName = saveFileName;
         this.contentLength = contentLength;
         this.contentType = contentType;
         this.createTime = createTime;
@@ -103,6 +113,12 @@ public class HttpTaskEntity {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+    public String getTargetFileName() {
+        return this.targetFileName;
+    }
+    public void setTargetFileName(String targetFileName) {
+        this.targetFileName = targetFileName;
+    }
     public long getContentLength() {
         return this.contentLength;
     }
@@ -115,17 +131,29 @@ public class HttpTaskEntity {
     public void setContentType(String contentType) {
         this.contentType = contentType;
     }
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return this.createTime;
     }
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
+    }
+    public int getThreadSize() {
+        return this.threadSize;
+    }
+    public void setThreadSize(int threadSize) {
+        this.threadSize = threadSize;
     }
     public int getState() {
         return this.state;
     }
     public void setState(int state) {
         this.state = state;
+    }
+    public String getErrorMsg() {
+        return this.errorMsg;
+    }
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
     public int getType() {
         return this.type;
@@ -139,23 +167,19 @@ public class HttpTaskEntity {
     public void setChildId(String childId) {
         this.childId = childId;
     }
-    public int getThreadSize() {
-        return this.threadSize;
+    public int getResponseCode() {
+        return this.responseCode;
     }
-    public void setThreadSize(int threadSize) {
-        this.threadSize = threadSize;
+    public void setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
     }
-    public String getErrorMsg() {
-        return this.errorMsg;
+    public String getSaveFileName() {
+        return this.saveFileName;
     }
-    public void setErrorMsg(String errorMsg) {
-        this.errorMsg = errorMsg;
+    public void setSaveFileName(String saveFileName) {
+        this.saveFileName = saveFileName;
     }
-    public String getTargetFileName() {
-        return this.targetFileName;
-    }
-    public void setTargetFileName(String targetFileName) {
-        this.targetFileName = targetFileName;
-    }
+
+
 
 }

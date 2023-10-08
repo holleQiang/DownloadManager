@@ -46,7 +46,10 @@ public class MainActivity extends BaseActivity {
 
         setSupportActionBar(mBinding.mToolBar);
 
-        DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
+//        DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
+//        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
+//                .commit();
+        DownloadManager2Fragment downloadManageFragment = new DownloadManager2Fragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
                 .commit();
 

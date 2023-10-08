@@ -47,17 +47,22 @@ public class HttpTaskBean {
     private String saveDir;
     private String fileName;
     private String targetFileName;
+    /**
+     * 实际保存的文件名
+     */
+    private String saveFileName;
     private long contentLength;
+    private int responseCode;
     private String contentType;
-    private Date createTime;
+    private long createTime;
     @State
     private int state;
     private String errorMsg;
     private int threadSize;
     @Type
     private int type;
-    private HttpDefaultTaskBean httpDefaultTask;
-    private HttpPartTaskBean httpPartTask;
+    private HttpDefaultTaskBean httpDefaultTaskBean;
+    private HttpPartTaskBean httpPartTaskBean;
 
     public String getUrl() {
         return url;
@@ -100,12 +105,13 @@ public class HttpTaskBean {
         this.contentType = contentType;
     }
 
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public HttpTaskBean setCreateTime(long createTime) {
         this.createTime = createTime;
+        return this;
     }
 
     public int getType() {
@@ -116,20 +122,20 @@ public class HttpTaskBean {
         this.type = type;
     }
 
-    public HttpDefaultTaskBean getHttpDefaultTask() {
-        return httpDefaultTask;
+    public HttpDefaultTaskBean getHttpDefaultTaskBean() {
+        return httpDefaultTaskBean;
     }
 
-    public void setHttpDefaultTask(HttpDefaultTaskBean httpDefaultTask) {
-        this.httpDefaultTask = httpDefaultTask;
+    public void setHttpDefaultTaskBean(HttpDefaultTaskBean httpDefaultTask) {
+        this.httpDefaultTaskBean = httpDefaultTask;
     }
 
-    public HttpPartTaskBean getHttpPartTask() {
-        return httpPartTask;
+    public HttpPartTaskBean getHttpPartTaskBean() {
+        return httpPartTaskBean;
     }
 
     public void setHttpPartTask(HttpPartTaskBean httpPartTask) {
-        this.httpPartTask = httpPartTask;
+        this.httpPartTaskBean = httpPartTask;
     }
 
     public int getState() {
@@ -172,6 +178,29 @@ public class HttpTaskBean {
 
     public HttpTaskBean setTargetFileName(String targetFileName) {
         this.targetFileName = targetFileName;
+        return this;
+    }
+
+    public int getResponseCode() {
+        return responseCode;
+    }
+
+    public HttpTaskBean setResponseCode(int responseCode) {
+        this.responseCode = responseCode;
+        return this;
+    }
+
+    public HttpTaskBean setHttpPartTaskBean(HttpPartTaskBean httpPartTaskBean) {
+        this.httpPartTaskBean = httpPartTaskBean;
+        return this;
+    }
+
+    public String getSaveFileName() {
+        return saveFileName;
+    }
+
+    public HttpTaskBean setSaveFileName(String saveFileName) {
+        this.saveFileName = saveFileName;
         return this;
     }
 }

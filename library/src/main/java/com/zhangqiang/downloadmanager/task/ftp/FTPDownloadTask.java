@@ -3,11 +3,11 @@ package com.zhangqiang.downloadmanager.task.ftp;
 import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.exception.DownloadException;
-import com.zhangqiang.downloadmanager.task.DownloadTask;
-import com.zhangqiang.downloadmanager.task.ftp.callback.Callbacks;
 import com.zhangqiang.downloadmanager.task.ftp.callback.ResourceInfo;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
+import com.zhangqiang.downloadmanager2.task.DownloadTask;
+import com.zhangqiang.downloadmanager2.task.Status;
 
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
@@ -30,24 +30,30 @@ public class FTPDownloadTask extends DownloadTask {
     private final String password;
     private final String ftpDir;
     private final String ftpFileName;
-    private final String saveDir;
-    private final String fileName;
 
     private Thread thread;
     private FTPClient ftpClient;
     private long currentLength;
 
-    private final Callbacks callbacks = new Callbacks();
 
-    public FTPDownloadTask(String host, int port, String userName, String password, String ftpDir, String ftpFileName, String saveDir, String fileName) {
+    public FTPDownloadTask(String saveDir, String targetFileName, long createTime, String host, int port, String userName, String password, String ftpDir, String ftpFileName) {
+        super(saveDir, targetFileName, createTime);
         this.host = host;
         this.port = port;
         this.userName = userName;
         this.password = password;
         this.ftpDir = ftpDir;
         this.ftpFileName = ftpFileName;
-        this.saveDir = saveDir;
-        this.fileName = fileName;
+    }
+
+    public FTPDownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage, String host, int port, String userName, String password, String ftpDir, String ftpFileName) {
+        super(saveDir, targetFileName, createTime, status, errorMessage);
+        this.host = host;
+        this.port = port;
+        this.userName = userName;
+        this.password = password;
+        this.ftpDir = ftpDir;
+        this.ftpFileName = ftpFileName;
     }
 
     @Override
@@ -55,7 +61,7 @@ public class FTPDownloadTask extends DownloadTask {
 
         if (TextUtils.isEmpty(ftpDir)
                 || TextUtils.isEmpty(ftpFileName)
-                || TextUtils.isEmpty(saveDir)) {
+                || TextUtils.isEmpty(getSaveDir())) {
             dispatchFail(new DownloadException(DownloadException.PARAM_ERROR, "param error"));
             return;
         }
@@ -100,8 +106,7 @@ public class FTPDownloadTask extends DownloadTask {
                         return;
                     }
                     ResourceInfo resourceInfo = new ResourceInfo(targetFtpFile.getSize(),
-                            URLConnection.getFileNameMap().getContentTypeFor(fileName));
-                    getCallbacks().notifyResourceInfoReady(resourceInfo);
+                            URLConnection.getFileNameMap().getContentTypeFor(getSaveFileName()));
                     boolean setFileTypeSuccess = ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
                     if (setFileTypeSuccess) {
                         LogUtils.i(TAG, "========ftp set file success");
@@ -113,7 +118,7 @@ public class FTPDownloadTask extends DownloadTask {
                     ftpClient.setRestartOffset(currentLength);
                     InputStream inputStream = ftpClient.retrieveFileStream(ftpFileName);
                     FileUtils.writeToFileFrom(inputStream,
-                            new File(saveDir, fileName),
+                            new File(getSaveFileName(), getSaveFileName()),
                             currentLength,
                             new FileUtils.WriteFileListener() {
                                 @Override
@@ -122,7 +127,7 @@ public class FTPDownloadTask extends DownloadTask {
                                 }
                             });
                     LogUtils.i(TAG, "========ftp 下载成功");
-                    dispatchComplete();
+                    dispatchSuccess();
                 } catch (IOException e) {
                     e.printStackTrace();
                     dispatchFail(new DownloadException(1000, e));
@@ -154,13 +159,10 @@ public class FTPDownloadTask extends DownloadTask {
     }
 
     @Override
-    public long getCurrentLength() {
-        return currentLength;
+    public String getSaveFileName() {
+        return ftpFileName;
     }
 
-    public Callbacks getCallbacks() {
-        return callbacks;
-    }
 
     private static String encode(String ftpStr) {
         try {

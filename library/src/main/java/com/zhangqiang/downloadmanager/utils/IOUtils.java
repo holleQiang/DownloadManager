@@ -14,4 +14,10 @@ public class IOUtils {
             }
         }
     }
+
+    public static void close(Closeable closeable) throws IOException {
+        if (closeable != null) {
+            closeable.close();
+        }
+    }
 }

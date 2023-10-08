@@ -3,17 +3,10 @@ package com.zhangqiang.downloadmanager.task.http.service;
 import android.content.Context;
 
 import com.zhangqiang.downloadmanager.db.DBManager;
-import com.zhangqiang.downloadmanager.db.dao.HttpDefaultTaskEntityDao;
-import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskEntityDao;
-import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskItemEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
-import com.zhangqiang.downloadmanager.db.entity.HttpDefaultTaskEntity;
-import com.zhangqiang.downloadmanager.db.entity.HttpPartTaskEntity;
-import com.zhangqiang.downloadmanager.db.entity.HttpPartTaskItemEntity;
 import com.zhangqiang.downloadmanager.db.entity.HttpTaskEntity;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskBean;
-import com.zhangqiang.downloadmanager.task.http.bean.HttpPartTaskItemBean;
 import com.zhangqiang.downloadmanager.task.http.bean.HttpTaskBean;
 
 import java.util.ArrayList;
@@ -57,11 +50,13 @@ public class HttpTaskService {
             httpTaskBean.setErrorMsg(httpTaskEntity.getErrorMsg());
             httpTaskBean.setThreadSize(httpTaskEntity.getThreadSize());
             httpTaskBean.setTargetFileName(httpTaskEntity.getTargetFileName());
+            httpTaskBean.setResponseCode(httpTaskEntity.getResponseCode());
+            httpTaskBean.setSaveFileName(httpTaskEntity.getSaveFileName());
             int httpTaskType = httpTaskEntity.getType();
             httpTaskBean.setType(httpTaskType);
             String childId = httpTaskEntity.getChildId();
             if (httpTaskType == HttpTaskBean.TYPE_DEFAULT) {
-                httpTaskBean.setHttpDefaultTask(httpDefaultTaskService.get(childId));
+                httpTaskBean.setHttpDefaultTaskBean(httpDefaultTaskService.get(childId));
             } else if (httpTaskType == HttpTaskBean.TYPE_PART) {
                 httpTaskBean.setHttpPartTask(httpPartTaskService.get(childId));
             }
@@ -91,14 +86,18 @@ public class HttpTaskService {
         httpTaskEntity.setFileName(httpTaskBean.getFileName());
         httpTaskEntity.setErrorMsg(httpTaskBean.getErrorMsg());
         httpTaskEntity.setTargetFileName(httpTaskBean.getTargetFileName());
+        httpTaskEntity.setSaveFileName(httpTaskBean.getSaveFileName());
+        httpTaskEntity.setResponseCode(httpTaskBean.getResponseCode());
         int type = httpTaskBean.getType();
         httpTaskEntity.setType(type);
         if (type == HttpTaskBean.TYPE_DEFAULT) {
-            HttpDefaultTaskBean httpDefaultTask = httpTaskBean.getHttpDefaultTask();
+            HttpDefaultTaskBean httpDefaultTask = httpTaskBean.getHttpDefaultTaskBean();
             httpTaskEntity.setChildId(httpDefaultTask.getId());
         } else if (type == HttpTaskBean.TYPE_PART) {
-            HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTask();
-            httpTaskEntity.setChildId(httpPartTask.getId());
+            HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTaskBean();
+            if(httpPartTask != null){
+                httpTaskEntity.setChildId(httpPartTask.getId());
+            }
         }
         return httpTaskEntity;
     }

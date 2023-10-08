@@ -1,24 +1,28 @@
 package com.zhangqiang.sample.ui.dialog;
 
-import android.content.Context;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
 import android.view.View;
 import android.widget.CheckBox;
 
-import com.zhangqiang.downloadmanager.DownloadManager;
-import com.zhangqiang.downloadmanager.TaskInfo;
+import androidx.annotation.Nullable;
+
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 
 public class TaskDeleteConfirmDialog extends BaseDialogFragment {
 
     private CheckBox cbDeleteFile;
-    private String taskId;
 
-    public static TaskDeleteConfirmDialog newInstance(String taskId) {
+    public interface OnDeleteListener{
+
+        void onDelete(boolean deleteFile);
+    }
+
+    private OnDeleteListener onDeleteListener;
+
+
+    public static TaskDeleteConfirmDialog newInstance() {
         Bundle arg = new Bundle();
-        arg.putString("taskId",taskId);
         TaskDeleteConfirmDialog dialog = new TaskDeleteConfirmDialog();
         dialog.setArguments(arg);
         return dialog;
@@ -28,9 +32,6 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
-        if (arguments != null) {
-            taskId = arguments.getString("taskId");
-        }
     }
 
     @Override
@@ -44,12 +45,15 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
         view.findViewById(R.id.bt_confirm).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Context context = getContext();
-                TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
-                if (taskInfo == null) {
-                    return;
+                if (onDeleteListener != null) {
+                    onDeleteListener.onDelete(cbDeleteFile.isChecked());
                 }
-                DownloadManager.getInstance(context).deleteTask(taskInfo.getId(), cbDeleteFile.isChecked());
+//                Context context = getContext();
+//                TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
+//                if (taskInfo == null) {
+//                    return;
+//                }
+//                DownloadManager.getInstance(context).deleteTask(taskInfo.getId(), cbDeleteFile.isChecked());
                 getDialog().dismiss();
             }
         });
@@ -66,4 +70,8 @@ public class TaskDeleteConfirmDialog extends BaseDialogFragment {
         return true;
     }
 
+    public TaskDeleteConfirmDialog setOnDeleteListener(OnDeleteListener onDeleteListener) {
+        this.onDeleteListener = onDeleteListener;
+        return this;
+    }
 }

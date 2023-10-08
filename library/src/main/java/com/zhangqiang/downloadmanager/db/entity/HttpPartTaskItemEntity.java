@@ -14,26 +14,31 @@ public class HttpPartTaskItemEntity {
     @Id
     private String id;
     @NotNull
-    private String filePath;
+    private String saveDir;
+    /**
+     * 实际保存的文件名
+     */
+    private String saveFileName;
     @NotNull
     private long startPosition;
     @NotNull
-    private long currentPosition;
+    private long currentLength;
     @NotNull
     private long endPosition;
     @NotNull
     private int state;
     @NotNull
-    private Date createTime;
+    private long createTime;
     private String errorMsg;
-    @Generated(hash = 1056940217)
-    public HttpPartTaskItemEntity(String id, @NotNull String filePath,
-            long startPosition, long currentPosition, long endPosition, int state,
-            @NotNull Date createTime, String errorMsg) {
+    @Generated(hash = 1280415093)
+    public HttpPartTaskItemEntity(String id, @NotNull String saveDir,
+            String saveFileName, long startPosition, long currentLength,
+            long endPosition, int state, long createTime, String errorMsg) {
         this.id = id;
-        this.filePath = filePath;
+        this.saveDir = saveDir;
+        this.saveFileName = saveFileName;
         this.startPosition = startPosition;
-        this.currentPosition = currentPosition;
+        this.currentLength = currentLength;
         this.endPosition = endPosition;
         this.state = state;
         this.createTime = createTime;
@@ -48,11 +53,17 @@ public class HttpPartTaskItemEntity {
     public void setId(String id) {
         this.id = id;
     }
-    public String getFilePath() {
-        return this.filePath;
+    public String getSaveDir() {
+        return this.saveDir;
     }
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setSaveDir(String saveDir) {
+        this.saveDir = saveDir;
+    }
+    public String getSaveFileName() {
+        return this.saveFileName;
+    }
+    public void setSaveFileName(String saveFileName) {
+        this.saveFileName = saveFileName;
     }
     public long getStartPosition() {
         return this.startPosition;
@@ -60,11 +71,11 @@ public class HttpPartTaskItemEntity {
     public void setStartPosition(long startPosition) {
         this.startPosition = startPosition;
     }
-    public long getCurrentPosition() {
-        return this.currentPosition;
+    public long getCurrentLength() {
+        return this.currentLength;
     }
-    public void setCurrentPosition(long currentPosition) {
-        this.currentPosition = currentPosition;
+    public void setCurrentLength(long currentLength) {
+        this.currentLength = currentLength;
     }
     public long getEndPosition() {
         return this.endPosition;
@@ -78,10 +89,10 @@ public class HttpPartTaskItemEntity {
     public void setState(int state) {
         this.state = state;
     }
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return this.createTime;
     }
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
     public String getErrorMsg() {
@@ -90,4 +101,5 @@ public class HttpPartTaskItemEntity {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
+
 }
