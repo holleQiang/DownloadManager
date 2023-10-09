@@ -3,6 +3,7 @@ package com.zhangqiang.downloadmanager.plugin.ftp;
 import android.content.Context;
 
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
+import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.ftp.bean.FTPTaskBean;
 import com.zhangqiang.downloadmanager.plugin.ftp.callback.ResourceInfo;
@@ -33,7 +34,16 @@ public class FtpDownloadPlugin implements DownloadPlugin {
     @Override
     public void apply(DownloadManager downloadManager) {
         downloadManager.addDownloadTaskFactory(new FtpDownloadTaskFactory());
+        ExecutorManager.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                List<FTPDownloadTask> ftpDownloadTasks = loadLocalDownloadTask();
+                downloadManager.addDownloadTasks(ftpDownloadTasks);
+            }
+        });
+    }
 
+    private List<FTPDownloadTask> loadLocalDownloadTask() {
         List<FTPDownloadTask> ftpDownloadTasks= new ArrayList<>();
         List<FTPTaskBean> ftpTaskBeans = ftpTaskService.getFtpTaskBeans();
         if (ftpTaskBeans != null) {
@@ -128,7 +138,7 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                 ftpDownloadTasks.add(ftpDownloadTask);
             }
         }
-        downloadManager.addDownloadTasks(ftpDownloadTasks);
+        return ftpDownloadTasks;
     }
 
     @Override
@@ -138,7 +148,7 @@ public class FtpDownloadPlugin implements DownloadPlugin {
 
     @Override
     public String getName() {
-        return "ftp 下载支持插件";
+        return "Ftp协议下载插件";
     }
 
 

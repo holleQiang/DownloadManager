@@ -2,6 +2,7 @@ package com.zhangqiang.downloadmanager.plugin.http;
 
 import android.content.Context;
 
+import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskItemBean;
@@ -47,6 +48,16 @@ public class HttpDownloadPlugin implements DownloadPlugin {
     @Override
     public void apply(DownloadManager downloadManager) {
         downloadManager.addDownloadTaskFactory(new HttpDownloadTaskFactory());
+        ExecutorManager.getInstance().submit(new Runnable() {
+            @Override
+            public void run() {
+                List<HttpDownloadTask> httpDownloadTasks = loadLocalDownloadTasks();
+                downloadManager.addDownloadTasks(httpDownloadTasks);
+            }
+        });
+    }
+
+    private List<HttpDownloadTask> loadLocalDownloadTasks() {
         List<HttpDownloadTask> httpDownloadTasks = new ArrayList<>();
         List<HttpTaskBean> httpTasks = httpTaskService.getHttpTasks();
         for (int i = 0; i < httpTasks.size(); i++) {
@@ -123,7 +134,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
             handleDownloadTaskSave(httpDownloadTask, httpTaskBean);
             httpDownloadTasks.add(httpDownloadTask);
         }
-        downloadManager.addDownloadTasks(httpDownloadTasks);
+        return httpDownloadTasks;
     }
 
     @Override

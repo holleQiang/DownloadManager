@@ -76,12 +76,12 @@ public class DownloadManager {
         Collections.sort(downloadTasks, new Comparator<DownloadTask>() {
             @Override
             public int compare(DownloadTask o1, DownloadTask o2) {
-                return o1.getCreateTime() < o2.getCreateTime() ? 1 : 0;
+                return Long.compare(o2.getCreateTime(), o1.getCreateTime());
             }
         });
     }
 
-    public void addDownloadTasks(List<? extends DownloadTask> tasks) {
+    public synchronized void addDownloadTasks(List<? extends DownloadTask> tasks) {
         if (tasks == null || tasks.isEmpty()) {
             return;
         }

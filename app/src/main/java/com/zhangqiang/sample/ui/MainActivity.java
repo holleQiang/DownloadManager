@@ -164,9 +164,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showTaskCreateDialog(String url) {
-//        CreateTaskDialog.createAndShow(getSupportFragmentManager(), url);
-
-        new TaskCreateByLinkDialog().show(getSupportFragmentManager(),"task_create_by_link");
+        TaskCreateByLinkDialog.newInstance(url).show(getSupportFragmentManager(),"task_create_by_link");
     }
 
     private final Processor mHttpProcessor = new HttpProcessor() {

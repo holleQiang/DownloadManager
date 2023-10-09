@@ -5,6 +5,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.plugin.http.okhttp.OKHttpClients;
 import com.zhangqiang.downloadmanager.plugin.http.response.OkHttpResponse;
 import com.zhangqiang.downloadmanager.plugin.http.part.PartInfo;
@@ -28,6 +29,7 @@ import java.io.InterruptedIOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -48,6 +50,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     private String saveFileName;
     private final List<OnHttpPartDownloadTasksReadyListener> onHttpPartDownloadTasksReadyListeners = new ArrayList<>();
     private final List<OnSaveFileNameChangeListener> onSaveFileNameChangeListeners = new ArrayList<>();
+    private Future<?> handleAllTaskSuccessFuture;
 
     public HttpDownloadTask(String saveDir, String targetFileName, long createTime, String url, Context context, int threadSize) {
         super(saveDir, targetFileName, createTime, url);
@@ -83,7 +86,16 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     protected void onStart() {
         LogUtils.i(TAG, "开始下载");
         if (partDownloadTasks != null) {
-            startPartDownloadTasks();
+            if (this.successPartDownloadTaskCount == partDownloadTasks.size()) {
+                handleAllTaskSuccessFuture = ExecutorManager.getInstance().submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        handleAllPartDownloadTasksSuccess();
+                    }
+                });
+            }else {
+                startPartDownloadTasks();
+            }
             return;
         }
         Request.Builder builder = new Request.Builder().url(getUrl());
@@ -185,6 +197,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     protected void onCancel() {
         if (downloadCall != null && !downloadCall.isCanceled()) {
             downloadCall.cancel();
+            downloadCall = null;
         }
         if (partDownloadTasks != null) {
             for (HttpPartDownloadTask partDownloadTask : partDownloadTasks) {
@@ -192,6 +205,10 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     partDownloadTask.cancel();
                 }
             }
+        }
+        if (handleAllTaskSuccessFuture != null) {
+            handleAllTaskSuccessFuture.cancel(true);
+            handleAllTaskSuccessFuture = null;
         }
     }
 
@@ -354,10 +371,6 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     }
 
     private void startPartDownloadTasks() {
-        if (this.successPartDownloadTaskCount == partDownloadTasks.size()) {
-            handleAllPartDownloadTasksSuccess();
-            return;
-        }
         for (HttpPartDownloadTask partDownloadTask : partDownloadTasks) {
             Status status = partDownloadTask.getStatus();
             if (status == Status.SUCCESS) {

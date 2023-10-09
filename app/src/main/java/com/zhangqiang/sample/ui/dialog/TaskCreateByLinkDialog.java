@@ -3,12 +3,14 @@ package com.zhangqiang.sample.ui.dialog;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.zhangqiang.downloadmanager.plugin.ftp.request.FtpDownloadRequest;
 import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
@@ -23,7 +25,25 @@ import java.io.File;
 
 public class TaskCreateByLinkDialog extends BaseDialogFragment {
 
-    private com.zhangqiang.sample.databinding.DialogTaskCreateByLinkBinding binding;
+    private DialogTaskCreateByLinkBinding binding;
+    private String url;
+
+    public static TaskCreateByLinkDialog newInstance(String url){
+        TaskCreateByLinkDialog dialog = new TaskCreateByLinkDialog();
+        Bundle bundle = new Bundle();
+        bundle.putString("url",url);
+        dialog.setArguments(bundle);
+        return dialog;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            this.url = arguments.getString("url");
+        }
+    }
 
     @Override
     protected int getLayoutResId() {
@@ -33,6 +53,7 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
     @Override
     protected void initView(View view) {
         binding = DialogTaskCreateByLinkBinding.bind(view);
+        binding.etLink.setText(url);
         binding.btDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
