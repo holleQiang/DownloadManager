@@ -1,10 +1,7 @@
 package com.zhangqiang.sample.ui.cell;
 
-import android.net.Uri;
 import android.view.View;
 import android.widget.ProgressBar;
-
-import androidx.fragment.app.FragmentManager;
 
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.action.Action;
@@ -19,8 +16,6 @@ import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
-import com.zhangqiang.sample.utils.ClipboardUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 
 import java.io.File;
@@ -28,11 +23,11 @@ import java.io.File;
 public class FTPDownloadTaskCell extends MultiCell<FTPDownloadTask> {
 
     private static final String TAG = FTPDownloadTaskCell.class.getSimpleName();
-    private final FragmentManager fragmentManager;
+    private final View.OnLongClickListener onItemLongClickListener;
 
-    public FTPDownloadTaskCell(FTPDownloadTask data, FragmentManager fragmentManager) {
+    public FTPDownloadTaskCell(FTPDownloadTask data,  View.OnLongClickListener onItemLongClickListener) {
         super(R.layout.item_download_ftp, data, null);
-        this.fragmentManager = fragmentManager;
+        this.onItemLongClickListener = onItemLongClickListener;
     }
 
     @Override
@@ -59,36 +54,7 @@ public class FTPDownloadTaskCell extends MultiCell<FTPDownloadTask> {
                 }
             }
         });
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
-                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
-                    @Override
-                    public void onDelete() {
-
-                    }
-
-                    @Override
-                    public void onCopyLink() {
-                        ClipboardUtils.copy(v.getContext(),downloadTask.buildLink());
-                        taskOperationDialog.dismiss();
-                    }
-
-                    @Override
-                    public void onRestart() {
-
-                    }
-
-                    @Override
-                    public void onOpenDirClick() {
-                        IntentUtils.openDir(v.getContext(),downloadTask.getSaveDir());
-                    }
-                }).show(fragmentManager, "task_operate_dialog");
-                return true;
-            }
-        });
-
+        view.setOnLongClickListener(onItemLongClickListener);
         Object tag = view.getTag();
         if (tag != null) {
             view.removeOnAttachStateChangeListener((View.OnAttachStateChangeListener) tag);

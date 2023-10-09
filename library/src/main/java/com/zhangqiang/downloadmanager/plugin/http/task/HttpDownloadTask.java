@@ -259,7 +259,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             }
         }
         File saveFile = new File(dir, getSaveFileName());
-        FileUtils.deleteFileIfExists(saveFile);
+        FileUtils.deleteFileOrThrow(saveFile);
         RandomAccessFile raf = null;
         try {
             raf = new RandomAccessFile(saveFile, "rw");
@@ -297,7 +297,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
         }
         if(!TextUtils.isEmpty(dir)){
             try {
-                FileUtils.deleteFileIfExists(new File(dir));
+                FileUtils.deleteFileOrThrow(new File(dir));
             } catch (IOException e) {
                 e.printStackTrace();
             }

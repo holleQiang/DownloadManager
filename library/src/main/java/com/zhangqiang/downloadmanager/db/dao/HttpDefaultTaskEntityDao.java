@@ -28,7 +28,7 @@ public class HttpDefaultTaskEntityDao extends AbstractDao<HttpDefaultTaskEntity,
         public final static Property CurrentLength = new Property(1, long.class, "currentLength", false, "CURRENT_LENGTH");
         public final static Property State = new Property(2, int.class, "state", false, "STATE");
         public final static Property ErrorMsg = new Property(3, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property CreateTime = new Property(4, java.util.Date.class, "createTime", false, "CREATE_TIME");
+        public final static Property CreateTime = new Property(4, long.class, "createTime", false, "CREATE_TIME");
     }
 
 
@@ -72,7 +72,7 @@ public class HttpDefaultTaskEntityDao extends AbstractDao<HttpDefaultTaskEntity,
         if (errorMsg != null) {
             stmt.bindString(4, errorMsg);
         }
-        stmt.bindLong(5, entity.getCreateTime().getTime());
+        stmt.bindLong(5, entity.getCreateTime());
     }
 
     @Override
@@ -90,7 +90,7 @@ public class HttpDefaultTaskEntityDao extends AbstractDao<HttpDefaultTaskEntity,
         if (errorMsg != null) {
             stmt.bindString(4, errorMsg);
         }
-        stmt.bindLong(5, entity.getCreateTime().getTime());
+        stmt.bindLong(5, entity.getCreateTime());
     }
 
     @Override
@@ -105,7 +105,7 @@ public class HttpDefaultTaskEntityDao extends AbstractDao<HttpDefaultTaskEntity,
             cursor.getLong(offset + 1), // currentLength
             cursor.getInt(offset + 2), // state
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // errorMsg
-            new java.util.Date(cursor.getLong(offset + 4)) // createTime
+            cursor.getLong(offset + 4) // createTime
         );
         return entity;
     }
@@ -116,7 +116,7 @@ public class HttpDefaultTaskEntityDao extends AbstractDao<HttpDefaultTaskEntity,
         entity.setCurrentLength(cursor.getLong(offset + 1));
         entity.setState(cursor.getInt(offset + 2));
         entity.setErrorMsg(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setCreateTime(new java.util.Date(cursor.getLong(offset + 4)));
+        entity.setCreateTime(cursor.getLong(offset + 4));
      }
     
     @Override

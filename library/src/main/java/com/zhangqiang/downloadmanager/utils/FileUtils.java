@@ -1,6 +1,7 @@
 package com.zhangqiang.downloadmanager.utils;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +9,8 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 
 public class FileUtils {
+
+    public static final String TAG = FileUtils.class.getSimpleName();
 
     public interface WriteFileListener {
 
@@ -76,10 +79,26 @@ public class FileUtils {
         return targetFileName;
     }
 
-    public static void deleteFileIfExists(File file) throws IOException {
-        if (file.exists()) {
+    public static void deleteFileOrThrow(File file) throws IOException {
+        if (file.exists() && file.isFile()) {
             if (!file.delete()) {
                 throw new IOException("delete file fail:" + file.getAbsolutePath());
+            }
+        }
+    }
+
+    public static void deleteFile(File file) {
+        if (file.exists() && file.isFile()) {
+            if (!file.delete()) {
+                Log.i(TAG, "delete file fail:" + file.getAbsolutePath());
+            }
+        }
+    }
+
+    public static void deleteDir(File dir) {
+        if (dir.exists() && dir.isDirectory()) {
+            if (!dir.delete()) {
+                Log.i(TAG, "delete dir fail:" + dir.getAbsolutePath());
             }
         }
     }

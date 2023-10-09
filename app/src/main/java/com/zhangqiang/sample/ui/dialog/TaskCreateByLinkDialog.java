@@ -20,6 +20,7 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.databinding.DialogTaskCreateByLinkBinding;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.utils.DownloadUtils;
 
 import java.io.File;
 
@@ -71,50 +72,8 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
                 Toast.makeText(getActivity(), "请输入链接", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Uri uri = Uri.parse(link);
-            String scheme = uri.getScheme();
-            DownloadRequest downloadRequest = null;
-            if ("http".equals(scheme) || "https".equals(scheme)) {
-                File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-                downloadRequest = new HttpDownloadRequest(dirFile.getAbsolutePath(),
-                        null,
-                        link,
-                        2);
-            } else if ("ftp".equals(scheme)) {
-                String userInfo = uri.getUserInfo();
-                String username = null;
-                String password = null;
-                if (!TextUtils.isEmpty(userInfo)) {
-                    String[] split = userInfo.split(":");
-                    if (split.length >= 1) {
-                        username = split[0];
-                    }
-                    if (split.length >= 2) {
-                        password = split[1];
-                    }
-                }
-
-                String path = uri.getPath();
-                File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-                String ftpDir = path.substring(0, path.lastIndexOf("/"));
-                if (TextUtils.isEmpty(ftpDir)) {
-                    ftpDir = "/";
-                }
-                downloadRequest = new FtpDownloadRequest(dirFile.getAbsolutePath(),
-                        null,
-                        uri.getHost(),
-                        uri.getPort(),
-                        username,
-                        password,
-                        ftpDir,
-                        uri.getLastPathSegment()
-                );
-            }
-            if (downloadRequest == null) {
+            if (!DownloadUtils.downloadLink(link)) {
                 Toast.makeText(getActivity(), "不支持下载此链接", Toast.LENGTH_SHORT).show();
-            } else {
-                DownloadManager.getInstance().enqueue(downloadRequest);
-                dismiss();
             }
         }
     }

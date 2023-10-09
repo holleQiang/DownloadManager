@@ -1,12 +1,15 @@
 package com.zhangqiang.downloadmanager.plugin.http;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
+import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskItemBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpTaskBean;
+import com.zhangqiang.downloadmanager.plugin.http.service.HttpDefaultTaskService;
 import com.zhangqiang.downloadmanager.plugin.http.service.HttpPartTaskItemService;
 import com.zhangqiang.downloadmanager.plugin.http.service.HttpPartTaskService;
 import com.zhangqiang.downloadmanager.plugin.http.service.HttpTaskService;
@@ -26,8 +29,11 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
 import com.zhangqiang.downloadmanager.task.Status;
+import com.zhangqiang.downloadmanager.utils.FileUtils;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,12 +41,15 @@ public class HttpDownloadPlugin implements DownloadPlugin {
 
     private final Context context;
     private final HttpTaskService httpTaskService;
+    private final HttpDefaultTaskService httpDefaultTaskService;
     private final HttpPartTaskService httpPartTaskService;
     private final HttpPartTaskItemService httpPartTaskItemService;
+    private final HashMap<HttpDownloadTask, HttpTaskBean> mappings = new HashMap<>();
 
     public HttpDownloadPlugin(Context context) {
         this.context = context;
         this.httpTaskService = new HttpTaskService(context);
+        this.httpDefaultTaskService = new HttpDefaultTaskService(context);
         this.httpPartTaskService = new HttpPartTaskService(context);
         this.httpPartTaskItemService = new HttpPartTaskItemService(context);
     }
@@ -48,6 +57,41 @@ public class HttpDownloadPlugin implements DownloadPlugin {
     @Override
     public void apply(DownloadManager downloadManager) {
         downloadManager.addDownloadTaskFactory(new HttpDownloadTaskFactory());
+        downloadManager.addOnDownloadTaskDeleteListener(new OnDownloadTaskDeleteListener() {
+            @Override
+            public void onDownloadTaskDelete(DownloadTask downloadTask) {
+                if (downloadTask instanceof HttpDownloadTask) {
+                    HttpDownloadTask httpDownloadTask = (HttpDownloadTask) downloadTask;
+                    HttpTaskBean httpTaskBean = mappings.get(httpDownloadTask);
+                    if (httpTaskBean == null) {
+                        throw new NullPointerException("httpTaskBean are not excepted null");
+                    }
+                    httpTaskService.remove(httpTaskBean.getId());
+                    HttpDefaultTaskBean httpDefaultTaskBean = httpTaskBean.getHttpDefaultTaskBean();
+                    if (httpDefaultTaskBean != null) {
+                        httpDefaultTaskService.remove(httpDefaultTaskBean.getId());
+                    }
+                    HttpPartTaskBean httpPartTaskBean = httpTaskBean.getHttpPartTaskBean();
+                    if (httpPartTaskBean != null) {
+                        httpPartTaskItemService.remove(httpPartTaskBean.getId());
+
+                        List<HttpPartTaskItemBean> items = httpPartTaskBean.getItems();
+                        if (items != null) {
+                            String dir = null;
+                            for (HttpPartTaskItemBean taskItemBean : items) {
+                                httpPartTaskItemService.remove(taskItemBean.getId());
+                                FileUtils.deleteFile(new File(taskItemBean.getSaveDir(), taskItemBean.getSaveFileName()));
+                                dir = taskItemBean.getSaveDir();
+                            }
+                            if (!TextUtils.isEmpty(dir) && dir != null) {
+                                FileUtils.deleteDir(new File(dir));
+                            }
+                        }
+                    }
+                    mappings.remove(httpDownloadTask);
+                }
+            }
+        });
         ExecutorManager.getInstance().submit(new Runnable() {
             @Override
             public void run() {
@@ -206,8 +250,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
-                        null,
-                        0,
+                        makeResourceInfo(httpTaskBean),
+                        item.getCurrentLength(),
                         context,
                         item.getStartPosition(),
                         item.getEndPosition()
@@ -219,8 +263,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
-                        null,
-                        0,
+                        makeResourceInfo(httpTaskBean),
+                        item.getCurrentLength(),
                         context,
                         item.getStartPosition(),
                         item.getEndPosition()
@@ -320,6 +364,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
     }
 
     private void handleDownloadTaskSave(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean) {
+        mappings.put(httpDownloadTask, httpTaskBean);
         httpDownloadTask.addStatusChangeListener(new OnStatusChangeListener() {
             @Override
             public void onStatusChange(Status newStatus, Status oldStatus) {
@@ -352,7 +397,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 if (httpTaskBean.getType() == HttpTaskBean.TYPE_DEFAULT) {
                     HttpDefaultTaskBean httpDefaultTaskBean = httpTaskBean.getHttpDefaultTaskBean();
                     httpDefaultTaskBean.setCurrentLength(httpDownloadTask.getCurrentLength());
-                    httpTaskService.update(httpTaskBean);
+                    httpDefaultTaskService.update(httpDefaultTaskBean);
                 }
             }
         });
@@ -365,8 +410,17 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 int responseCode = resourceInfo.getResponseCode();
                 httpTaskBean.setResponseCode(responseCode);
                 if (responseCode == 200) {
+
+                    HttpDefaultTaskBean httpDefaultTaskBean = new HttpDefaultTaskBean();
+                    httpDefaultTaskBean.setId(UUID.randomUUID().toString());
+                    httpDefaultTaskBean.setCreateTime(System.currentTimeMillis());
+                    httpDefaultTaskBean.setCurrentLength(0);
+                    httpDefaultTaskService.add(httpDefaultTaskBean);
+
                     httpTaskBean.setType(HttpTaskBean.TYPE_DEFAULT);
+                    httpTaskBean.setHttpDefaultTaskBean(httpDefaultTaskBean);
                 } else if (responseCode == 206) {
+
                     httpTaskBean.setType(HttpTaskBean.TYPE_PART);
                 }
                 httpTaskService.update(httpTaskBean);

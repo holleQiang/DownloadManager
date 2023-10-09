@@ -44,11 +44,11 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
 
     private static final String TAG = HttpDownloadTaskCell.class.getSimpleName();
     private boolean showPartInfo;
-    private final FragmentManager fragmentManager;
+    private View.OnLongClickListener onItemLongClickListener;
 
-    public HttpDownloadTaskCell(HttpDownloadTask data, FragmentManager fragmentManager) {
+    public HttpDownloadTaskCell(HttpDownloadTask data, View.OnLongClickListener onItemLongClickListener) {
         super(R.layout.item_download, data, null);
-        this.fragmentManager = fragmentManager;
+        this.onItemLongClickListener = onItemLongClickListener;
     }
 
 
@@ -78,35 +78,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
             }
         });
         updateSpeed(viewHolder);
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(final View v) {
-                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
-                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
-                    @Override
-                    public void onDelete() {
-
-                    }
-
-                    @Override
-                    public void onCopyLink() {
-                        ClipboardUtils.copy(v.getContext(),downloadTask.getUrl());
-                        taskOperationDialog.dismiss();
-                    }
-
-                    @Override
-                    public void onRestart() {
-
-                    }
-
-                    @Override
-                    public void onOpenDirClick() {
-                        IntentUtils.openDir(v.getContext(),downloadTask.getSaveDir());
-                    }
-                }).show(fragmentManager, "task_operate_dialog");
-                return true;
-            }
-        });
+        view.setOnLongClickListener(onItemLongClickListener);
         viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, null);
         viewHolder.setChecked(R.id.cb_show_part_info, showPartInfo);
         viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, new CompoundButton.OnCheckedChangeListener() {

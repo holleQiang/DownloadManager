@@ -24,6 +24,7 @@ public class DownloadManager {
     private int activeTaskCount = 0;
     private final List<OnTaskCountChangeListener> onTaskCountChangeListeners = new ArrayList<>();
     private final List<OnActiveTaskCountChangeListener> onActiveTaskCountChangeListeners = new ArrayList<>();
+    private final List<OnDownloadTaskDeleteListener> onDownloadTaskDeleteListeners = new ArrayList<>();
 
     private DownloadManager() {
     }
@@ -104,15 +105,18 @@ public class DownloadManager {
 
     public void deleteTask(DownloadTask task, RemoveTaskOptions options) {
         if (downloadTasks.remove(task)) {
-            task.cancel();
+            if(task.getStatus() == Status.DOWNLOADING){
+                task.cancel();
+            }
             if (options.isDeleteFile()) {
                 try {
-                    FileUtils.deleteFileIfExists(new File(task.getSaveDir(), task.getSaveFileName()));
+                    FileUtils.deleteFileOrThrow(new File(task.getSaveDir(), task.getSaveFileName()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
             dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() + 1);
+            dispatchDownloadTaskDelete(task);
         }
     }
 
@@ -158,5 +162,19 @@ public class DownloadManager {
 
     public void removeActiveTaskCountChangeListener(OnActiveTaskCountChangeListener listener) {
         onActiveTaskCountChangeListeners.remove(listener);
+    }
+
+    public void addOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener){
+        onDownloadTaskDeleteListeners.add(listener);
+    }
+
+    public void removeOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener){
+        onDownloadTaskDeleteListeners.remove(listener);
+    }
+
+    private void dispatchDownloadTaskDelete(DownloadTask downloadTask){
+        for (int i = onDownloadTaskDeleteListeners.size() - 1; i >= 0; i--) {
+            onDownloadTaskDeleteListeners.get(i).onDownloadTaskDelete(downloadTask);
+        }
     }
 }

@@ -24,10 +24,10 @@ public class HttpDefaultTaskEntity {
     private int state;
     private String errorMsg;
     @NotNull
-    private Date createTime;
-    @Generated(hash = 1391573043)
+    private long createTime;
+    @Generated(hash = 292729816)
     public HttpDefaultTaskEntity(String id, long currentLength, int state,
-            String errorMsg, @NotNull Date createTime) {
+            String errorMsg, long createTime) {
         this.id = id;
         this.currentLength = currentLength;
         this.state = state;
@@ -61,10 +61,11 @@ public class HttpDefaultTaskEntity {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return this.createTime;
     }
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
+
 }

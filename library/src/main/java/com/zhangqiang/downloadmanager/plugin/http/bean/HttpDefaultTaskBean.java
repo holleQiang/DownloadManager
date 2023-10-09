@@ -21,7 +21,7 @@ public class HttpDefaultTaskBean {
     @State
     private int state;
     private String errorMsg;
-    private Date createTime;
+    private long createTime;
 
     public String getId() {
         return id;
@@ -55,11 +55,12 @@ public class HttpDefaultTaskBean {
         this.errorMsg = errorMsg;
     }
 
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public HttpDefaultTaskBean setCreateTime(long createTime) {
         this.createTime = createTime;
+        return this;
     }
 }

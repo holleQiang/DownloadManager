@@ -18,6 +18,7 @@ import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.OnTaskCountChangeListener;
+import com.zhangqiang.downloadmanager.manager.RemoveTaskOptions;
 import com.zhangqiang.downloadmanager.plugin.ftp.FtpDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.ftp.task.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.HttpDownloadPlugin;
@@ -27,7 +28,11 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.ui.cell.FTPDownloadTaskCell;
 import com.zhangqiang.sample.ui.cell.HttpDownloadTaskCell;
+import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
+import com.zhangqiang.sample.utils.ClipboardUtils;
+import com.zhangqiang.sample.utils.DownloadUtils;
+import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.util.ArrayList;
@@ -90,11 +95,77 @@ public class DownloadManagerFragment extends BaseFragment {
         for (int i = 0; i < taskCount; i++) {
             DownloadTask task = DownloadManager.getInstance().getTask(i);
             if (task instanceof HttpDownloadTask) {
-                cells.add(new HttpDownloadTaskCell((HttpDownloadTask) task, getChildFragmentManager()));
+                cells.add(makeHttpDownloadTaskCell((HttpDownloadTask) task));
             } else if (task instanceof FTPDownloadTask) {
-                cells.add(new FTPDownloadTaskCell((FTPDownloadTask) task, getChildFragmentManager()));
+                cells.add(makeFtpDownloadTaskCell(((FTPDownloadTask) task)));
             }
         }
         cellRVAdapter.setDataList(cells);
+    }
+
+    private Cell makeFtpDownloadTaskCell(FTPDownloadTask downloadTask) {
+        return new FTPDownloadTaskCell(downloadTask, new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
+                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
+
+                    @Override
+                    public void onDelete(boolean deleteFile) {
+                        DownloadManager.getInstance().deleteTask(downloadTask,new RemoveTaskOptions().setDeleteFile(deleteFile));
+                    }
+
+                    @Override
+                    public void onCopyLink() {
+                        ClipboardUtils.copy(v.getContext(),downloadTask.buildLink());
+                    }
+
+                    @Override
+                    public void onRestart() {
+                        DownloadManager.getInstance().deleteTask(downloadTask,new RemoveTaskOptions().setDeleteFile(true));
+                        DownloadUtils.downloadFtpUrl(downloadTask.buildLink());
+                    }
+
+                    @Override
+                    public void onOpenDirClick() {
+                        IntentUtils.openDir(v.getContext(),downloadTask.getSaveDir());
+                    }
+                }).show(getChildFragmentManager(), "task_operate_dialog");
+                return true;
+            }
+        });
+    }
+
+    private Cell makeHttpDownloadTaskCell(HttpDownloadTask downloadTask) {
+        return new HttpDownloadTaskCell(downloadTask, new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
+                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
+
+                    @Override
+                    public void onDelete(boolean deleteFile) {
+                        DownloadManager.getInstance().deleteTask(downloadTask,new RemoveTaskOptions().setDeleteFile(deleteFile));
+                    }
+
+                    @Override
+                    public void onCopyLink() {
+                        ClipboardUtils.copy(v.getContext(),downloadTask.getUrl());
+                    }
+
+                    @Override
+                    public void onRestart() {
+                        DownloadManager.getInstance().deleteTask(downloadTask,new RemoveTaskOptions().setDeleteFile(true));
+                        DownloadUtils.downloadHttpUrl(downloadTask.getUrl());
+                    }
+
+                    @Override
+                    public void onOpenDirClick() {
+                        IntentUtils.openDir(v.getContext(),downloadTask.getSaveDir());
+                    }
+                }).show(getChildFragmentManager(), "task_operate_dialog");
+                return true;
+            }
+        });
     }
 }

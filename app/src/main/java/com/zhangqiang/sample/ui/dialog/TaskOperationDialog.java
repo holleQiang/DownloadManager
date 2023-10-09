@@ -4,7 +4,9 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
+
 import android.view.View;
 
 import com.zhangqiang.sample.R;
@@ -13,10 +15,10 @@ import com.zhangqiang.sample.databinding.DialogTaksOperationBinding;
 
 public class TaskOperationDialog extends BaseDialogFragment {
 
-    private com.zhangqiang.sample.databinding.DialogTaksOperationBinding binding;
+    private DialogTaksOperationBinding binding;
 
-    public interface OperationListener{
-        void onDelete();
+    public interface OperationListener {
+        void onDelete(boolean deleteFile);
 
         void onCopyLink();
 
@@ -58,75 +60,46 @@ public class TaskOperationDialog extends BaseDialogFragment {
             @Override
             public void onClick(View v) {
 
-                if (operationListener != null) {
-                    operationListener.onDelete();
-                }
-//                TaskDeleteConfirmDialog dialog = TaskDeleteConfirmDialog.newInstance(taskId);
-//                dialog.show(getFragmentManager(), "delete_confirm");
+                TaskDeleteConfirmDialog dialog = TaskDeleteConfirmDialog.newInstance();
+                dialog.setOnDeleteListener(new TaskDeleteConfirmDialog.OnDeleteListener() {
+                    @Override
+                    public void onDelete(boolean deleteFile) {
+                        if (operationListener != null) {
+                            operationListener.onDelete(deleteFile);
+                        }
+                    }
+                });
+                dialog.show(getChildFragmentManager(), "delete_confirm");
                 getDialog().dismiss();
             }
         });
-       binding.btCopyLink.setOnClickListener(new View.OnClickListener() {
+        binding.btCopyLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(operationListener != null){
+                if (operationListener != null) {
                     operationListener.onCopyLink();
                 }
-//                TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
-//                if (taskInfo instanceof HttpTaskInfo) {
-//                    HttpTaskInfo httpTaskInfo = (HttpTaskInfo) taskInfo;
-//                    copy(context, httpTaskInfo.getUrl());
-//                    Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
-//                    getDialog().dismiss();
-//                }
                 getDialog().dismiss();
             }
         });
-       binding.btRestart.setOnClickListener(new View.OnClickListener() {
+        binding.btRestart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(operationListener != null){
+                if (operationListener != null) {
                     operationListener.onRestart();
                 }
-//                TaskInfo taskInfo = DownloadManager.getInstance(context).getTaskInfo(taskId);
-//                if (taskInfo instanceof HttpTaskInfo) {
-//                    HttpTaskInfo httpTaskInfo = (HttpTaskInfo) taskInfo;
-//                    DownloadManager.getInstance(context).deleteTask(taskId, true);
-//                    DownloadRequest request = new HttpDownloadRequest.Builder()
-//                            .setUrl(httpTaskInfo.getUrl())
-//                            .setSaveDir(httpTaskInfo.getSaveDir())
-//                            .setThreadSize(httpTaskInfo.getThreadCount())
-//                            .setFileName(httpTaskInfo.getFileName())
-//                            .build();
-//                    DownloadManager.getInstance(context).enqueue(request);
-//                    getDialog().dismiss();
-//                }else if(taskInfo instanceof FTPTaskInfo){
-//                    FTPTaskInfo ftpTaskInfo = (FTPTaskInfo) taskInfo;
-//                    DownloadManager.getInstance(context).deleteTask(taskId, true);
-//                    DownloadRequest request = new FTPDownloadRequest.Builder()
-//                            .setHost(ftpTaskInfo.getHost())
-//                            .setPort(ftpTaskInfo.getPort())
-//                            .setSaveDir(ftpTaskInfo.getSaveDir())
-//                            .setFileName(ftpTaskInfo.getFileName())
-//                            .setFtpDir(ftpTaskInfo.getFtpDir())
-//                            .setFtpFileName(ftpTaskInfo.getFtpFileName())
-//                            .setUserName(ftpTaskInfo.getUserName())
-//                            .setPassword(ftpTaskInfo.getPassword())
-//                            .build();
-//                    DownloadManager.getInstance(context).enqueue(request);
-//                    getDialog().dismiss();
-//                }
                 getDialog().dismiss();
             }
         });
-       binding.btOpenDir.setOnClickListener(new View.OnClickListener() {
-           @Override
-           public void onClick(View v) {
-               if(operationListener != null){
-                   operationListener.onOpenDirClick();
-               }
-           }
-       });
+        binding.btOpenDir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (operationListener != null) {
+                    operationListener.onOpenDirClick();
+                }
+                getDialog().dismiss();
+            }
+        });
         binding.btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
