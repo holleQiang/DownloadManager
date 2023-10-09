@@ -50,10 +50,16 @@ public class SettingsActivity extends BaseActivity {
                     }
                 });
 
+        SettingsManager.getInstance().getHttpDownloadThreadSize().toObservable()
+                .compose(RxJavaUtils.bindLifecycle(this)).subscribe(new BaseObserver<Integer>() {
+                    @Override
+                    public void onNext(Integer integer) {
+                        mBinding.etThreadSize.setText(String.valueOf(integer));
+                    }
+                });
         initialPluginInfo();
 
     }
-
 
 
     @Override
@@ -72,6 +78,10 @@ public class SettingsActivity extends BaseActivity {
             String saveDir = mBinding.etSaveDir.getText().toString();
             if (isValidDir(saveDir)) {
                 SettingsManager.getInstance().getSaveDirOption().set(saveDir);
+            }
+            String threadSize = mBinding.etThreadSize.getText().toString();
+            if (!TextUtils.isEmpty(threadSize)) {
+                SettingsManager.getInstance().getHttpDownloadThreadSize().set(Integer.valueOf(threadSize));
             }
             finish();
         }

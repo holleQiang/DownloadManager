@@ -50,5 +50,6 @@
     <string name="download_right_now">立即下载</string>
     <string name="add_link">添加链接</string>
     <string name="open_file_dir">打开文件所在目录</string>
+    <string name="http_download_thread_size">Http下载任务线程数量</string>
 
 </resources>

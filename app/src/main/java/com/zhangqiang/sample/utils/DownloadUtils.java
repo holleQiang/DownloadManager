@@ -19,7 +19,7 @@ public class DownloadUtils {
         DownloadRequest downloadRequest = new HttpDownloadRequest(dirFile.getAbsolutePath(),
                 null,
                 httpUrl,
-                2);
+                SettingsManager.getInstance().getHttpDownloadThreadSize().get());
         DownloadManager.getInstance().enqueue(downloadRequest);
     }
 

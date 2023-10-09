@@ -26,7 +26,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
     private final List<OnTaskFailListener> onTaskFailListeners = new ArrayList<>();
     private final List<OnProgressChangeListener> onProgressChangeListeners = new ArrayList<>();
     private final SpeedHelper speedHelper = new SpeedHelper(this);
-    private final IntervalTask progressTask = new IntervalTask(30) {
+    private final IntervalTask progressTask = new IntervalTask(300) {
 
         long lastLength = getCurrentLength();
         @Override
@@ -84,7 +84,6 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
         if (status != Status.DOWNLOADING) {
             throw new IllegalStateException("cancel not from downloading status");
         }
-
         status = Status.CANCELED;
         onCancel();
         dispatchStatusChange(Status.CANCELED, Status.DOWNLOADING);

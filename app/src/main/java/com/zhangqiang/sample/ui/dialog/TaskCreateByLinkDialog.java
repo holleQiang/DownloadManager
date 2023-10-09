@@ -74,6 +74,8 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
             }
             if (!DownloadUtils.downloadLink(link)) {
                 Toast.makeText(getActivity(), "不支持下载此链接", Toast.LENGTH_SHORT).show();
+            }else {
+                getDialog().dismiss();
             }
         }
     }

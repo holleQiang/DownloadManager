@@ -20,6 +20,7 @@ public class SettingsManager {
     private final AtomicBoolean hasInit = new AtomicBoolean(false);
     private Option<Integer> maxRunningTaskCountOption;
     private Option<String> saveDirOption;
+    private Option<Integer> httpDownloadThreadSize;
 
     private SettingsManager() {
     }
@@ -34,8 +35,9 @@ public class SettingsManager {
         }
         context = context.getApplicationContext();
         ValueStore valueStore = new MMKVValueStore(context);
-        maxRunningTaskCountOption = Options.ofInt("thread_count", 3, valueStore);
+        maxRunningTaskCountOption = Options.ofInt("max_running_task_count", 3, valueStore);
         saveDirOption = Options.ofString("save_dir", "Download", valueStore);
+        httpDownloadThreadSize = Options.ofInt("http_thread_size", 2, valueStore);
     }
 
     public Option<Integer> getMaxRunningTaskCountOption() {
@@ -52,5 +54,9 @@ public class SettingsManager {
 
     public String getSaveDir() {
         return getSaveDirOption().get();
+    }
+
+    public Option<Integer> getHttpDownloadThreadSize() {
+        return httpDownloadThreadSize;
     }
 }
