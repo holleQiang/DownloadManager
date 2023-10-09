@@ -47,5 +47,7 @@
     <string name="please_check_your_internet">请检查网络连接</string>
     <string name="cannot_found_app_to_process">无法找到处理的应用</string>
     <string name="installed_plugin">已安装插件</string>
+    <string name="download_right_now">立即下载</string>
+    <string name="add_link">添加链接</string>
 
 </resources>

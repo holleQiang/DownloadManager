@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -15,19 +16,21 @@ import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
-import com.zhangqiang.downloadmanager.task.speed.OnSpeedChangeListener;
+import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
-import com.zhangqiang.downloadmanager2.plugin.http.task.HttpDownloadTask;
-import com.zhangqiang.downloadmanager2.plugin.http.task.HttpPartDownloadTask;
-import com.zhangqiang.downloadmanager2.plugin.http.task.OnProgressChangeListener;
-import com.zhangqiang.downloadmanager2.plugin.http.task.OnResourceInfoReadyListener;
-import com.zhangqiang.downloadmanager2.plugin.http.task.ResourceInfo;
-import com.zhangqiang.downloadmanager2.task.OnSaveFileNameChangeListener;
-import com.zhangqiang.downloadmanager2.task.OnStatusChangeListener;
-import com.zhangqiang.downloadmanager2.task.Status;
+import com.zhangqiang.downloadmanager.plugin.http.task.HttpDownloadTask;
+import com.zhangqiang.downloadmanager.plugin.http.task.HttpPartDownloadTask;
+import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
+import com.zhangqiang.downloadmanager.plugin.http.task.OnResourceInfoReadyListener;
+import com.zhangqiang.downloadmanager.plugin.http.task.ResourceInfo;
+import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
+import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
+import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
+import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
+import com.zhangqiang.sample.utils.ClipboardUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.ResourceUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
@@ -38,17 +41,14 @@ import java.util.List;
 
 public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
 
-    public interface OnLongClickListener {
-
-        void onLongClick();
-    }
 
     private static final String TAG = HttpDownloadTaskCell.class.getSimpleName();
     private boolean showPartInfo;
-    private OnLongClickListener onLongClickListener;
+    private final FragmentManager fragmentManager;
 
-    public HttpDownloadTaskCell(HttpDownloadTask data) {
+    public HttpDownloadTaskCell(HttpDownloadTask data, FragmentManager fragmentManager) {
         super(R.layout.item_download, data, null);
+        this.fragmentManager = fragmentManager;
     }
 
 
@@ -81,9 +81,24 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         view.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(final View v) {
-                if (onLongClickListener != null) {
-                    onLongClickListener.onLongClick();
-                }
+                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
+                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
+                    @Override
+                    public void onDelete() {
+
+                    }
+
+                    @Override
+                    public void onCopyLink() {
+                        ClipboardUtils.copy(v.getContext(),downloadTask.getUrl());
+                        taskOperationDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onRestart() {
+
+                    }
+                }).show(fragmentManager, "task_operate_dialog");
                 return true;
             }
         });
@@ -354,10 +369,5 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
     private long getContentLength() {
         ResourceInfo resourceInfo = getData().getResourceInfo();
         return resourceInfo == null ? 0 : resourceInfo.getContentLength();
-    }
-
-    public HttpDownloadTaskCell setOnLongClickListener(OnLongClickListener onLongClickListener) {
-        this.onLongClickListener = onLongClickListener;
-        return this;
     }
 }

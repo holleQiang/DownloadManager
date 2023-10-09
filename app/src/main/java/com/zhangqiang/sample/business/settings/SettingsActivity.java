@@ -9,14 +9,14 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhangqiang.celladapter.CellRVAdapter;
-import com.zhangqiang.downloadmanager2.manager.DownloadManager;
+import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.plugins.PluginInfoCell;
 import com.zhangqiang.sample.databinding.ActivitySettingsBinding;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.ui.DownloadManager2Fragment;
+import com.zhangqiang.sample.ui.DownloadManagerFragment;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.util.ArrayList;
@@ -88,7 +88,7 @@ public class SettingsActivity extends BaseActivity {
         CellRVAdapter pluginsAdapter = new CellRVAdapter();
         mBinding.rvPlugins.setAdapter(pluginsAdapter);
         mBinding.rvPlugins.setLayoutManager(new LinearLayoutManager(this));
-        DownloadManager downloadManager = DownloadManager2Fragment.downloadManager;
+        DownloadManager downloadManager = DownloadManagerFragment.downloadManager;
         int pluginCount = downloadManager.getPluginCount();
         List<PluginInfoCell> pluginInfoCells = new ArrayList<>();
         for (int i = 0; i < pluginCount; i++) {

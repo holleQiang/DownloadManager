@@ -11,11 +11,11 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
-import com.zhangqiang.downloadmanager2.plugin.http.request.HttpDownloadRequest;
+import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.ui.DownloadManager2Fragment;
+import com.zhangqiang.sample.ui.DownloadManagerFragment;
 
 import java.io.File;
 
@@ -80,7 +80,7 @@ public class CreateTaskDialog extends BaseDialogFragment {
                     etSaveName.getText().toString().trim(),
                     url,
                     Integer.parseInt(etThreadSize.getText().toString()));
-            DownloadManager2Fragment.downloadManager.enqueue(request);
+            DownloadManagerFragment.downloadManager.enqueue(request);
             getDialog().dismiss();
         }
     }

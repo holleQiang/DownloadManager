@@ -21,6 +21,7 @@ import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.CreateTaskDialog;
+import com.zhangqiang.sample.ui.dialog.TaskCreateByLinkDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
 import com.zhangqiang.sample.utils.WebViewUtils;
@@ -49,7 +50,7 @@ public class MainActivity extends BaseActivity {
 //        DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
 //        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
 //                .commit();
-        DownloadManager2Fragment downloadManageFragment = new DownloadManager2Fragment();
+        DownloadManagerFragment downloadManageFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
                 .commit();
 
@@ -163,7 +164,9 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showTaskCreateDialog(String url) {
-        CreateTaskDialog.createAndShow(getSupportFragmentManager(), url);
+//        CreateTaskDialog.createAndShow(getSupportFragmentManager(), url);
+
+        new TaskCreateByLinkDialog().show(getSupportFragmentManager(),"task_create_by_link");
     }
 
     private final Processor mHttpProcessor = new HttpProcessor() {

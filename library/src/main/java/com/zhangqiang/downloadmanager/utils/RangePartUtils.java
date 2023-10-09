@@ -1,7 +1,7 @@
 package com.zhangqiang.downloadmanager.utils;
 
-import com.zhangqiang.downloadmanager.task.http.part.PartInfo;
-import com.zhangqiang.downloadmanager.task.http.range.RangePart;
+import com.zhangqiang.downloadmanager.plugin.http.part.PartInfo;
+import com.zhangqiang.downloadmanager.plugin.http.range.RangePart;
 
 import java.util.ArrayList;
 import java.util.List;

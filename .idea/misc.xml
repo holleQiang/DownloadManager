@@ -12,6 +12,7 @@
         <entry key="app/src/main/res/layout/activity_download_manager.xml" value="0.178125" />
         <entry key="app/src/main/res/layout/activity_settings.xml" value="0.21927083333333333" />
         <entry key="app/src/main/res/layout/activity_web_view.xml" value="0.2635416666666667" />
+        <entry key="app/src/main/res/layout/dialog_task_create_by_link.xml" value="0.21331521739130435" />
         <entry key="app/src/main/res/layout/dialog_test.xml" value="0.17028985507246377" />
         <entry key="app/src/main/res/layout/fragment_download_manager2.xml" value="0.2635416666666667" />
         <entry key="app/src/main/res/layout/item_download.xml" value="0.1" />

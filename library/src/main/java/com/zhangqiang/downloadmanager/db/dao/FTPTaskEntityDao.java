@@ -32,14 +32,14 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         public final static Property FtpDir = new Property(5, String.class, "ftpDir", false, "FTP_DIR");
         public final static Property FtpFileName = new Property(6, String.class, "ftpFileName", false, "FTP_FILE_NAME");
         public final static Property SaveDir = new Property(7, String.class, "saveDir", false, "SAVE_DIR");
-        public final static Property FileName = new Property(8, String.class, "fileName", false, "FILE_NAME");
+        public final static Property SaveFileName = new Property(8, String.class, "saveFileName", false, "SAVE_FILE_NAME");
         public final static Property TargetFileName = new Property(9, String.class, "targetFileName", false, "TARGET_FILE_NAME");
         public final static Property CurrentLength = new Property(10, long.class, "currentLength", false, "CURRENT_LENGTH");
         public final static Property ContentType = new Property(11, String.class, "contentType", false, "CONTENT_TYPE");
         public final static Property ContentLength = new Property(12, long.class, "contentLength", false, "CONTENT_LENGTH");
         public final static Property State = new Property(13, int.class, "state", false, "STATE");
         public final static Property ErrorMsg = new Property(14, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property CreateTime = new Property(15, java.util.Date.class, "createTime", false, "CREATE_TIME");
+        public final static Property CreateTime = new Property(15, long.class, "createTime", false, "CREATE_TIME");
     }
 
 
@@ -63,14 +63,14 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
                 "\"FTP_DIR\" TEXT," + // 5: ftpDir
                 "\"FTP_FILE_NAME\" TEXT," + // 6: ftpFileName
                 "\"SAVE_DIR\" TEXT," + // 7: saveDir
-                "\"FILE_NAME\" TEXT," + // 8: fileName
+                "\"SAVE_FILE_NAME\" TEXT," + // 8: saveFileName
                 "\"TARGET_FILE_NAME\" TEXT," + // 9: targetFileName
                 "\"CURRENT_LENGTH\" INTEGER NOT NULL ," + // 10: currentLength
                 "\"CONTENT_TYPE\" TEXT," + // 11: contentType
                 "\"CONTENT_LENGTH\" INTEGER NOT NULL ," + // 12: contentLength
                 "\"STATE\" INTEGER NOT NULL ," + // 13: state
                 "\"ERROR_MSG\" TEXT," + // 14: errorMsg
-                "\"CREATE_TIME\" INTEGER);"); // 15: createTime
+                "\"CREATE_TIME\" INTEGER NOT NULL );"); // 15: createTime
     }
 
     /** Drops the underlying database table. */
@@ -119,9 +119,9 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             stmt.bindString(8, saveDir);
         }
  
-        String fileName = entity.getFileName();
-        if (fileName != null) {
-            stmt.bindString(9, fileName);
+        String saveFileName = entity.getSaveFileName();
+        if (saveFileName != null) {
+            stmt.bindString(9, saveFileName);
         }
  
         String targetFileName = entity.getTargetFileName();
@@ -141,11 +141,7 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         if (errorMsg != null) {
             stmt.bindString(15, errorMsg);
         }
- 
-        java.util.Date createTime = entity.getCreateTime();
-        if (createTime != null) {
-            stmt.bindLong(16, createTime.getTime());
-        }
+        stmt.bindLong(16, entity.getCreateTime());
     }
 
     @Override
@@ -188,9 +184,9 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             stmt.bindString(8, saveDir);
         }
  
-        String fileName = entity.getFileName();
-        if (fileName != null) {
-            stmt.bindString(9, fileName);
+        String saveFileName = entity.getSaveFileName();
+        if (saveFileName != null) {
+            stmt.bindString(9, saveFileName);
         }
  
         String targetFileName = entity.getTargetFileName();
@@ -210,11 +206,7 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         if (errorMsg != null) {
             stmt.bindString(15, errorMsg);
         }
- 
-        java.util.Date createTime = entity.getCreateTime();
-        if (createTime != null) {
-            stmt.bindLong(16, createTime.getTime());
-        }
+        stmt.bindLong(16, entity.getCreateTime());
     }
 
     @Override
@@ -233,14 +225,14 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
             cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5), // ftpDir
             cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6), // ftpFileName
             cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // saveDir
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // fileName
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // saveFileName
             cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9), // targetFileName
             cursor.getLong(offset + 10), // currentLength
             cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11), // contentType
             cursor.getLong(offset + 12), // contentLength
             cursor.getInt(offset + 13), // state
             cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14), // errorMsg
-            cursor.isNull(offset + 15) ? null : new java.util.Date(cursor.getLong(offset + 15)) // createTime
+            cursor.getLong(offset + 15) // createTime
         );
         return entity;
     }
@@ -255,14 +247,14 @@ public class FTPTaskEntityDao extends AbstractDao<FTPTaskEntity, String> {
         entity.setFtpDir(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
         entity.setFtpFileName(cursor.isNull(offset + 6) ? null : cursor.getString(offset + 6));
         entity.setSaveDir(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
-        entity.setFileName(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setSaveFileName(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
         entity.setTargetFileName(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
         entity.setCurrentLength(cursor.getLong(offset + 10));
         entity.setContentType(cursor.isNull(offset + 11) ? null : cursor.getString(offset + 11));
         entity.setContentLength(cursor.getLong(offset + 12));
         entity.setState(cursor.getInt(offset + 13));
         entity.setErrorMsg(cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14));
-        entity.setCreateTime(cursor.isNull(offset + 15) ? null : new java.util.Date(cursor.getLong(offset + 15)));
+        entity.setCreateTime(cursor.getLong(offset + 15));
      }
     
     @Override

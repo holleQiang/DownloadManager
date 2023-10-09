@@ -18,7 +18,7 @@ public class FTPTaskEntity {
     private String ftpDir;
     private String ftpFileName;
     private String saveDir;
-    private String fileName;
+    private String saveFileName;
     private String targetFileName;
 
     private long currentLength;
@@ -26,13 +26,13 @@ public class FTPTaskEntity {
     private long contentLength;
     private int state;
     private String errorMsg;
-    private Date createTime;
-    @Generated(hash = 1167128173)
+    private long createTime;
+    @Generated(hash = 1009438359)
     public FTPTaskEntity(String id, String host, int port, String userName,
             String password, String ftpDir, String ftpFileName, String saveDir,
-            String fileName, String targetFileName, long currentLength,
+            String saveFileName, String targetFileName, long currentLength,
             String contentType, long contentLength, int state, String errorMsg,
-            Date createTime) {
+            long createTime) {
         this.id = id;
         this.host = host;
         this.port = port;
@@ -41,7 +41,7 @@ public class FTPTaskEntity {
         this.ftpDir = ftpDir;
         this.ftpFileName = ftpFileName;
         this.saveDir = saveDir;
-        this.fileName = fileName;
+        this.saveFileName = saveFileName;
         this.targetFileName = targetFileName;
         this.currentLength = currentLength;
         this.contentType = contentType;
@@ -71,6 +71,18 @@ public class FTPTaskEntity {
     public void setPort(int port) {
         this.port = port;
     }
+    public String getUserName() {
+        return this.userName;
+    }
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+    public String getPassword() {
+        return this.password;
+    }
+    public void setPassword(String password) {
+        this.password = password;
+    }
     public String getFtpDir() {
         return this.ftpDir;
     }
@@ -89,11 +101,11 @@ public class FTPTaskEntity {
     public void setSaveDir(String saveDir) {
         this.saveDir = saveDir;
     }
-    public String getFileName() {
-        return this.fileName;
+    public String getSaveFileName() {
+        return this.saveFileName;
     }
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setSaveFileName(String saveFileName) {
+        this.saveFileName = saveFileName;
     }
     public String getTargetFileName() {
         return this.targetFileName;
@@ -107,6 +119,18 @@ public class FTPTaskEntity {
     public void setCurrentLength(long currentLength) {
         this.currentLength = currentLength;
     }
+    public String getContentType() {
+        return this.contentType;
+    }
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+    public long getContentLength() {
+        return this.contentLength;
+    }
+    public void setContentLength(long contentLength) {
+        this.contentLength = contentLength;
+    }
     public int getState() {
         return this.state;
     }
@@ -119,34 +143,12 @@ public class FTPTaskEntity {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
-    public Date getCreateTime() {
+    public long getCreateTime() {
         return this.createTime;
     }
-    public void setCreateTime(Date createTime) {
+    public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
-    public String getUserName() {
-        return this.userName;
-    }
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
-    public String getPassword() {
-        return this.password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    public long getContentLength() {
-        return this.contentLength;
-    }
-    public void setContentLength(long contentLength) {
-        this.contentLength = contentLength;
-    }
-    public String getContentType() {
-        return this.contentType;
-    }
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
+
+
 }

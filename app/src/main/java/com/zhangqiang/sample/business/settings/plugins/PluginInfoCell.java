@@ -3,7 +3,7 @@ package com.zhangqiang.sample.business.settings.plugins;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.vh.ViewHolder;
-import com.zhangqiang.downloadmanager2.plugin.DownloadPlugin;
+import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
 import com.zhangqiang.sample.R;
 
 public class PluginInfoCell extends MultiCell<DownloadPlugin> {
