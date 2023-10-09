@@ -9,8 +9,11 @@ import android.view.View;
 
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
+import com.zhangqiang.sample.databinding.DialogTaksOperationBinding;
 
 public class TaskOperationDialog extends BaseDialogFragment {
+
+    private com.zhangqiang.sample.databinding.DialogTaksOperationBinding binding;
 
     public interface OperationListener{
         void onDelete();
@@ -18,6 +21,8 @@ public class TaskOperationDialog extends BaseDialogFragment {
         void onCopyLink();
 
         void onRestart();
+
+        void onOpenDirClick();
     }
 
     private OperationListener operationListener;
@@ -47,8 +52,9 @@ public class TaskOperationDialog extends BaseDialogFragment {
 
     @Override
     protected void initView(View view) {
+        binding = DialogTaksOperationBinding.bind(view);
         final Context context = getContext();
-        view.findViewById(R.id.bt_delete_task).setOnClickListener(new View.OnClickListener() {
+        binding.btDeleteTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -60,7 +66,7 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 getDialog().dismiss();
             }
         });
-        view.findViewById(R.id.bt_copy_link).setOnClickListener(new View.OnClickListener() {
+       binding.btCopyLink.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(operationListener != null){
@@ -76,7 +82,7 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 getDialog().dismiss();
             }
         });
-        view.findViewById(R.id.bt_restart).setOnClickListener(new View.OnClickListener() {
+       binding.btRestart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(operationListener != null){
@@ -113,7 +119,15 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 getDialog().dismiss();
             }
         });
-        view.findViewById(R.id.bt_cancel).setOnClickListener(new View.OnClickListener() {
+       binding.btOpenDir.setOnClickListener(new View.OnClickListener() {
+           @Override
+           public void onClick(View v) {
+               if(operationListener != null){
+                   operationListener.onOpenDirClick();
+               }
+           }
+       });
+        binding.btCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getDialog().cancel();

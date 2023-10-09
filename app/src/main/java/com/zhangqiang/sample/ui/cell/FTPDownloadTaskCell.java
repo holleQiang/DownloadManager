@@ -79,6 +79,11 @@ public class FTPDownloadTaskCell extends MultiCell<FTPDownloadTask> {
                     public void onRestart() {
 
                     }
+
+                    @Override
+                    public void onOpenDirClick() {
+                        IntentUtils.openDir(v.getContext(),downloadTask.getSaveDir());
+                    }
                 }).show(fragmentManager, "task_operate_dialog");
                 return true;
             }

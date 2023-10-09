@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 
@@ -58,7 +59,7 @@ public class IntentUtils {
             Map<String, String> mimeTypes = MimeTypeUtils.getMimeTypes(context);
             if (mimeTypes != null) {
                 String assertMimeType = mimeTypes.get(fileFormat);
-                if(assertMimeType != null && !assertMimeType.equals(mimeType)){
+                if (assertMimeType != null && !assertMimeType.equals(mimeType)) {
                     try {
                         openFileOrThrow(context, file, assertMimeType);
                         return;
@@ -98,6 +99,23 @@ public class IntentUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(uri);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        context.startActivity(intent);
+    }
+
+    public static void openDir(Context context, String dir) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        String mimeType;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            mimeType = DocumentsContract.Document.MIME_TYPE_DIR;
+        } else {
+            mimeType = "vnd.android.document/directory";
+        }
+        File file = new File(dir);
+        Uri uri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileProvider", file);
+        intent.setDataAndType(uri, mimeType);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 

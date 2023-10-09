@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -54,23 +55,40 @@ public class DownloadManagerFragment extends BaseFragment {
         dividerDrawable.setBounds(0, 0, 0, ScreenUtils.dp2Px(view.getContext(), 10));
         rvDownloadTask.addItemDecoration(new LinearRVDivider(dividerDrawable));
 
-        downloadManager = new DownloadManager();
-        downloadManager.registerPlugin(new HttpDownloadPlugin(view.getContext()));
-        downloadManager.registerPlugin(new FtpDownloadPlugin(view.getContext()));
-        downloadManager.addTaskCountChangeListener(new OnTaskCountChangeListener() {
-            @Override
-            public void onTaskCountChange(int newCount, int oldCount) {
-                updateTaskList();
-            }
-        });
+        DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(view.getContext()));
+        DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(view.getContext()));
+
+        DownloadManager.getInstance().addTaskCountChangeListener(onTaskCountChangeListener);
         updateTaskList();
+    }
+
+    final OnTaskCountChangeListener onTaskCountChangeListener = new OnTaskCountChangeListener() {
+        @Override
+        public void onTaskCountChange(int newCount, int oldCount) {
+            FragmentActivity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateTaskList();
+                }
+            });
+        }
+    };
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        DownloadManager.getInstance().removeTaskCountChangeListener(onTaskCountChangeListener);
     }
 
     private void updateTaskList() {
         List<Cell> cells = new ArrayList<>();
-        int taskCount = downloadManager.getTaskCount();
+        int taskCount = DownloadManager.getInstance().getTaskCount();
         for (int i = 0; i < taskCount; i++) {
-            DownloadTask task = downloadManager.getTask(i);
+            DownloadTask task = DownloadManager.getInstance().getTask(i);
             if (task instanceof HttpDownloadTask) {
                 cells.add(new HttpDownloadTaskCell((HttpDownloadTask) task, getChildFragmentManager()));
             } else if (task instanceof FTPDownloadTask) {

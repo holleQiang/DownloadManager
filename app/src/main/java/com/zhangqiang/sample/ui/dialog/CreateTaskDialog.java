@@ -4,18 +4,19 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
+
+import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.ui.DownloadManagerFragment;
 
 import java.io.File;
 
@@ -80,7 +81,7 @@ public class CreateTaskDialog extends BaseDialogFragment {
                     etSaveName.getText().toString().trim(),
                     url,
                     Integer.parseInt(etThreadSize.getText().toString()));
-            DownloadManagerFragment.downloadManager.enqueue(request);
+            DownloadManager.getInstance().enqueue(request);
             getDialog().dismiss();
         }
     }

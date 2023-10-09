@@ -17,12 +17,20 @@ import java.util.List;
 
 public class DownloadManager {
 
+    private static final DownloadManager instance = new DownloadManager();
     private final List<DownloadPlugin> downloadPlugins = new ArrayList<>();
     private final List<DownloadTaskFactory> downloadTaskFactories = new ArrayList<>();
     private final List<DownloadTask> downloadTasks = new ArrayList<>();
     private int activeTaskCount = 0;
     private final List<OnTaskCountChangeListener> onTaskCountChangeListeners = new ArrayList<>();
     private final List<OnActiveTaskCountChangeListener> onActiveTaskCountChangeListeners = new ArrayList<>();
+
+    private DownloadManager() {
+    }
+
+    public static DownloadManager getInstance() {
+        return instance;
+    }
 
     public void registerPlugin(DownloadPlugin plugin) {
         downloadPlugins.add(plugin);

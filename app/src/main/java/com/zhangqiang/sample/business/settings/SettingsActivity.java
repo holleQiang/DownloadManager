@@ -16,7 +16,6 @@ import com.zhangqiang.sample.business.settings.plugins.PluginInfoCell;
 import com.zhangqiang.sample.databinding.ActivitySettingsBinding;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.ui.DownloadManagerFragment;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.util.ArrayList;
@@ -88,11 +87,10 @@ public class SettingsActivity extends BaseActivity {
         CellRVAdapter pluginsAdapter = new CellRVAdapter();
         mBinding.rvPlugins.setAdapter(pluginsAdapter);
         mBinding.rvPlugins.setLayoutManager(new LinearLayoutManager(this));
-        DownloadManager downloadManager = DownloadManagerFragment.downloadManager;
-        int pluginCount = downloadManager.getPluginCount();
+        int pluginCount = DownloadManager.getInstance().getPluginCount();
         List<PluginInfoCell> pluginInfoCells = new ArrayList<>();
         for (int i = 0; i < pluginCount; i++) {
-            pluginInfoCells.add(new PluginInfoCell(downloadManager.getPluginAt(i)));
+            pluginInfoCells.add(new PluginInfoCell(DownloadManager.getInstance().getPluginAt(i)));
         }
         pluginsAdapter.setDataList(pluginInfoCells);
     }

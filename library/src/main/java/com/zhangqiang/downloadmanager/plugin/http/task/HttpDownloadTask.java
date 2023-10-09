@@ -1,6 +1,7 @@
 package com.zhangqiang.downloadmanager.plugin.http.task;
 
 import android.content.Context;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -218,7 +219,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     }
 
     private static String makeSaveFileName(String targetFileName, ResourceInfo resourceInfo, String url, String saveDir) {
-        String fileName;
+        String fileName = null;
         if (!TextUtils.isEmpty(targetFileName)) {
             fileName = targetFileName;
         } else {
@@ -226,7 +227,16 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             if (!TextUtils.isEmpty(resourceInfoFileName)) {
                 fileName = resourceInfoFileName;
             } else {
-                fileName = MD5Utils.getMD5(url);
+                Uri uri = Uri.parse(url);
+                if(uri != null){
+                    String lastPathSegment = uri.getLastPathSegment();
+                    if(lastPathSegment != null && lastPathSegment.contains(".")){
+                        fileName = lastPathSegment;
+                    }
+                }
+                if(TextUtils.isEmpty(fileName)){
+                    fileName = MD5Utils.getMD5(url);
+                }
             }
         }
         return FileUtils.getDistinctFileName(saveDir, fileName);

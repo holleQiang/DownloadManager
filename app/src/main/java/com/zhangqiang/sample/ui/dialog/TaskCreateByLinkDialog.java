@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.ftp.request.FtpDownloadRequest;
 import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
@@ -19,7 +20,6 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.databinding.DialogTaskCreateByLinkBinding;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.ui.DownloadManagerFragment;
 
 import java.io.File;
 
@@ -113,7 +113,7 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
             if (downloadRequest == null) {
                 Toast.makeText(getActivity(), "不支持下载此链接", Toast.LENGTH_SHORT).show();
             } else {
-                DownloadManagerFragment.downloadManager.enqueue(downloadRequest);
+                DownloadManager.getInstance().enqueue(downloadRequest);
                 dismiss();
             }
         }
