@@ -59,6 +59,7 @@
 
                 <data android:scheme="http" />
                 <data android:scheme="https" />
+                <data android:scheme="ftp" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />

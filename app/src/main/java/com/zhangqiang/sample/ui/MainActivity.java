@@ -60,8 +60,8 @@ public class MainActivity extends BaseActivity {
             @Override
             public boolean process(@NonNull String text) {
                 try {
-                    IntentUtils.openActivityByUri(MainActivity.this,Uri.parse(text));
-                }catch (Throwable e){
+                    IntentUtils.openActivityByUri(MainActivity.this, Uri.parse(text));
+                } catch (Throwable e) {
                     Toast.makeText(MainActivity.this, getString(R.string.cannot_found_app_to_process), Toast.LENGTH_SHORT).show();
                 }
                 return false;
@@ -101,7 +101,10 @@ public class MainActivity extends BaseActivity {
         if (TextUtils.isEmpty(link)) {
             Uri data = getIntent().getData();
             if (data != null) {
-                if ("http".equals(data.getScheme()) || "https".equals(data.getScheme())) {
+                String scheme = data.getScheme();
+                if ("http".equals(scheme)
+                        || "https".equals(scheme)
+                        || "ftp".equals(scheme)) {
                     link = data.toString();
                 }
             }
@@ -163,7 +166,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void showTaskCreateDialog(String url) {
-        TaskCreateByLinkDialog.newInstance(url).show(getSupportFragmentManager(),"task_create_by_link");
+        TaskCreateByLinkDialog.newInstance(url).show(getSupportFragmentManager(), "task_create_by_link");
     }
 
     private final Processor mHttpProcessor = new HttpProcessor() {
@@ -179,7 +182,7 @@ public class MainActivity extends BaseActivity {
     };
 
     private void processHttpUrl(String url) {
-        QRCodeResultProcessUtils.processHttpUrl(this,url);
+        QRCodeResultProcessUtils.processHttpUrl(this, url);
     }
 
 }

@@ -3,6 +3,7 @@ package com.zhangqiang.sample;
 import androidx.multidex.MultiDexApplication;
 
 import com.zhangqiang.sample.business.container.ContainerProcessorManager;
+import com.zhangqiang.sample.business.container.processor.FtpProtocolProcessor;
 import com.zhangqiang.sample.business.container.processor.HttpProcessor;
 import com.zhangqiang.sample.business.container.processor.QRCodeProcessor;
 import com.zhangqiang.sample.impl.BaseObserver;
@@ -28,6 +29,7 @@ public class DMApplication extends MultiDexApplication {
                 });
         ContainerProcessorManager.getInstance().registerProcessor(new QRCodeProcessor());
         ContainerProcessorManager.getInstance().registerProcessor(new HttpProcessor());
+        ContainerProcessorManager.getInstance().registerProcessor(new FtpProtocolProcessor());
 
         WebInterface.onImageClickListeners.add(new OnImageClickListener() {
             @Override
