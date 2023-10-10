@@ -2,6 +2,8 @@ package com.zhangqiang.downloadmanager.speed;
 
 import android.os.SystemClock;
 
+import com.zhangqiang.downloadmanager.schedule.IntervalTask;
+import com.zhangqiang.downloadmanager.schedule.Schedule;
 import com.zhangqiang.downloadmanager.task.CurrentLengthOwner;
 
 import java.util.ArrayList;
@@ -12,6 +14,12 @@ public class SpeedHelper {
     private final SpeedRecord record = new SpeedRecord();
     private final CurrentLengthOwner currentLengthOwner;
     private final List<OnSpeedChangeListener> onSpeedChangeListeners = new ArrayList<>();
+    private final IntervalTask speedTask = new IntervalTask(3000) {
+        @Override
+        public void run() {
+            calculateSpeed();
+        }
+    };
 
     public SpeedHelper(CurrentLengthOwner currentLengthOwner) {
         this.currentLengthOwner = currentLengthOwner;
@@ -57,5 +65,13 @@ public class SpeedHelper {
 
     public long getSpeed(){
         return  record.speed;
+    }
+
+    public void start() {
+        Schedule.getInstance().startSchedule(speedTask);
+    }
+
+    public void stop(){
+        Schedule.getInstance().stopSchedule(speedTask);
     }
 }

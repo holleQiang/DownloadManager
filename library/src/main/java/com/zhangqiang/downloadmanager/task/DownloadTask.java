@@ -13,7 +13,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
+public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     private final String saveDir;
     private final String targetFileName;
@@ -29,21 +29,17 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
     private final IntervalTask progressTask = new IntervalTask(300) {
 
         long lastLength = getCurrentLength();
+
         @Override
         public void run() {
             long currentLength = getCurrentLength();
-            if(lastLength !=currentLength){
+            if (lastLength != currentLength) {
                 dispatchProgressChange();
                 lastLength = currentLength;
             }
         }
     };
-    private final IntervalTask speedTask = new IntervalTask(3000) {
-        @Override
-        public void run() {
-            getSpeedHelper().calculateSpeed();
-        }
-    };
+
 
     public DownloadTask(String saveDir, String targetFileName, long createTime) {
         this.saveDir = saveDir;
@@ -51,7 +47,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
         this.createTime = createTime;
     }
 
-    public DownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage,long currentLength) {
+    public DownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage, long currentLength) {
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
@@ -171,16 +167,17 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
 
     protected void startScheduleProgress() {
         Schedule.getInstance().startSchedule(progressTask);
-        Schedule.getInstance().startSchedule(speedTask);
+        getSpeedHelper().start();
+
     }
 
     protected void stopScheduleProgressChange() {
         Schedule.getInstance().stopSchedule(progressTask);
-        Schedule.getInstance().stopSchedule(speedTask);
+        getSpeedHelper().stop();
     }
 
-    protected void dispatchCurrentLength(long currentLength){
-        this.currentLength  = currentLength;
+    protected void dispatchCurrentLength(long currentLength) {
+        this.currentLength = currentLength;
     }
 
     public long getInitialLength() {
@@ -206,7 +203,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner{
     }
 
     private void dispatchFileSaveLength(long length) {
-        dispatchCurrentLength(getCurrentLength()+length);
+        dispatchCurrentLength(getCurrentLength() + length);
     }
 
     protected void performSaveFile(InputStream inputStream) throws IOException {

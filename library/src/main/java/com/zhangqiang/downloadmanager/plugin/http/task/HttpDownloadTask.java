@@ -341,8 +341,10 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                         successPartDownloadTaskCount++;
                         if (successPartDownloadTaskCount == partDownloadTasks.size()) {
                             LogUtils.i(TAG, "206 所有子任务完成");
-                            handleAllPartDownloadTasksSuccess();
                             stopScheduleProgressChange();
+                            //保证100%进度回调
+                            dispatchProgressChange();
+                            handleAllPartDownloadTasksSuccess();
                         }
                     } else if (newStatus == Status.FAIL) {
                         for (HttpPartDownloadTask downloadTask : partDownloadTasks) {
