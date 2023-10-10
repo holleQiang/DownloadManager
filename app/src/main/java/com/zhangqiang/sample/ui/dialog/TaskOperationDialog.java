@@ -39,7 +39,6 @@ public class TaskOperationDialog extends BaseDialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle arguments = getArguments();
     }
 
     @Override
@@ -55,7 +54,6 @@ public class TaskOperationDialog extends BaseDialogFragment {
     @Override
     protected void initView(View view) {
         binding = DialogTaksOperationBinding.bind(view);
-        final Context context = getContext();
         binding.btDeleteTask.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -69,7 +67,7 @@ public class TaskOperationDialog extends BaseDialogFragment {
                         }
                     }
                 });
-                dialog.show(getChildFragmentManager(), "delete_confirm");
+                dialog.show(getParentFragmentManager(), "delete_confirm");
                 getDialog().dismiss();
             }
         });
@@ -106,18 +104,6 @@ public class TaskOperationDialog extends BaseDialogFragment {
                 getDialog().cancel();
             }
         });
-    }
-
-    private void copy(Context context, String url) {
-        if (context == null) {
-            return;
-        }
-        ClipboardManager clipboardManager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboardManager == null) {
-            return;
-        }
-        ClipData clipData = ClipData.newPlainText(url, url);
-        clipboardManager.setPrimaryClip(clipData);
     }
 
     public TaskOperationDialog setOperationListener(OperationListener operationListener) {
