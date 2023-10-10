@@ -23,8 +23,7 @@ import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.ui.dialog.TaskCreateByLinkDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
-import com.zhangqiang.sample.utils.WebViewUtils;
-import com.zhangqiang.web.activity.WebViewActivity;
+import com.zhangqiang.web.manager.WebManager;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -138,7 +137,7 @@ public class MainActivity extends BaseActivity {
             showTaskCreateDialog("");
             return true;
         } else if (item.getItemId() == R.id.web_view) {
-            startActivity(new Intent(this, WebViewActivity.class));
+            WebManager.getInstance().openWebViewActivity(this,null);
         } else if (item.getItemId() == R.id.scan_qr_code) {
             startActivity(new Intent(this, QRCodeScanActivity.class));
         } else if (item.getItemId() == R.id.choose_image_with_qrcode) {
@@ -176,7 +175,7 @@ public class MainActivity extends BaseActivity {
                 pendingScanUrl = urls.get(0);
             } else {
                 processHttpUrl(urls.get(0));
-                WebViewUtils.open(MainActivity.this, urls.get(0));
+                WebManager.getInstance().openWebViewActivity(MainActivity.this, urls.get(0));
             }
         }
     };

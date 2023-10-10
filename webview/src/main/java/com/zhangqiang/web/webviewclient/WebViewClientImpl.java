@@ -1,32 +1,18 @@
-package com.zhangqiang.web.view;
+package com.zhangqiang.web.webviewclient;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Handler;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.zhangqiang.common.utils.IntentUtils;
-import com.zhangqiang.web.WebContext;
-import com.zhangqiang.web.activity.WebActivityContext;
-import com.zhangqiang.web.activity.WebViewActivity;
-import com.zhangqiang.web.export.WebInterface;
-import com.zhangqiang.web.hybrid.ConsoleLogMonitorMethod;
-import com.zhangqiang.web.hybrid.DOMChangeMonitorMethod;
-import com.zhangqiang.web.hybrid.DocumentLoadMonitorMethod;
-import com.zhangqiang.web.hybrid.RemoveElementByIDMethod;
-import com.zhangqiang.web.hybrid.RemoveElementByTagMethod;
-import com.zhangqiang.web.image.ImageClickMethod;
-import com.zhangqiang.web.log.WebLogger;
-
-import java.util.Arrays;
+import com.zhangqiang.web.context.WebContext;
 
 /**
  * description :
@@ -78,27 +64,11 @@ public class WebViewClientImpl extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
-        WebInterface.javaScriptInterface.call(new ConsoleLogMonitorMethod(new ConsoleLogMonitorMethod.LogReceiver() {
-            @Override
-            public void onReceiveLog(String[] logs) {
-                WebLogger.info("console.log@@@:"+ Arrays.asList(logs).toString());
-            }
-        }));
-        WebInterface.javaScriptInterface.call(new DocumentLoadMonitorMethod(new DocumentLoadMonitorMethod.OnDocumentLoadedListener() {
-            @Override
-            public void onDocumentLoaded() {
-                WebInterface.javaScriptInterface.call(new RemoveElementByTagMethod("sidjjad"));
-                WebInterface.javaScriptInterface.call(new RemoveElementByIDMethod("ahsdow"));
-            }
-        }));
-        WebInterface.javaScriptInterface.call(new DOMChangeMonitorMethod(new DOMChangeMonitorMethod.OnDOMChangedListener() {
-            @Override
-            public void onDOMChanged() {
-                WebInterface.javaScriptInterface.call(new RemoveElementByTagMethod("sidjjad"));
-                WebInterface.javaScriptInterface.call(new RemoveElementByIDMethod("ahsdow"));
-            }
-        }));
+        webContext.dispatchPageStarted(view, url, favicon);
+
     }
+
+
 
     @Override
     public void onLoadResource(WebView view, String url) {
@@ -108,12 +78,7 @@ public class WebViewClientImpl extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        WebInterface.javaScriptInterface.call(new ImageClickMethod(new ImageClickMethod.OnImageClickListener() {
-            @Override
-            public void onImageClick(String src) {
-                WebInterface.onImageClickListeners.dispatchImageClick(webContext,src);
-            }
-        }));
+        webContext.dispatchPageFinished(view, url);
 //        new Handler(webContext.looper).postDelayed(new Runnable() {
 //            @Override
 //            public void run() {
@@ -121,4 +86,6 @@ public class WebViewClientImpl extends WebViewClient {
 //            }
 //        },1000);
     }
+
+
 }

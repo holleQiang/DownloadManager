@@ -4,27 +4,19 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.business.container.ContainerActivity;
 import com.zhangqiang.sample.business.container.ContainerProcessor;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.RxJavaUtils;
-import com.zhangqiang.sample.utils.WebViewUtils;
+import com.zhangqiang.web.manager.WebManager;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
-import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -62,7 +54,7 @@ public class HttpProcessor implements ContainerProcessor {
                             @Override
                             public void onNext(CheckResult result) {
                                 if (result.contentTypeContains("text/html")) {
-                                    WebViewUtils.open(activity,result.getUrl());
+                                    WebManager.getInstance().openWebViewActivity(activity,result.getUrl());
                                 }else {
                                     IntentUtils.openMainActivity(activity,url);
                                 }

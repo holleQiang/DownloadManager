@@ -60,9 +60,6 @@ public class DownloadManagerFragment extends BaseFragment {
         dividerDrawable.setBounds(0, 0, 0, ScreenUtils.dp2Px(view.getContext(), 10));
         rvDownloadTask.addItemDecoration(new LinearRVDivider(dividerDrawable));
 
-        DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(view.getContext()));
-        DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(view.getContext()));
-
         DownloadManager.getInstance().addTaskCountChangeListener(onTaskCountChangeListener);
         updateTaskList();
     }

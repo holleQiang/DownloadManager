@@ -72,7 +72,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             int threadSize,
                             List<HttpPartDownloadTask> partDownloadTasks,
                             String saveFileName) {
-        super(saveDir, targetFileName, createTime, status, errorMessage, currentLength,url, resourceInfo);
+        super(saveDir, targetFileName, createTime, status, errorMessage, currentLength, url, resourceInfo);
         this.context = context;
         this.threadSize = threadSize;
         this.partDownloadTasks = partDownloadTasks;
@@ -94,7 +94,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                         handleAllPartDownloadTasksSuccess();
                     }
                 });
-            }else {
+            } else {
                 startPartDownloadTasks();
             }
             return;
@@ -183,7 +183,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                         dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
                     }
                 } catch (Throwable e) {
-                    if(getStatus() != Status.CANCELED){
+                    if (getStatus() != Status.CANCELED) {
                         dispatchFail(e);
                     } else {
                         throw e;
@@ -228,14 +228,26 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                 fileName = resourceInfoFileName;
             } else {
                 Uri uri = Uri.parse(url);
-                if(uri != null){
+                if (uri != null) {
                     String lastPathSegment = uri.getLastPathSegment();
-                    if(lastPathSegment != null && lastPathSegment.contains(".")){
+                    if (lastPathSegment != null && lastPathSegment.contains(".")) {
                         fileName = lastPathSegment;
                     }
                 }
-                if(TextUtils.isEmpty(fileName)){
+                if (TextUtils.isEmpty(fileName)) {
                     fileName = MD5Utils.getMD5(url);
+                    if (resourceInfo != null) {
+                        String fileNameSuffix = null;
+                        String contentType = resourceInfo.getContentType();
+                        if ("image/jpeg".equals(contentType)) {
+                            fileNameSuffix = ".jpg";
+                        } else if ("image/png".equals(contentType)) {
+                            fileNameSuffix = ".png";
+                        }
+                        if (fileNameSuffix != null) {
+                            fileName += fileNameSuffix;
+                        }
+                    }
                 }
             }
         }
@@ -295,7 +307,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             }
             dir = partTask.getSaveDir();
         }
-        if(!TextUtils.isEmpty(dir)){
+        if (!TextUtils.isEmpty(dir)) {
             try {
                 FileUtils.deleteFileOrThrow(new File(dir));
             } catch (IOException e) {
@@ -374,7 +386,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     for (HttpPartDownloadTask downloadTask : partDownloadTasks) {
                         totalLength += downloadTask.getCurrentLength();
                     }
-                    LogUtils.i(TAG,"onProgressChange:"+(float)totalLength/ getResourceInfo().getContentLength());
+                    LogUtils.i(TAG, "onProgressChange:" + (float) totalLength / getResourceInfo().getContentLength());
                     dispatchCurrentLength(totalLength);
                 }
             });
@@ -408,7 +420,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             //删除临时文件
             deletePartFiles();
         } catch (IOException e) {
-            if(getStatus() == Status.CANCELED){
+            if (getStatus() == Status.CANCELED) {
                 return;
             }
             dispatchFail(e);

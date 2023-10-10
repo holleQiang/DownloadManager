@@ -9,7 +9,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
-import com.zhangqiang.web.WebContext;
+import com.zhangqiang.web.context.WebContext;
 import com.zhangqiang.web.log.WebLogger;
 
 import org.json.JSONException;
@@ -27,7 +27,7 @@ public class JavaScriptInterface {
     @SuppressLint("AddJavascriptInterface")
     public void attachToWebContext(WebContext webContext) {
         detachFromWebContext();
-        webContext.webView.addJavascriptInterface(this, NATIVE_INTERFACE);
+        webContext.getWebView().addJavascriptInterface(this, NATIVE_INTERFACE);
         attachedWebContext = webContext;
     }
 
@@ -36,7 +36,6 @@ public class JavaScriptInterface {
             return;
         }
         clearRecords();
-        attachedWebContext.webView.removeJavascriptInterface(NATIVE_INTERFACE);
         attachedWebContext = null;
     }
 
@@ -66,28 +65,32 @@ public class JavaScriptInterface {
     }
 
     public void callJS(String js) {
-        if (attachedWebContext == null) {
-            throw new IllegalStateException("interface has not attach to web context");
-        }
-        Looper looper = attachedWebContext.looper;
-        if (Looper.myLooper() != looper) {
-            new Handler(looper).post(new Runnable() {
-                @Override
-                public void run() {
-                    callJS(js);
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                if (attachedWebContext == null) {
+                    throw new IllegalStateException("interface has not attach to web context");
                 }
-            });
-            return;
-        }
+                WebView webView = attachedWebContext.getWebView();
+                if (webView == null) {
+                    return;
+                }
+                evaluateJS(webView, js);
+            }
+        });
+    }
+
+    private void evaluateJS(WebView webView, String js) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            attachedWebContext.webView.evaluateJavascript(js, new ValueCallback<String>() {
+            webView.evaluateJavascript(js, new ValueCallback<String>() {
                 @Override
                 public void onReceiveValue(String value) {
 
                 }
             });
         } else {
-            attachedWebContext.webView.loadUrl("javascript:" + js);
+            webView.loadUrl("javascript:" + js);
         }
     }
 
