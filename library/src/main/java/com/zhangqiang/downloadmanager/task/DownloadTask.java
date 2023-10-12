@@ -5,6 +5,10 @@ import com.zhangqiang.downloadmanager.schedule.IntervalTask;
 import com.zhangqiang.downloadmanager.schedule.Schedule;
 import com.zhangqiang.downloadmanager.speed.SpeedHelper;
 import com.zhangqiang.downloadmanager.speed.SpeedSupport;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.FailChain;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.FailInterceptor;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.RealFailChain;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.RetryFailInterceptor;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
@@ -39,12 +43,14 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
             }
         }
     };
+    private final List<FailInterceptor> failInterceptors = new ArrayList<>();
 
 
     public DownloadTask(String saveDir, String targetFileName, long createTime) {
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
+        init();
     }
 
     public DownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage, long currentLength) {
@@ -54,6 +60,11 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         this.status = status;
         this.errorMessage = errorMessage;
         this.currentLength = this.initialLength = currentLength;
+        init();
+    }
+
+    private void init() {
+        addFailInterceptor(new RetryFailInterceptor(this));
     }
 
     public void start() {
@@ -108,14 +119,26 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     protected void dispatchFail(Throwable e) {
-        if (status != Status.DOWNLOADING && status != Status.CANCELED) {
-            throw new IllegalStateException("dispatch fail from  status:" + status);
-        }
-        status = Status.FAIL;
-        errorMessage = e.getMessage();
-        dispatchStatusChange(Status.FAIL, Status.DOWNLOADING);
-        for (int i = onTaskFailListeners.size() - 1; i >= 0; i--) {
-            onTaskFailListeners.get(i).onTaskFail(e);
+        List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
+        finalInterceptors.add(new DispatchFailInterceptor());
+        FailChain chain = new RealFailChain(e, finalInterceptors, 0);
+        chain.proceed(e);
+    }
+
+    private class DispatchFailInterceptor implements FailInterceptor {
+
+        @Override
+        public void onIntercept(FailChain chain) {
+            Throwable e = chain.getThrowable();
+            if (status != Status.DOWNLOADING && status != Status.CANCELED) {
+                throw new IllegalStateException("dispatch fail from  status:" + status);
+            }
+            status = Status.FAIL;
+            errorMessage = e.getMessage();
+            dispatchStatusChange(Status.FAIL, Status.DOWNLOADING);
+            for (int i = onTaskFailListeners.size() - 1; i >= 0; i--) {
+                onTaskFailListeners.get(i).onTaskFail(e);
+            }
         }
     }
 
@@ -225,5 +248,13 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         } finally {
             dispatchFileSaveEnd();
         }
+    }
+
+    public void addFailInterceptor(FailInterceptor interceptor) {
+        failInterceptors.add(interceptor);
+    }
+
+    public void removeFailInterceptor(FailInterceptor interceptor) {
+        failInterceptors.remove(interceptor);
     }
 }
