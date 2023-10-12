@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.manager;
+package com.zhangqiang.downloadmanager.manager.network;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -40,10 +40,6 @@ public class NetWorkManager {
             }
         }
         return instance;
-    }
-
-    public interface OnAvailableChangedListener{
-        void onAvailableChanged(boolean available);
     }
 
     public synchronized void addOnAvailableChangedListener(OnAvailableChangedListener listener){

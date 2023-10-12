@@ -362,6 +362,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                         for (HttpPartDownloadTask downloadTask : partDownloadTasks) {
                             if (downloadTask.getStatus() == Status.DOWNLOADING) {
                                 downloadTask.cancel();
+                                LogUtils.i(TAG,"=====cancel downloading task===="+downloadTask.getSaveFileName());
                             }
                         }
                         stopScheduleProgressChange();
@@ -375,7 +376,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             partDownloadTask.addTaskFailListener(new OnTaskFailListener() {
                 @Override
                 public void onTaskFail(Throwable e) {
-                    LogUtils.i(TAG, "206 子任务失败: " + e.getMessage());
+                    LogUtils.i(TAG, "206 子任务失败: " + partDownloadTask.getSaveFileName());
                     dispatchFail(new RuntimeException("子任务失败: " + e.getMessage(), e));
                 }
             });

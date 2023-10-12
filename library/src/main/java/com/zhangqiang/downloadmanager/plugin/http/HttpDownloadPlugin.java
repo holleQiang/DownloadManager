@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
-import com.zhangqiang.downloadmanager.manager.NetWorkManager;
 import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskBean;
@@ -30,8 +29,8 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
 import com.zhangqiang.downloadmanager.task.Status;
-import com.zhangqiang.downloadmanager.task.interceptor.fail.FailChain;
-import com.zhangqiang.downloadmanager.task.interceptor.fail.FailInterceptor;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.NetworkInterceptor;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.RetryFailInterceptor;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
@@ -368,6 +367,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
 
     private void handleDownloadTaskCreate(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean){
         handleDownloadTaskSave(httpDownloadTask,httpTaskBean);
+        httpDownloadTask.addFailInterceptor(new NetworkInterceptor(context,httpDownloadTask));
+        httpDownloadTask.addFailInterceptor(new RetryFailInterceptor(httpDownloadTask));
     }
 
     private void handleDownloadTaskSave(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean) {

@@ -16,13 +16,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     private final String saveDir;
     private final String targetFileName;
     private final long createTime;
-    private Status status = Status.IDLE;
+    private AtomicReference<Status> status = new AtomicReference<>(Status.IDLE);
     private String errorMessage;
     private long currentLength;
     private long initialLength;
@@ -50,29 +51,23 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
-        init();
     }
 
     public DownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage, long currentLength) {
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
-        this.status = status;
+        this.status = new AtomicReference<>(status);
         this.errorMessage = errorMessage;
         this.currentLength = this.initialLength = currentLength;
-        init();
     }
 
-    private void init() {
-        addFailInterceptor(new RetryFailInterceptor(this));
-    }
 
     public void start() {
-        if (status == Status.DOWNLOADING) {
+        if (status.get() == Status.DOWNLOADING) {
             throw new IllegalStateException("cannot start from downloading status");
         }
-        Status oldStatus = status;
-        status = Status.DOWNLOADING;
+        Status oldStatus = status.getAndSet(Status.DOWNLOADING);
         dispatchStatusChange(Status.DOWNLOADING, oldStatus);
         forceStart();
     }
@@ -88,10 +83,10 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     protected abstract void onStart();
 
     public void cancel() {
-        if (status != Status.DOWNLOADING) {
+
+        if (!status.compareAndSet(Status.DOWNLOADING,Status.CANCELED)) {
             throw new IllegalStateException("cancel not from downloading status");
         }
-        status = Status.CANCELED;
         onCancel();
         dispatchStatusChange(Status.CANCELED, Status.DOWNLOADING);
     }
@@ -99,22 +94,25 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     protected abstract void onCancel();
 
     public void addStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
-        onStatusChangeListeners.add(onStatusChangeListener);
+        synchronized (onStatusChangeListeners) {
+            onStatusChangeListeners.add(onStatusChangeListener);
+        }
     }
 
-    public void removeStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
-        onStatusChangeListeners.remove(onStatusChangeListener);
+    public synchronized void removeStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
+        synchronized (onStatusChangeListeners) {
+            onStatusChangeListeners.remove(onStatusChangeListener);
+        }
     }
 
     public Status getStatus() {
-        return status;
+        return status.get();
     }
 
     protected void dispatchSuccess() {
-        if (status != Status.DOWNLOADING) {
+        if (status.compareAndSet(Status.DOWNLOADING,Status.SUCCESS)) {
             throw new IllegalStateException("dispatch success from no downloading status");
         }
-        status = Status.SUCCESS;
         dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);
     }
 
@@ -129,22 +127,26 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         @Override
         public void onIntercept(FailChain chain) {
-            Throwable e = chain.getThrowable();
-            if (status != Status.DOWNLOADING && status != Status.CANCELED) {
+            if (status.get() == Status.CANCELED) {
+                return;
+            }
+            if (!status.compareAndSet(Status.DOWNLOADING,Status.FAIL)) {
                 throw new IllegalStateException("dispatch fail from  status:" + status);
             }
-            status = Status.FAIL;
+            Throwable e = chain.getThrowable();
             errorMessage = e.getMessage();
             dispatchStatusChange(Status.FAIL, Status.DOWNLOADING);
-            for (int i = onTaskFailListeners.size() - 1; i >= 0; i--) {
-                onTaskFailListeners.get(i).onTaskFail(e);
-            }
+            dispatchTaskFail(e);
         }
     }
 
+
+
     private void dispatchStatusChange(Status newStatus, Status oldStatus) {
-        for (int i = onStatusChangeListeners.size() - 1; i >= 0; i--) {
-            onStatusChangeListeners.get(i).onStatusChange(newStatus, oldStatus);
+        synchronized (onStatusChangeListeners) {
+            for (int i = onStatusChangeListeners.size() - 1; i >= 0; i--) {
+                onStatusChangeListeners.get(i).onStatusChange(newStatus, oldStatus);
+            }
         }
     }
 
@@ -155,11 +157,23 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     public abstract String getSaveFileName();
 
     public void addTaskFailListener(OnTaskFailListener listener) {
-        onTaskFailListeners.add(listener);
+        synchronized (onTaskFailListeners) {
+            onTaskFailListeners.add(listener);
+        }
     }
 
     public void removeTaskFailListener(OnTaskFailListener listener) {
-        onTaskFailListeners.remove(listener);
+        synchronized (onTaskFailListeners) {
+            onTaskFailListeners.remove(listener);
+        }
+    }
+
+    private void dispatchTaskFail(Throwable e) {
+        synchronized (onTaskFailListeners) {
+            for (int i = onTaskFailListeners.size() - 1; i >= 0; i--) {
+                onTaskFailListeners.get(i).onTaskFail(e);
+            }
+        }
     }
 
     public String getErrorMessage() {
@@ -175,23 +189,28 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     public void addOnProgressChangeListener(OnProgressChangeListener listener) {
-        onProgressChangeListeners.add(listener);
+        synchronized (onProgressChangeListeners) {
+            onProgressChangeListeners.add(listener);
+        }
     }
 
     public void removeOnProgressChangeListener(OnProgressChangeListener listener) {
-        onProgressChangeListeners.remove(listener);
+        synchronized (onProgressChangeListeners) {
+            onProgressChangeListeners.remove(listener);
+        }
     }
 
     protected void dispatchProgressChange() {
-        for (int i = onProgressChangeListeners.size() - 1; i >= 0; i--) {
-            onProgressChangeListeners.get(i).onProgressChange();
+        synchronized (onProgressChangeListeners) {
+            for (int i = onProgressChangeListeners.size() - 1; i >= 0; i--) {
+                onProgressChangeListeners.get(i).onProgressChange();
+            }
         }
     }
 
     protected void startScheduleProgress() {
         Schedule.getInstance().startSchedule(progressTask);
         getSpeedHelper().start();
-
     }
 
     protected void stopScheduleProgressChange() {

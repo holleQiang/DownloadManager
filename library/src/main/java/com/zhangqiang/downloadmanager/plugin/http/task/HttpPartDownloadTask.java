@@ -53,17 +53,11 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
         downloadCall.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if (call.isCanceled()) {
-                    return;
-                }
                 dispatchFail(e);
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (call.isCanceled()) {
-                    return;
-                }
                 try {
                     int code = response.code();
                     if (code == 200) {
@@ -91,11 +85,7 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
                         dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
                     }
                 } catch (Throwable e) {
-                    if (getStatus() != Status.CANCELED) {
-                        dispatchFail(e);
-                    } else {
-                        throw e;
-                    }
+                    dispatchFail(e);
                 }
             }
         });
@@ -105,6 +95,7 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
     protected void onCancel() {
         if (downloadCall != null && !downloadCall.isCanceled()) {
             downloadCall.cancel();
+            downloadCall = null;
         }
     }
 

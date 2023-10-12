@@ -8,11 +8,13 @@ import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class RetryFailInterceptor implements FailInterceptor {
 
     public static final String TAG = RetryFailInterceptor.class.getSimpleName();
 
-    private int retryCount = 0;
+    private final AtomicInteger retryCount = new AtomicInteger(0);
     private final DownloadTask downloadTask;
     private final Handler handler = new Handler(Looper.getMainLooper());
 
@@ -25,7 +27,7 @@ public class RetryFailInterceptor implements FailInterceptor {
         public void onStatusChange(Status newStatus, Status oldStatus) {
             if (newStatus == Status.CANCELED) {
                 handler.removeCallbacks(forceStartTask);
-                retryCount = 0;
+                retryCount.set(0);
             }
             downloadTask.removeStatusChangeListener(this);
         }
@@ -34,8 +36,12 @@ public class RetryFailInterceptor implements FailInterceptor {
     private final Runnable forceStartTask = new Runnable() {
         @Override
         public void run() {
-            if (downloadTask.getStatus() == Status.CANCELED) {
+            Status status = downloadTask.getStatus();
+            if (status == Status.CANCELED || status == Status.FAIL) {
                 return;
+            }
+            if (status != Status.DOWNLOADING) {
+                throw new IllegalStateException("bug may exists:"+status);
             }
             LogUtils.i(TAG, "重试第：" + retryCount + "次");
             downloadTask.forceStart();
@@ -46,14 +52,19 @@ public class RetryFailInterceptor implements FailInterceptor {
 
     @Override
     public void onIntercept(FailChain chain) {
-        retryCount++;
-        if (retryCount <= 2) {
+        downloadTask.removeStatusChangeListener(onStatusChangeListener);
+        int count = retryCount.incrementAndGet();
+        if(count == 1){
+            downloadTask.addStatusChangeListener(onStatusChangeListener);
+        }
+        LogUtils.i(TAG,"onIntercept======retryCount===="+retryCount);
+        if (count <= 2) {
             handler.postDelayed(forceStartTask, 2000);
-        } else if (retryCount <= 5) {
+        } else if (count <= 5) {
             handler.postDelayed(forceStartTask, 5000);
         } else {
             chain.proceed(chain.getThrowable());
-            retryCount = 0;
+            retryCount.set(0);
         }
     }
 }
