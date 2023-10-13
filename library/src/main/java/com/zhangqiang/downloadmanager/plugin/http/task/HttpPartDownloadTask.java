@@ -85,7 +85,10 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
                         dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
                     }
                 } catch (Throwable e) {
+                    e.printStackTrace();
                     dispatchFail(e);
+                }finally {
+                    response.close();
                 }
             }
         });

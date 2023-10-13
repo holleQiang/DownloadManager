@@ -73,6 +73,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     public void forceStart() {
+        if (getStatus() != Status.DOWNLOADING) {
+            throw new IllegalStateException("cannot call forceStart when status are not downloading");
+        }
         try {
             onStart();
         } catch (Throwable e) {
@@ -110,7 +113,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     protected void dispatchSuccess() {
-        if (status.compareAndSet(Status.DOWNLOADING,Status.SUCCESS)) {
+        if (!status.compareAndSet(Status.DOWNLOADING,Status.SUCCESS)) {
             throw new IllegalStateException("dispatch success from no downloading status");
         }
         dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);

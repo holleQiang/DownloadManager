@@ -43,8 +43,9 @@ public class RetryFailInterceptor implements FailInterceptor {
             if (status != Status.DOWNLOADING) {
                 throw new IllegalStateException("bug may exists:"+status);
             }
-            LogUtils.i(TAG, "重试第：" + retryCount + "次");
             downloadTask.forceStart();
+            int count = retryCount.incrementAndGet();
+            LogUtils.i(TAG, "重试第：" + count + "次");
             //监听取消任务时，也取消重试任务
             downloadTask.addStatusChangeListener(onStatusChangeListener);
         }
@@ -53,14 +54,14 @@ public class RetryFailInterceptor implements FailInterceptor {
     @Override
     public void onIntercept(FailChain chain) {
         downloadTask.removeStatusChangeListener(onStatusChangeListener);
-        int count = retryCount.incrementAndGet();
-        if(count == 1){
+        int count = retryCount.get();
+        if(count == 0){
             downloadTask.addStatusChangeListener(onStatusChangeListener);
         }
         LogUtils.i(TAG,"onIntercept======retryCount===="+retryCount);
-        if (count <= 2) {
+        if (count < 2) {
             handler.postDelayed(forceStartTask, 2000);
-        } else if (count <= 5) {
+        } else if (count < 5) {
             handler.postDelayed(forceStartTask, 5000);
         } else {
             chain.proceed(chain.getThrowable());

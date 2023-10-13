@@ -188,6 +188,8 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     } else {
                         throw e;
                     }
+                }finally {
+                    response.close();
                 }
             }
         });

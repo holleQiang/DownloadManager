@@ -5,6 +5,8 @@ import android.text.TextUtils;
 
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
+import com.zhangqiang.downloadmanager.manager.network.NetWorkManager;
+import com.zhangqiang.downloadmanager.manager.network.OnAvailableChangedListener;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskItemBean;
@@ -29,7 +31,6 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
 import com.zhangqiang.downloadmanager.task.Status;
-import com.zhangqiang.downloadmanager.task.interceptor.fail.NetworkInterceptor;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.RetryFailInterceptor;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
@@ -101,6 +102,24 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 downloadManager.addDownloadTasks(httpDownloadTasks);
             }
         });
+        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
+            @Override
+            public void onAvailableChanged(boolean available) {
+                if(available){
+                    int taskCount = downloadManager.getTaskCount();
+                    for (int i = 0; i < taskCount; i++) {
+                        DownloadTask task = downloadManager.getTask(i);
+                        if(task.getStatus() == Status.FAIL){
+                            task.start();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void drop() {
     }
 
     private List<HttpDownloadTask> loadLocalDownloadTasks() {
@@ -183,10 +202,6 @@ public class HttpDownloadPlugin implements DownloadPlugin {
         return httpDownloadTasks;
     }
 
-    @Override
-    public void drop() {
-
-    }
 
     @Override
     public String getName() {
@@ -365,9 +380,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
         }
     }
 
-    private void handleDownloadTaskCreate(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean){
-        handleDownloadTaskSave(httpDownloadTask,httpTaskBean);
-        httpDownloadTask.addFailInterceptor(new NetworkInterceptor(context,httpDownloadTask));
+    private void handleDownloadTaskCreate(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean) {
+        handleDownloadTaskSave(httpDownloadTask, httpTaskBean);
         httpDownloadTask.addFailInterceptor(new RetryFailInterceptor(httpDownloadTask));
     }
 
