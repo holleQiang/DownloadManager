@@ -87,7 +87,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void cancel() {
 
-        if (!status.compareAndSet(Status.DOWNLOADING,Status.CANCELED)) {
+        if (!status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
             throw new IllegalStateException("cancel not from downloading status");
         }
         onCancel();
@@ -113,17 +113,19 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     protected void dispatchSuccess() {
-        if (!status.compareAndSet(Status.DOWNLOADING,Status.SUCCESS)) {
+        if (!status.compareAndSet(Status.DOWNLOADING, Status.SUCCESS)) {
             throw new IllegalStateException("dispatch success from no downloading status");
         }
         dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);
     }
 
     protected void dispatchFail(Throwable e) {
-        List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
-        finalInterceptors.add(new DispatchFailInterceptor());
-        FailChain chain = new RealFailChain(e, finalInterceptors, 0);
-        chain.proceed(e);
+        synchronized (failInterceptors) {
+            List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
+            finalInterceptors.add(new DispatchFailInterceptor());
+            FailChain chain = new RealFailChain(e, finalInterceptors, 0);
+            chain.proceed(e);
+        }
     }
 
     private class DispatchFailInterceptor implements FailInterceptor {
@@ -133,7 +135,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
             if (status.get() == Status.CANCELED) {
                 return;
             }
-            if (!status.compareAndSet(Status.DOWNLOADING,Status.FAIL)) {
+            if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
                 throw new IllegalStateException("dispatch fail from  status:" + status);
             }
             Throwable e = chain.getThrowable();
@@ -142,7 +144,6 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
             dispatchTaskFail(e);
         }
     }
-
 
 
     private void dispatchStatusChange(Status newStatus, Status oldStatus) {
@@ -273,10 +274,14 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     public void addFailInterceptor(FailInterceptor interceptor) {
-        failInterceptors.add(interceptor);
+        synchronized (failInterceptors) {
+            failInterceptors.add(interceptor);
+        }
     }
 
     public void removeFailInterceptor(FailInterceptor interceptor) {
-        failInterceptors.remove(interceptor);
+        synchronized (failInterceptors) {
+            failInterceptors.remove(interceptor);
+        }
     }
 }
