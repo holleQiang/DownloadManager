@@ -20,6 +20,7 @@ import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.plugin.http.task.HttpDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.task.HttpPartDownloadTask;
+import com.zhangqiang.downloadmanager.plugin.http.task.HttpPartDownloadTaskFactory;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnHttpPartDownloadTasksReadyListener;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnResourceInfoReadyListener;
@@ -105,11 +106,11 @@ public class HttpDownloadPlugin implements DownloadPlugin {
         NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
             @Override
             public void onAvailableChanged(boolean available) {
-                if(available){
+                if (available) {
                     int taskCount = downloadManager.getTaskCount();
                     for (int i = 0; i < taskCount; i++) {
                         DownloadTask task = downloadManager.getTask(i);
-                        if(task.getStatus() == Status.FAIL){
+                        if (task.getStatus() == Status.FAIL) {
                             task.start();
                         }
                     }
@@ -130,17 +131,20 @@ public class HttpDownloadPlugin implements DownloadPlugin {
             int state = httpTaskBean.getState();
             HttpDownloadTask httpDownloadTask;
             if (state == HttpTaskBean.STATE_IDLE) {
-                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getSaveDir(),
+                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getId(),
+                        httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
                         httpTaskBean.getUrl(),
                         context,
-                        httpTaskBean.getThreadSize());
+                        httpTaskBean.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl());
             } else if (state == HttpTaskBean.STATE_START
                     || state == HttpTaskBean.STATE_GENERATING_INFO
                     || state == HttpTaskBean.STATE_WAITING_CHILDREN_TASK) {
 
-                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getSaveDir(),
+                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getId(),
+                        httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
                         Status.DOWNLOADING,
@@ -150,12 +154,14 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         getCurrentLength(httpTaskBean),
                         context,
                         httpTaskBean.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl(),
                         makePartDownloadTasks(httpTaskBean, context),
                         httpTaskBean.getSaveFileName()
                 );
                 httpDownloadTask.forceStart();
             } else if (state == HttpTaskBean.STATE_SUCCESS) {
-                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getSaveDir(),
+                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getId(),
+                        httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
                         Status.SUCCESS,
@@ -165,10 +171,12 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         getCurrentLength(httpTaskBean),
                         context,
                         httpTaskBean.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl(),
                         makePartDownloadTasks(httpTaskBean, context),
                         httpTaskBean.getSaveFileName());
             } else if (state == HttpTaskBean.STATE_FAIL) {
-                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getSaveDir(),
+                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getId(),
+                        httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
                         Status.FAIL,
@@ -178,10 +186,12 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         getCurrentLength(httpTaskBean),
                         context,
                         httpTaskBean.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl(),
                         makePartDownloadTasks(httpTaskBean, context),
                         httpTaskBean.getSaveFileName());
             } else if (state == HttpTaskBean.STATE_CANCEL) {
-                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getSaveDir(),
+                httpDownloadTask = new HttpDownloadTask(httpTaskBean.getId(),
+                        httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
                         Status.CANCELED,
@@ -191,6 +201,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         getCurrentLength(httpTaskBean),
                         context,
                         httpTaskBean.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl(),
                         makePartDownloadTasks(httpTaskBean, context),
                         httpTaskBean.getSaveFileName());
             } else {
@@ -248,7 +259,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
             int state = item.getState();
             HttpPartDownloadTask partDownloadTask;
             if (state == HttpPartTaskItemBean.STATE_IDLE) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.IDLE,
@@ -261,7 +273,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_START) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.DOWNLOADING,
@@ -274,7 +287,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_GENERATING_INFO) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.DOWNLOADING,
@@ -287,7 +301,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_SAVING_FILE) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.DOWNLOADING,
@@ -300,7 +315,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_SUCCESS) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.SUCCESS,
@@ -313,7 +329,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_FAIL) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.FAIL,
@@ -326,7 +343,8 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                         item.getEndPosition()
                 );
             } else if (state == HttpPartTaskItemBean.STATE_CANCEL) {
-                partDownloadTask = new HttpPartDownloadTask(item.getSaveDir(),
+                partDownloadTask = new HttpPartDownloadTask(item.getId(),
+                        item.getSaveDir(),
                         item.getSaveFileName(),
                         System.currentTimeMillis(),
                         Status.CANCELED,
@@ -352,17 +370,20 @@ public class HttpDownloadPlugin implements DownloadPlugin {
         @Override
         public DownloadTask createTask(DownloadRequest downloadRequest) {
             if (downloadRequest instanceof HttpDownloadRequest) {
+
                 HttpDownloadRequest httpDownloadRequest = (HttpDownloadRequest) downloadRequest;
-                HttpDownloadTask httpDownloadTask = new HttpDownloadTask(downloadRequest.getSaveDir(),
+                HttpDownloadTask httpDownloadTask = new HttpDownloadTask(generateId(),
+                        downloadRequest.getSaveDir(),
                         downloadRequest.getTargetFileName(),
                         System.currentTimeMillis(),
                         httpDownloadRequest.getUrl(),
                         context,
-                        httpDownloadRequest.getThreadSize());
+                        httpDownloadRequest.getThreadSize(),
+                        new HttpPartDownloadTaskFactoryImpl());
 
                 //保存数据库
                 HttpTaskBean httpTaskBean = new HttpTaskBean();
-                httpTaskBean.setId(UUID.randomUUID().toString());
+                httpTaskBean.setId(httpDownloadTask.getId());
                 httpTaskBean.setUrl(httpDownloadTask.getUrl());
                 httpTaskBean.setThreadSize(httpDownloadTask.getThreadSize());
                 httpTaskBean.setSaveDir(httpDownloadTask.getSaveDir());
@@ -434,7 +455,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 if (responseCode == 200) {
 
                     HttpDefaultTaskBean httpDefaultTaskBean = new HttpDefaultTaskBean();
-                    httpDefaultTaskBean.setId(UUID.randomUUID().toString());
+                    httpDefaultTaskBean.setId(generateId());
                     httpDefaultTaskBean.setCreateTime(System.currentTimeMillis());
                     httpDefaultTaskBean.setCurrentLength(0);
                     httpDefaultTaskService.add(httpDefaultTaskBean);
@@ -463,7 +484,7 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 for (HttpPartDownloadTask partDownloadTask : partDownloadTasks) {
 
                     HttpPartTaskItemBean partTaskItemBean = new HttpPartTaskItemBean();
-                    partTaskItemBean.setId(UUID.randomUUID().toString());
+                    partTaskItemBean.setId(partDownloadTask.getId());
                     partTaskItemBean.setSaveDir(partDownloadTask.getSaveDir());
                     partTaskItemBean.setSaveFileName(partDownloadTask.getSaveFileName());
                     partTaskItemBean.setCreateTime(System.currentTimeMillis());
@@ -475,9 +496,9 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                     handlePartDownloadTaskSave(partDownloadTask, partTaskItemBean);
                     partTaskItemBeans.add(partTaskItemBean);
                 }
-                httpPartTaskBean.setItems(partTaskItemBeans);
+                httpPartTaskBean.setId(generateId());
                 httpPartTaskBean.setCreateTime(System.currentTimeMillis());
-                httpPartTaskBean.setId(UUID.randomUUID().toString());
+                httpPartTaskBean.setItems(partTaskItemBeans);
                 httpPartTaskBean.setState(HttpPartTaskBean.STATE_IDLE);
                 httpPartTaskService.add(httpPartTaskBean);
 
@@ -521,5 +542,29 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 httpPartTaskItemService.update(partTaskItemBean);
             }
         });
+    }
+
+    private class HttpPartDownloadTaskFactoryImpl implements HttpPartDownloadTaskFactory {
+
+        @Override
+        public HttpPartDownloadTask createHttpPartDownloadTask(String saveDir,
+                                                               String targetFileName,
+                                                               String url,
+                                                               long startPosition,
+                                                               long endPosition) {
+
+            return new HttpPartDownloadTask(generateId(),
+                    saveDir,
+                    targetFileName,
+                    System.currentTimeMillis(),
+                    url,
+                    context,
+                    startPosition,
+                    endPosition);
+        }
+    }
+
+    private String generateId() {
+        return UUID.randomUUID().toString();
     }
 }

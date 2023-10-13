@@ -39,8 +39,9 @@ public class FTPDownloadTask extends DownloadTask {
     private final List<OnResourceInfoReadyListener> onResourceInfoReadyListeners = new ArrayList<>();
 
 
-    public FTPDownloadTask(String saveDir, String targetFileName, long createTime, String host, int port, String userName, String password, String ftpDir, String ftpFileName) {
-        super(saveDir, targetFileName, createTime);
+    public FTPDownloadTask(String id,
+                           String saveDir, String targetFileName, long createTime, String host, int port, String userName, String password, String ftpDir, String ftpFileName) {
+        super(id, saveDir, targetFileName, createTime);
         this.host = host;
         this.port = port;
         this.userName = userName;
@@ -53,7 +54,8 @@ public class FTPDownloadTask extends DownloadTask {
         }
     }
 
-    public FTPDownloadTask(String saveDir,
+    public FTPDownloadTask(String id,
+                           String saveDir,
                            String targetFileName,
                            long createTime,
                            Status status,
@@ -67,7 +69,7 @@ public class FTPDownloadTask extends DownloadTask {
                            String ftpFileName,
                            ResourceInfo resourceInfo,
                            String saveFileName) {
-        super(saveDir, targetFileName, createTime, status, errorMessage, currentLength);
+        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength);
         this.host = host;
         this.port = port;
         this.userName = userName;

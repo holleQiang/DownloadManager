@@ -12,7 +12,7 @@ public class HttpDefaultTaskBean {
     public static final int STATE_CANCEL = 3;
     public static final int STATE_SUCCESS = 4;
 
-    @IntDef(value = {STATE_IDLE,STATE_CANCEL, STATE_WRITING_TO_FILE, STATE_FAIL, STATE_SUCCESS})
+    @IntDef(value = {STATE_IDLE, STATE_CANCEL, STATE_WRITING_TO_FILE, STATE_FAIL, STATE_SUCCESS})
     @interface State {
     }
 

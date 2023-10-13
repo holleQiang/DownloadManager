@@ -24,7 +24,7 @@ import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
 
 /**
  * {@inheritDoc}
- * 
+ *
  * @see org.greenrobot.greendao.AbstractDaoSession
  */
 public class DaoSession extends AbstractDaoSession {
@@ -72,7 +72,7 @@ public class DaoSession extends AbstractDaoSession {
         registerDao(HttpPartTaskItemEntity.class, httpPartTaskItemEntityDao);
         registerDao(HttpTaskEntity.class, httpTaskEntityDao);
     }
-    
+
     public void clear() {
         fTPTaskEntityDaoConfig.clearIdentityScope();
         httpDefaultTaskEntityDaoConfig.clearIdentityScope();

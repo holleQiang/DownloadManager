@@ -31,9 +31,9 @@ public class NetWorkManager {
         }, filter);
     }
 
-    public static NetWorkManager getInstance(Context context){
+    public static NetWorkManager getInstance(Context context) {
         if (instance == null) {
-            synchronized (NetWorkManager.class){
+            synchronized (NetWorkManager.class) {
                 if (instance == null) {
                     instance = new NetWorkManager(context);
                 }
@@ -42,14 +42,14 @@ public class NetWorkManager {
         return instance;
     }
 
-    public synchronized void addOnAvailableChangedListener(OnAvailableChangedListener listener){
+    public synchronized void addOnAvailableChangedListener(OnAvailableChangedListener listener) {
         if (onAvailableChangedListeners.contains(listener)) {
             return;
         }
         onAvailableChangedListeners.add(listener);
     }
 
-    public synchronized void removeOnAvailableChangedListener(OnAvailableChangedListener listener){
+    public synchronized void removeOnAvailableChangedListener(OnAvailableChangedListener listener) {
         onAvailableChangedListeners.remove(listener);
     }
 
@@ -59,11 +59,11 @@ public class NetWorkManager {
         }
     }
 
-    public boolean isAvailable(){
+    public boolean isAvailable() {
         ConnectivityManager connectivityManager = getConnectivityManager();
         if (connectivityManager != null) {
             NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
-            return activeNetworkInfo!= null && activeNetworkInfo.isAvailable();
+            return activeNetworkInfo != null && activeNetworkInfo.isAvailable();
         }
         return false;
     }

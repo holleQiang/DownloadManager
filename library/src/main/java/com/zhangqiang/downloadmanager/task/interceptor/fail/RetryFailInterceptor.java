@@ -22,7 +22,7 @@ public class RetryFailInterceptor implements FailInterceptor {
         this.downloadTask = downloadTask;
     }
 
-   private final OnStatusChangeListener onStatusChangeListener = new OnStatusChangeListener() {
+    private final OnStatusChangeListener onStatusChangeListener = new OnStatusChangeListener() {
         @Override
         public void onStatusChange(Status newStatus, Status oldStatus) {
             if (newStatus == Status.CANCELED) {
@@ -41,7 +41,7 @@ public class RetryFailInterceptor implements FailInterceptor {
                 return;
             }
             if (status != Status.DOWNLOADING) {
-                throw new IllegalStateException("bug may exists:"+status);
+                throw new IllegalStateException("bug may exists:" + status);
             }
             downloadTask.forceStart();
             int count = retryCount.incrementAndGet();
@@ -55,10 +55,10 @@ public class RetryFailInterceptor implements FailInterceptor {
     public void onIntercept(FailChain chain) {
         downloadTask.removeStatusChangeListener(onStatusChangeListener);
         int count = retryCount.get();
-        if(count == 0){
+        if (count == 0) {
             downloadTask.addStatusChangeListener(onStatusChangeListener);
         }
-        LogUtils.i(TAG,"onIntercept======retryCount===="+retryCount);
+        LogUtils.i(TAG, "onIntercept======retryCount====" + retryCount);
         if (count < 2) {
             handler.postDelayed(forceStartTask, 2000);
         } else if (count < 5) {

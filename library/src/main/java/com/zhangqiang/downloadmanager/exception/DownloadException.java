@@ -1,6 +1,6 @@
 package com.zhangqiang.downloadmanager.exception;
 
-public class DownloadException extends Exception{
+public class DownloadException extends Exception {
 
     public static final int UNKNOWN = -1;
     public static final int HTTP_CONNECT_FAIL = 100;
@@ -14,12 +14,12 @@ public class DownloadException extends Exception{
 
     private final int code;
 
-    public DownloadException(int code,String message) {
+    public DownloadException(int code, String message) {
         super(message);
         this.code = code;
     }
 
-    public DownloadException( int code,Throwable cause) {
+    public DownloadException(int code, Throwable cause) {
         super(cause);
         this.code = code;
     }

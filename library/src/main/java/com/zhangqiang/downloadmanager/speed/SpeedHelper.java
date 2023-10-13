@@ -25,7 +25,7 @@ public class SpeedHelper {
         this.currentLengthOwner = currentLengthOwner;
     }
 
-    public void calculateSpeed(){
+    public void calculateSpeed() {
         long currentLength = currentLengthOwner.getCurrentLength();
         if (record.lastComputeTime == 0) {
             record.lastComputeTime = SystemClock.elapsedRealtime();
@@ -43,35 +43,35 @@ public class SpeedHelper {
             }
             record.lastComputeTime = currentTime;
             record.lastLength = currentLength;
-            if(changed){
+            if (changed) {
                 dispatchSpeedChange();
             }
         }
     }
 
-    public void addOnSpeedChangeListener(OnSpeedChangeListener listener){
+    public void addOnSpeedChangeListener(OnSpeedChangeListener listener) {
         onSpeedChangeListeners.add(listener);
     }
 
-    public void removeOnSpeedChangeListener(OnSpeedChangeListener listener){
+    public void removeOnSpeedChangeListener(OnSpeedChangeListener listener) {
         onSpeedChangeListeners.remove(listener);
     }
 
-    private void dispatchSpeedChange(){
+    private void dispatchSpeedChange() {
         for (int i = onSpeedChangeListeners.size() - 1; i >= 0; i--) {
             onSpeedChangeListeners.get(i).onSpeedChange();
         }
     }
 
-    public long getSpeed(){
-        return  record.speed;
+    public long getSpeed() {
+        return record.speed;
     }
 
     public void start() {
         Schedule.getInstance().startSchedule(speedTask);
     }
 
-    public void stop(){
+    public void stop() {
         Schedule.getInstance().stopSchedule(speedTask);
     }
 }

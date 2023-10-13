@@ -8,7 +8,6 @@ import com.zhangqiang.downloadmanager.speed.SpeedSupport;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.FailChain;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.FailInterceptor;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.RealFailChain;
-import com.zhangqiang.downloadmanager.task.interceptor.fail.RetryFailInterceptor;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
@@ -20,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
+    private final String id;
     private final String saveDir;
     private final String targetFileName;
     private final long createTime;
@@ -47,13 +47,21 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     private final List<FailInterceptor> failInterceptors = new ArrayList<>();
 
 
-    public DownloadTask(String saveDir, String targetFileName, long createTime) {
+    public DownloadTask(String id, String saveDir, String targetFileName, long createTime) {
+        this.id = id;
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
     }
 
-    public DownloadTask(String saveDir, String targetFileName, long createTime, Status status, String errorMessage, long currentLength) {
+    public DownloadTask(String id,
+                        String saveDir,
+                        String targetFileName,
+                        long createTime,
+                        Status status,
+                        String errorMessage,
+                        long currentLength) {
+        this.id = id;
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
@@ -283,5 +291,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         synchronized (failInterceptors) {
             failInterceptors.remove(interceptor);
         }
+    }
+
+    public String getId() {
+        return id;
     }
 }

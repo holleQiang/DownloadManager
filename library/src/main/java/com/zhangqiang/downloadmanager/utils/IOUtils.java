@@ -5,7 +5,7 @@ import java.io.IOException;
 
 public class IOUtils {
 
-    public static void closeSilently(Closeable closeable){
+    public static void closeSilently(Closeable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();

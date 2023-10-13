@@ -33,7 +33,7 @@ public class ExecutorManager {
         return executor.submit(runnable);
     }
 
-    public <T> Future<T> submit(Callable<T> callable){
+    public <T> Future<T> submit(Callable<T> callable) {
         return executor.submit(callable);
     }
 }

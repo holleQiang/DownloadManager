@@ -93,7 +93,7 @@ public class HttpUtils {
         return rangePart;
     }
 
-    public static String getFileNameSuffixByContentType( FieldGetter fieldGetter) {
+    public static String getFileNameSuffixByContentType(FieldGetter fieldGetter) {
         String contentTypeField = fieldGetter.getField("Content-Type");
         if (TextUtils.isEmpty(contentTypeField)) {
             return null;

@@ -68,7 +68,8 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                 int state = ftpTaskBean.getState();
                 FTPDownloadTask ftpDownloadTask;
                 if (state == FTPTaskBean.STATE_IDLE) {
-                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getSaveDir(),
+                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                            ftpTaskBean.getSaveDir(),
                             ftpTaskBean.getTargetFileName(),
                             ftpTaskBean.getCreateTime(),
                             Status.IDLE,
@@ -84,7 +85,8 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                             ftpTaskBean.getSaveFileName()
                     );
                 } else if (state == FTPTaskBean.STATE_DOWNLOADING) {
-                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getSaveDir(),
+                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                            ftpTaskBean.getSaveDir(),
                             ftpTaskBean.getTargetFileName(),
                             ftpTaskBean.getCreateTime(),
                             Status.DOWNLOADING,
@@ -101,7 +103,8 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                     );
                     ftpDownloadTask.forceStart();
                 } else if (state == FTPTaskBean.STATE_SUCCESS) {
-                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getSaveDir(),
+                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                            ftpTaskBean.getSaveDir(),
                             ftpTaskBean.getTargetFileName(),
                             ftpTaskBean.getCreateTime(),
                             Status.SUCCESS,
@@ -117,7 +120,8 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                             ftpTaskBean.getSaveFileName()
                     );
                 } else if (state == FTPTaskBean.STATE_FAIL) {
-                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getSaveDir(),
+                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                            ftpTaskBean.getSaveDir(),
                             ftpTaskBean.getTargetFileName(),
                             ftpTaskBean.getCreateTime(),
                             Status.FAIL,
@@ -133,7 +137,8 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                             ftpTaskBean.getSaveFileName()
                     );
                 } else if (state == FTPTaskBean.STATE_CANCEL) {
-                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getSaveDir(),
+                    ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                            ftpTaskBean.getSaveDir(),
                             ftpTaskBean.getTargetFileName(),
                             ftpTaskBean.getCreateTime(),
                             Status.CANCELED,
@@ -174,8 +179,13 @@ public class FtpDownloadPlugin implements DownloadPlugin {
         @Override
         public DownloadTask createTask(DownloadRequest downloadRequest) {
             if (downloadRequest instanceof FtpDownloadRequest) {
+
+                FTPTaskBean ftpTaskBean = new FTPTaskBean();
+                ftpTaskBean.setId(UUID.randomUUID().toString());
+
                 FtpDownloadRequest ftpDownloadRequest = (FtpDownloadRequest) downloadRequest;
-                FTPDownloadTask ftpDownloadTask = new FTPDownloadTask(ftpDownloadRequest.getSaveDir(),
+                FTPDownloadTask ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
+                        ftpDownloadRequest.getSaveDir(),
                         ftpDownloadRequest.getTargetFileName(),
                         System.currentTimeMillis(),
                         ftpDownloadRequest.getHost(),
@@ -185,8 +195,6 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                         ftpDownloadRequest.getFtpDir(),
                         ftpDownloadRequest.getFtpFileName());
 
-                FTPTaskBean ftpTaskBean = new FTPTaskBean();
-                ftpTaskBean.setId(UUID.randomUUID().toString());
                 ftpTaskBean.setSaveDir(ftpDownloadTask.getSaveDir());
                 ftpTaskBean.setTargetFileName(ftpDownloadTask.getTargetFileName());
                 ftpTaskBean.setSaveFileName(ftpDownloadTask.getSaveFileName());

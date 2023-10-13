@@ -8,7 +8,7 @@ import java.util.List;
 
 public class RangePartUtils {
 
-    public static List<PartInfo> toPartInfoList(RangePart rangePart,int count){
+    public static List<PartInfo> toPartInfoList(RangePart rangePart, int count) {
         List<PartInfo> partInfoList = new ArrayList<>();
         final long total = rangePart.getTotal();
         long eachDownload = total / count;

@@ -22,10 +22,10 @@ public class Schedule {
                 IntervalTask intervalTask = ((IntervalTask) msg.obj);
                 intervalTask.run();
 
-                if(intervalTask.isAlive()){
+                if (intervalTask.isAlive()) {
                     Message message = handler.obtainMessage(0);
                     message.obj = intervalTask;
-                    handler.sendMessageDelayed(message,intervalTask.getInterval());
+                    handler.sendMessageDelayed(message, intervalTask.getInterval());
                 }
                 return true;
             }
@@ -36,15 +36,15 @@ public class Schedule {
         return instance;
     }
 
-    public void startSchedule(IntervalTask task){
+    public void startSchedule(IntervalTask task) {
         task.setAlive(true);
         Message message = handler.obtainMessage(0);
         message.obj = task;
         handler.sendMessage(message);
     }
 
-    public void stopSchedule(IntervalTask task){
+    public void stopSchedule(IntervalTask task) {
         task.setAlive(false);
-        handler.removeMessages(0,task);
+        handler.removeMessages(0, task);
     }
 }

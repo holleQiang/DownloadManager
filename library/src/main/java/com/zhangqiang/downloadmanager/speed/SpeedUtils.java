@@ -38,8 +38,8 @@ public class SpeedUtils {
 //        return speedSupport.getSpeedRecord().speed;
     }
 
-    public static void resetStatus(SpeedSupport speedSupport){
-        LogUtils.i(TAG,"=======resetStatus=======");
+    public static void resetStatus(SpeedSupport speedSupport) {
+        LogUtils.i(TAG, "=======resetStatus=======");
 //        SpeedRecord speedRecord = speedSupport.getSpeedRecord();
 //        speedRecord.lastLength = speedSupport.getCurrentLength();
 //        speedRecord.lastComputeTime = SystemClock.elapsedRealtime();

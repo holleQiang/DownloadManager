@@ -15,7 +15,7 @@ public class HttpDefaultTaskService {
         this.mDBManager = new DBManager(context);
     }
 
-    public HttpDefaultTaskBean get(String id){
+    public HttpDefaultTaskBean get(String id) {
         HttpDefaultTaskEntity defaultTaskEntity = getHttpDefaultTaskEntityDao().load(id);
         HttpDefaultTaskBean httpDefaultTask = new HttpDefaultTaskBean();
         httpDefaultTask.setCreateTime(defaultTaskEntity.getCreateTime());
@@ -26,11 +26,11 @@ public class HttpDefaultTaskService {
         return httpDefaultTask;
     }
 
-    public void add(HttpDefaultTaskBean httpDefaultTaskBean){
+    public void add(HttpDefaultTaskBean httpDefaultTaskBean) {
         getHttpDefaultTaskEntityDao().insert(beanToEntity(httpDefaultTaskBean));
     }
 
-    public void update(HttpDefaultTaskBean httpDefaultTaskBean){
+    public void update(HttpDefaultTaskBean httpDefaultTaskBean) {
         getHttpDefaultTaskEntityDao().update(beanToEntity(httpDefaultTaskBean));
     }
 

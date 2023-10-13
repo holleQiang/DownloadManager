@@ -95,7 +95,7 @@ public class HttpTaskService {
             httpTaskEntity.setChildId(httpDefaultTask.getId());
         } else if (type == HttpTaskBean.TYPE_PART) {
             HttpPartTaskBean httpPartTask = httpTaskBean.getHttpPartTaskBean();
-            if(httpPartTask != null){
+            if (httpPartTask != null) {
                 httpTaskEntity.setChildId(httpPartTask.getId());
             }
         }

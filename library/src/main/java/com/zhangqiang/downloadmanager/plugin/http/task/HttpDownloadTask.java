@@ -45,6 +45,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
 
     private final Context context;
     private final int threadSize;
+    private final HttpPartDownloadTaskFactory httpPartDownloadTaskFactory;
     private List<HttpPartDownloadTask> partDownloadTasks;
     private int successPartDownloadTaskCount;
     private Call downloadCall;
@@ -53,14 +54,22 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     private final List<OnSaveFileNameChangeListener> onSaveFileNameChangeListeners = new ArrayList<>();
     private Future<?> handleAllTaskSuccessFuture;
 
-    public HttpDownloadTask(String saveDir, String targetFileName, long createTime, String url, Context context, int threadSize) {
-        super(saveDir, targetFileName, createTime, url);
+    public HttpDownloadTask(String id,
+                            String saveDir,
+                            String targetFileName,
+                            long createTime,
+                            String url,
+                            Context context,
+                            int threadSize, HttpPartDownloadTaskFactory httpPartDownloadTaskFactory) {
+        super(id, saveDir, targetFileName, createTime, url);
         this.context = context;
         this.threadSize = threadSize;
+        this.httpPartDownloadTaskFactory = httpPartDownloadTaskFactory;
         this.saveFileName = makeSaveFileName(targetFileName, null, url, saveDir);
     }
 
-    public HttpDownloadTask(String saveDir,
+    public HttpDownloadTask(String id,
+                            String saveDir,
                             String targetFileName,
                             long createTime,
                             Status status,
@@ -70,11 +79,13 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             long currentLength,
                             Context context,
                             int threadSize,
+                            HttpPartDownloadTaskFactory httpPartDownloadTaskFactory,
                             List<HttpPartDownloadTask> partDownloadTasks,
                             String saveFileName) {
-        super(saveDir, targetFileName, createTime, status, errorMessage, currentLength, url, resourceInfo);
+        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength, url, resourceInfo);
         this.context = context;
         this.threadSize = threadSize;
+        this.httpPartDownloadTaskFactory = httpPartDownloadTaskFactory;
         this.partDownloadTasks = partDownloadTasks;
         this.saveFileName = saveFileName;
         if (TextUtils.isEmpty(this.saveFileName)) {
@@ -166,11 +177,9 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             for (PartInfo partInfo : partInfoList) {
                                 File saveDir = new File(getSaveDir(), "." + getSaveFileName());
                                 FileUtils.createDirIfNotExists(saveDir);
-                                HttpPartDownloadTask partDownloadTask = new HttpPartDownloadTask(saveDir.getAbsolutePath(),
+                                HttpPartDownloadTask partDownloadTask = httpPartDownloadTaskFactory.createHttpPartDownloadTask(saveDir.getAbsolutePath(),
                                         partInfo.getStart() + "_" + partInfo.getEnd() + ".tmp",
-                                        System.currentTimeMillis(),
                                         getUrl(),
-                                        context,
                                         partInfo.getStart(),
                                         partInfo.getEnd());
                                 partDownloadTasks.add(partDownloadTask);
@@ -188,7 +197,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     } else {
                         throw e;
                     }
-                }finally {
+                } finally {
                     response.close();
                 }
             }
@@ -364,7 +373,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                         for (HttpPartDownloadTask downloadTask : partDownloadTasks) {
                             if (downloadTask.getStatus() == Status.DOWNLOADING) {
                                 downloadTask.cancel();
-                                LogUtils.i(TAG,"=====cancel downloading task===="+downloadTask.getSaveFileName());
+                                LogUtils.i(TAG, "=====cancel downloading task====" + downloadTask.getSaveFileName());
                             }
                         }
                         stopScheduleProgressChange();

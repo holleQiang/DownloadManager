@@ -24,7 +24,7 @@ public class HttpTaskBean {
 
     @Retention(SOURCE)
     @Target({FIELD})
-    @IntDef(value = {TYPE_UNKNOWN,TYPE_DEFAULT, TYPE_PART})
+    @IntDef(value = {TYPE_UNKNOWN, TYPE_DEFAULT, TYPE_PART})
     @interface Type {
     }
 

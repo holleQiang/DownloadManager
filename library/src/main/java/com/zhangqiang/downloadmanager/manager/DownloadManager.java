@@ -122,7 +122,7 @@ public class DownloadManager {
     public void deleteTask(DownloadTask task, RemoveTaskOptions options) {
         synchronized (downloadTasks) {
             if (downloadTasks.remove(task)) {
-                if(task.getStatus() == Status.DOWNLOADING){
+                if (task.getStatus() == Status.DOWNLOADING) {
                     task.cancel();
                 }
                 if (options.isDeleteFile()) {
@@ -198,19 +198,19 @@ public class DownloadManager {
         }
     }
 
-    public void addOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener){
+    public void addOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener) {
         synchronized (onDownloadTaskDeleteListeners) {
             onDownloadTaskDeleteListeners.add(listener);
         }
     }
 
-    public void removeOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener){
+    public void removeOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener) {
         synchronized (onDownloadTaskDeleteListeners) {
             onDownloadTaskDeleteListeners.remove(listener);
         }
     }
 
-    private void dispatchDownloadTaskDelete(DownloadTask downloadTask){
+    private void dispatchDownloadTaskDelete(DownloadTask downloadTask) {
         synchronized (onDownloadTaskDeleteListeners) {
             for (int i = onDownloadTaskDeleteListeners.size() - 1; i >= 0; i--) {
                 onDownloadTaskDeleteListeners.get(i).onDownloadTaskDelete(downloadTask);
@@ -218,14 +218,14 @@ public class DownloadManager {
         }
     }
 
-    public void setMaxActiveTaskSize(int maxSize){
+    public void setMaxActiveTaskSize(int maxSize) {
         maxActiveTaskSize.set(maxSize);
-        if(maxSize < getActiveTaskCount()){
+        if (maxSize < getActiveTaskCount()) {
 
         }
     }
 
-    public int getMaxActiveTaskSize(){
+    public int getMaxActiveTaskSize() {
         return maxActiveTaskSize.get();
     }
 }
