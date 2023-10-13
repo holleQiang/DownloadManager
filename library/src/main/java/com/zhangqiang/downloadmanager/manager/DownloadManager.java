@@ -35,21 +35,29 @@ public class DownloadManager {
     }
 
     public void registerPlugin(DownloadPlugin plugin) {
-        downloadPlugins.add(plugin);
-        plugin.apply(this);
+        synchronized (downloadPlugins) {
+            downloadPlugins.add(plugin);
+            plugin.apply(this);
+        }
     }
 
     public void unRegisterPlugin(DownloadPlugin plugin) {
-        downloadPlugins.remove(plugin);
-        plugin.drop();
+        synchronized (downloadPlugins) {
+            downloadPlugins.remove(plugin);
+            plugin.drop();
+        }
     }
 
     public int getPluginCount() {
-        return downloadPlugins.size();
+        synchronized (downloadPlugins) {
+            return downloadPlugins.size();
+        }
     }
 
     public DownloadPlugin getPluginAt(int position) {
-        return downloadPlugins.get(position);
+        synchronized (downloadPlugins) {
+            return downloadPlugins.get(position);
+        }
     }
 
     public DownloadTask enqueue(DownloadRequest request) {
