@@ -26,15 +26,15 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
     private final long endPosition;
     private Call downloadCall;
 
-    public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, String url, Context context, long startPosition, long endPosition) {
-        super(id, saveDir, targetFileName, createTime, url);
+    public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority, String url, Context context, long startPosition, long endPosition) {
+        super(id, saveDir, targetFileName, createTime, priority, url);
         this.context = context;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
     }
 
-    public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, Status status, String errorMessage, String url, ResourceInfo resourceInfo, long currentLength, Context context, long startPosition, long endPosition) {
-        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength, url, resourceInfo);
+    public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority, Status status, String errorMessage, String url, ResourceInfo resourceInfo, long currentLength, Context context, long startPosition, long endPosition) {
+        super(id, saveDir, targetFileName, createTime, priority, status, errorMessage, currentLength, url, resourceInfo);
         this.context = context;
         this.startPosition = startPosition;
         this.endPosition = endPosition;

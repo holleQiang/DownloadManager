@@ -30,6 +30,7 @@ public class HttpPartTaskItemService {
         httpPartTaskItem.setSaveDir(partTaskItemEntity.getSaveDir());
         httpPartTaskItem.setSaveFileName(partTaskItemEntity.getSaveFileName());
         httpPartTaskItem.setErrorMsg(partTaskItemEntity.getErrorMsg());
+        httpPartTaskItem.setPriority(partTaskItemEntity.getPriority());
         return httpPartTaskItem;
     }
 
@@ -56,6 +57,7 @@ public class HttpPartTaskItemService {
         itemEntity.setCurrentLength(item.getCurrentLength());
         itemEntity.setEndPosition(item.getEndPosition());
         itemEntity.setErrorMsg(item.getErrorMsg());
+        itemEntity.setPriority(item.getPriority());
         return itemEntity;
     }
 

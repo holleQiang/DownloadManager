@@ -21,7 +21,7 @@ public class FTPTaskEntity {
     private String saveDir;
     private String saveFileName;
     private String targetFileName;
-
+    private int priority;
     private long currentLength;
     private String contentType;
     private long contentLength;
@@ -29,12 +29,11 @@ public class FTPTaskEntity {
     private String errorMsg;
     private long createTime;
 
-    @Generated(hash = 1009438359)
-    public FTPTaskEntity(String id, String host, int port, String userName,
-                         String password, String ftpDir, String ftpFileName, String saveDir,
-                         String saveFileName, String targetFileName, long currentLength,
-                         String contentType, long contentLength, int state, String errorMsg,
-                         long createTime) {
+    @Generated(hash = 1093481057)
+    public FTPTaskEntity(String id, String host, int port, String userName, String password,
+            String ftpDir, String ftpFileName, String saveDir, String saveFileName,
+            String targetFileName, int priority, long currentLength, String contentType,
+            long contentLength, int state, String errorMsg, long createTime) {
         this.id = id;
         this.host = host;
         this.port = port;
@@ -45,6 +44,7 @@ public class FTPTaskEntity {
         this.saveDir = saveDir;
         this.saveFileName = saveFileName;
         this.targetFileName = targetFileName;
+        this.priority = priority;
         this.currentLength = currentLength;
         this.contentType = contentType;
         this.contentLength = contentLength;
@@ -183,6 +183,14 @@ public class FTPTaskEntity {
 
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
+    }
+
+    public int getPriority() {
+        return this.priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
 

@@ -40,8 +40,17 @@ public class FTPDownloadTask extends DownloadTask {
 
 
     public FTPDownloadTask(String id,
-                           String saveDir, String targetFileName, long createTime, String host, int port, String userName, String password, String ftpDir, String ftpFileName) {
-        super(id, saveDir, targetFileName, createTime);
+                           String saveDir,
+                           String targetFileName,
+                           long createTime,
+                           int priority,
+                           String host,
+                           int port,
+                           String userName,
+                           String password,
+                           String ftpDir,
+                           String ftpFileName) {
+        super(id, saveDir, targetFileName, createTime, priority);
         this.host = host;
         this.port = port;
         this.userName = userName;
@@ -58,6 +67,7 @@ public class FTPDownloadTask extends DownloadTask {
                            String saveDir,
                            String targetFileName,
                            long createTime,
+                           int priority,
                            Status status,
                            String errorMessage,
                            long currentLength,
@@ -69,7 +79,7 @@ public class FTPDownloadTask extends DownloadTask {
                            String ftpFileName,
                            ResourceInfo resourceInfo,
                            String saveFileName) {
-        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength);
+        super(id, saveDir, targetFileName, createTime, priority, status, errorMessage, currentLength);
         this.host = host;
         this.port = port;
         this.userName = userName;

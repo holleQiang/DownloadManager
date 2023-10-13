@@ -27,11 +27,15 @@ public class HttpPartTaskItemEntity {
     @NotNull
     private long createTime;
     private String errorMsg;
+    /**
+     * 优先级
+     */
+    private int priority;
 
-    @Generated(hash = 1280415093)
-    public HttpPartTaskItemEntity(String id, @NotNull String saveDir,
-                                  String saveFileName, long startPosition, long currentLength,
-                                  long endPosition, int state, long createTime, String errorMsg) {
+    @Generated(hash = 1985732245)
+    public HttpPartTaskItemEntity(String id, @NotNull String saveDir, String saveFileName,
+            long startPosition, long currentLength, long endPosition, int state, long createTime,
+            String errorMsg, int priority) {
         this.id = id;
         this.saveDir = saveDir;
         this.saveFileName = saveFileName;
@@ -41,6 +45,7 @@ public class HttpPartTaskItemEntity {
         this.state = state;
         this.createTime = createTime;
         this.errorMsg = errorMsg;
+        this.priority = priority;
     }
 
     @Generated(hash = 1397547861)
@@ -117,6 +122,14 @@ public class HttpPartTaskItemEntity {
 
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
+    }
+
+    public int getPriority() {
+        return this.priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
 }

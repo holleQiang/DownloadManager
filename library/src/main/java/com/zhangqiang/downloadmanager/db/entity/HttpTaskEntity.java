@@ -61,13 +61,16 @@ public class HttpTaskEntity {
      * 子任务id
      */
     private String childId;
+    /**
+     * 优先级
+     */
+    private int priority;
 
-    @Generated(hash = 160461520)
-    public HttpTaskEntity(String id, @NotNull String url, @NotNull String saveDir,
-                          String fileName, int responseCode, String targetFileName,
-                          String saveFileName, long contentLength, String contentType,
-                          long createTime, int threadSize, int state, String errorMsg, int type,
-                          String childId) {
+    @Generated(hash = 2086849369)
+    public HttpTaskEntity(String id, @NotNull String url, @NotNull String saveDir, String fileName,
+            int responseCode, String targetFileName, String saveFileName, long contentLength,
+            String contentType, long createTime, int threadSize, int state, String errorMsg, int type,
+            String childId, int priority) {
         this.id = id;
         this.url = url;
         this.saveDir = saveDir;
@@ -83,6 +86,7 @@ public class HttpTaskEntity {
         this.errorMsg = errorMsg;
         this.type = type;
         this.childId = childId;
+        this.priority = priority;
     }
 
     @Generated(hash = 1367485091)
@@ -207,6 +211,14 @@ public class HttpTaskEntity {
 
     public void setSaveFileName(String saveFileName) {
         this.saveFileName = saveFileName;
+    }
+
+    public int getPriority() {
+        return this.priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
 

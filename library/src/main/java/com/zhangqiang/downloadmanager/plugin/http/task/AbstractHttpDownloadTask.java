@@ -12,13 +12,13 @@ public abstract class AbstractHttpDownloadTask extends DownloadTask {
     private ResourceInfo resourceInfo;
     private final List<OnResourceInfoReadyListener> onResourceInfoReadyListeners = new ArrayList<>();
 
-    public AbstractHttpDownloadTask(String id, String saveDir, String targetFileName, long createTime, String url) {
-        super(id, saveDir, targetFileName, createTime);
+    public AbstractHttpDownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority, String url) {
+        super(id, saveDir, targetFileName, createTime, priority);
         this.url = url;
     }
 
-    public AbstractHttpDownloadTask(String id, String saveDir, String targetFileName, long createTime, Status status, String errorMessage, long currentLength, String url, ResourceInfo resourceInfo) {
-        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength);
+    public AbstractHttpDownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority, Status status, String errorMessage, long currentLength, String url, ResourceInfo resourceInfo) {
+        super(id, saveDir, targetFileName, createTime, priority, status, errorMessage, currentLength);
         this.url = url;
         this.resourceInfo = resourceInfo;
     }

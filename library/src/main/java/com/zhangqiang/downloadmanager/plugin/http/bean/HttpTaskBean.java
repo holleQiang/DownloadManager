@@ -62,6 +62,10 @@ public class HttpTaskBean {
     private int type;
     private HttpDefaultTaskBean httpDefaultTaskBean;
     private HttpPartTaskBean httpPartTaskBean;
+    /**
+     * 优先级
+     */
+    private int priority;
 
     public String getUrl() {
         return url;
@@ -200,6 +204,15 @@ public class HttpTaskBean {
 
     public HttpTaskBean setSaveFileName(String saveFileName) {
         this.saveFileName = saveFileName;
+        return this;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public HttpTaskBean setPriority(int priority) {
+        this.priority = priority;
         return this;
     }
 }

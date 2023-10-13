@@ -26,6 +26,10 @@ public class FTPTaskBean {
     private int state = STATE_IDLE;
     private String errorMsg;
     private long createTime;
+    /**
+     * 优先级
+     */
+    private int priority;
 
     public String getId() {
         return id;
@@ -168,6 +172,15 @@ public class FTPTaskBean {
 
     public FTPTaskBean setSaveFileName(String saveFileName) {
         this.saveFileName = saveFileName;
+        return this;
+    }
+
+    public int getPriority() {
+        return priority;
+    }
+
+    public FTPTaskBean setPriority(int priority) {
+        this.priority = priority;
         return this;
     }
 }

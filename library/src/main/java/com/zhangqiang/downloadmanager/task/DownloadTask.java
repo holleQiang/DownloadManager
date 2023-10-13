@@ -23,6 +23,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     private final String saveDir;
     private final String targetFileName;
     private final long createTime;
+    private final int priority;
     private AtomicReference<Status> status = new AtomicReference<>(Status.IDLE);
     private String errorMessage;
     private long currentLength;
@@ -47,24 +48,26 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     private final List<FailInterceptor> failInterceptors = new ArrayList<>();
 
 
-    public DownloadTask(String id, String saveDir, String targetFileName, long createTime) {
+    public DownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority) {
         this.id = id;
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
+        this.priority = priority;
     }
 
     public DownloadTask(String id,
                         String saveDir,
                         String targetFileName,
                         long createTime,
-                        Status status,
+                        int priority, Status status,
                         String errorMessage,
                         long currentLength) {
         this.id = id;
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.createTime = createTime;
+        this.priority = priority;
         this.status = new AtomicReference<>(status);
         this.errorMessage = errorMessage;
         this.currentLength = this.initialLength = currentLength;
@@ -295,5 +298,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public String getId() {
         return id;
+    }
+
+    public int getPriority() {
+        return priority;
     }
 }
