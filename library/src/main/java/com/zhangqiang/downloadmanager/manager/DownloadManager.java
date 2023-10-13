@@ -70,7 +70,7 @@ public class DownloadManager {
                     downloadTasks.add(downloadTask);
                     sortTasks();
                     dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() - 1);
-                    downloadTask.start();
+                    startMaxPriorityIdlTasks();
                     return downloadTask;
                 }
             }
@@ -220,12 +220,84 @@ public class DownloadManager {
 
     public void setMaxActiveTaskSize(int maxSize) {
         maxActiveTaskSize.set(maxSize);
-        if (maxSize < getActiveTaskCount()) {
-
+        int activeTaskCount = getActiveTaskCount();
+        if (maxSize < activeTaskCount) {
+            cancelMinPriorityDownloadTasks();
+        } else if (maxSize > activeTaskCount) {
+            startMaxPriorityIdlTasks();
         }
     }
 
     public int getMaxActiveTaskSize() {
         return maxActiveTaskSize.get();
+    }
+
+
+    private DownloadTask findMaxPriorityIdlTask() {
+        synchronized (downloadTasks) {
+            int maxPriority = Integer.MIN_VALUE;
+            DownloadTask maxPriorityTask = null;
+            for (DownloadTask downloadTask : downloadTasks) {
+                if (downloadTask.getStatus() == Status.IDLE) {
+                    int priority = downloadTask.getPriority();
+                    if (priority > maxPriority) {
+                        maxPriority = priority;
+                        maxPriorityTask = downloadTask;
+                    }
+                }
+            }
+            return maxPriorityTask;
+        }
+    }
+
+    private void startMaxPriorityIdlTasks() {
+        int activeTaskCount = getActiveTaskCount();
+        int maxActiveTaskSize = getMaxActiveTaskSize();
+        if (activeTaskCount >= maxActiveTaskSize) {
+            return;
+        }
+        int index = 0;
+        while (index < maxActiveTaskSize - activeTaskCount) {
+            DownloadTask maxPriorityIdlTask = findMaxPriorityIdlTask();
+            if (maxPriorityIdlTask == null) {
+                break;
+            }
+            maxPriorityIdlTask.start();
+            index++;
+        }
+    }
+
+    private void cancelMinPriorityDownloadTasks() {
+        int activeTaskCount = getActiveTaskCount();
+        int maxActiveTaskSize = getMaxActiveTaskSize();
+        if (activeTaskCount <= maxActiveTaskSize) {
+            return;
+        }
+        int index = 0;
+        while (index < activeTaskCount - maxActiveTaskSize) {
+            DownloadTask maxPriorityIdlTask = findMinPriorityDownloadingTask();
+            if (maxPriorityIdlTask == null) {
+                break;
+            }
+            maxPriorityIdlTask.cancel();
+            index++;
+        }
+    }
+
+    private DownloadTask findMinPriorityDownloadingTask() {
+        synchronized (downloadTasks) {
+            int minPriority = Integer.MAX_VALUE;
+            DownloadTask minPriorityTask = null;
+            for (DownloadTask downloadTask : downloadTasks) {
+                if (downloadTask.getStatus() == Status.DOWNLOADING) {
+                    int priority = downloadTask.getPriority();
+                    if (priority < minPriority) {
+                        minPriority = priority;
+                        minPriorityTask = downloadTask;
+                    }
+                }
+            }
+            return minPriorityTask;
+        }
     }
 }
