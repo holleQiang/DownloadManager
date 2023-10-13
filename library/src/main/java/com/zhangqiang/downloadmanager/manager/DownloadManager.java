@@ -26,6 +26,7 @@ public class DownloadManager {
     private final List<OnTaskCountChangeListener> onTaskCountChangeListeners = new ArrayList<>();
     private final List<OnActiveTaskCountChangeListener> onActiveTaskCountChangeListeners = new ArrayList<>();
     private final List<OnDownloadTaskDeleteListener> onDownloadTaskDeleteListeners = new ArrayList<>();
+    private final AtomicInteger maxActiveTaskSize = new AtomicInteger(Integer.MAX_VALUE);
 
     private DownloadManager() {
     }
@@ -215,5 +216,16 @@ public class DownloadManager {
                 onDownloadTaskDeleteListeners.get(i).onDownloadTaskDelete(downloadTask);
             }
         }
+    }
+
+    public void setMaxActiveTaskSize(int maxSize){
+        maxActiveTaskSize.set(maxSize);
+        if(maxSize < getActiveTaskCount()){
+
+        }
+    }
+
+    public int getMaxActiveTaskSize(){
+        return maxActiveTaskSize.get();
     }
 }

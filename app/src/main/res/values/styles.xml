@@ -13,7 +13,9 @@
         <item name="bottomSheetDialogTheme">@style/BottomSheetDialogTheme</item>
     </style>
 
-    <style name="SettingsTitle"></style>
+    <style name="SettingsTitle">
+        <item name="android:textStyle">bold</item>
+    </style>
 
     <style name="TaskOperationTitle">
         <item name="android:textSize">16sp</item>
