@@ -11,6 +11,7 @@ import com.zhangqiang.sample.business.container.processor.HttpProcessor;
 import com.zhangqiang.sample.business.container.processor.QRCodeProcessor;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.utils.ProcessUtils;
 import com.zhangqiang.sample.web.DownloadPlugin;
 import com.zhangqiang.web.manager.WebManager;
 
@@ -28,8 +29,13 @@ public class DMApplication extends MultiDexApplication {
                     }
                 });
 
-        DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(this));
-        DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(this));
+
+        String processName = getApplicationContext().getApplicationInfo().processName;
+
+        if(ProcessUtils.isMainProcess(this)){
+            DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(this));
+            DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(this));
+        }
 
         ContainerProcessorManager.getInstance().registerProcessor(new QRCodeProcessor());
         ContainerProcessorManager.getInstance().registerProcessor(new HttpProcessor());

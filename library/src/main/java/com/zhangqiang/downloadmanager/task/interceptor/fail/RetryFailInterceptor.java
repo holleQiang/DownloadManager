@@ -26,46 +26,51 @@ public class RetryFailInterceptor implements FailInterceptor {
         @Override
         public void onStatusChange(Status newStatus, Status oldStatus) {
             if (newStatus == Status.CANCELED) {
+                //重试被暂停
                 handler.removeCallbacks(forceStartTask);
                 retryCount.set(0);
+                downloadTask.removeStatusChangeListener(this);
+            }else if(newStatus == Status.SUCCESS){
+                //重试成功
+                handler.removeCallbacks(forceStartTask);
+                retryCount.set(0);
+                downloadTask.removeStatusChangeListener(this);
+            }else {
+                //只为了监听重试暂停和成功行为，如果有别的case，可能是有bug
+                throw new IllegalStateException("bug may exists:" + newStatus);
             }
-            downloadTask.removeStatusChangeListener(this);
         }
     };
 
     private final Runnable forceStartTask = new Runnable() {
         @Override
         public void run() {
-            Status status = downloadTask.getStatus();
-            if (status == Status.CANCELED || status == Status.FAIL) {
-                return;
-            }
-            if (status != Status.DOWNLOADING) {
-                throw new IllegalStateException("bug may exists:" + status);
-            }
-            downloadTask.forceStart();
             int count = retryCount.incrementAndGet();
             LogUtils.i(TAG, "重试第：" + count + "次");
-            //监听取消任务时，也取消重试任务
-            downloadTask.addStatusChangeListener(onStatusChangeListener);
+            downloadTask.forceStart();
         }
     };
 
     @Override
     public void onIntercept(FailChain chain) {
-        downloadTask.removeStatusChangeListener(onStatusChangeListener);
+
         int count = retryCount.get();
         if (count == 0) {
+            //第一次重试添加监听
             downloadTask.addStatusChangeListener(onStatusChangeListener);
         }
-        LogUtils.i(TAG, "onIntercept======retryCount====" + retryCount);
         if (count < 2) {
             handler.postDelayed(forceStartTask, 2000);
         } else if (count < 5) {
-            handler.postDelayed(forceStartTask, 5000);
+            handler.postDelayed(forceStartTask, 000);
         } else {
-            chain.proceed(chain.getThrowable());
+            //重试结束，抛出异常
+            //移除监听
+            downloadTask.removeStatusChangeListener(onStatusChangeListener);
+            //重置重试次数
             retryCount.set(0);
+            //抛出异常
+            chain.proceed(chain.getThrowable());
         }
     }
 }

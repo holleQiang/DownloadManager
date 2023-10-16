@@ -97,6 +97,12 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     }
 
     @Override
+    public void forceStart() {
+        LogUtils.i(TAG, "force start");
+        super.forceStart();
+    }
+
+    @Override
     protected void onStart() {
         LogUtils.i(TAG, "开始下载");
         if (partDownloadTasks != null) {
@@ -374,8 +380,8 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     } else if (newStatus == Status.FAIL) {
                         for (HttpPartDownloadTask downloadTask : partDownloadTasks) {
                             if (downloadTask.getStatus() == Status.DOWNLOADING) {
-                                downloadTask.cancel();
                                 LogUtils.i(TAG, "=====cancel downloading task====" + downloadTask.getSaveFileName());
+                                downloadTask.cancel();
                             }
                         }
                         stopScheduleProgressChange();

@@ -80,13 +80,17 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         }
         Status oldStatus = status.getAndSet(Status.DOWNLOADING);
         dispatchStatusChange(Status.DOWNLOADING, oldStatus);
-        forceStart();
+        performStart();
     }
 
     public void forceStart() {
         if (getStatus() != Status.DOWNLOADING) {
             throw new IllegalStateException("cannot call forceStart when status are not downloading");
         }
+        performStart();
+    }
+
+    private void performStart() {
         try {
             onStart();
         } catch (Throwable e) {

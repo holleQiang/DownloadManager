@@ -103,20 +103,20 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 downloadManager.addDownloadTasks(httpDownloadTasks);
             }
         });
-        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
-            @Override
-            public void onAvailableChanged(boolean available) {
-                if (available) {
-                    int taskCount = downloadManager.getTaskCount();
-                    for (int i = 0; i < taskCount; i++) {
-                        DownloadTask task = downloadManager.getTask(i);
-                        if (task.getStatus() == Status.FAIL) {
-                            task.start();
-                        }
-                    }
-                }
-            }
-        });
+//        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
+//            @Override
+//            public void onAvailableChanged(boolean available) {
+//                if (available) {
+//                    int taskCount = downloadManager.getTaskCount();
+//                    for (int i = 0; i < taskCount; i++) {
+//                        DownloadTask task = downloadManager.getTask(i);
+//                        if (task.getStatus() == Status.FAIL) {
+//                            task.start();
+//                        }
+//                    }
+//                }
+//            }
+//        });
     }
 
     @Override
