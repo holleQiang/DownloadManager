@@ -172,12 +172,9 @@ public class NestedWebView extends WebView implements NestedScrollingChild3 {
 
                 final int y = (int) ev.getY(activePointerIndex);
                 int deltaY = mLastMotionY - y;
-                if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset,
-                        ViewCompat.TYPE_TOUCH)) {
-                    deltaY -= mScrollConsumed[1];
-                    mNestedYOffset += mScrollOffset[1];
-                }
+
                 if (!mIsBeingDragged && Math.abs(deltaY) > mTouchSlop) {
+
                     final ViewParent parent = getParent();
                     if (parent != null) {
                         parent.requestDisallowInterceptTouchEvent(true);
@@ -190,6 +187,13 @@ public class NestedWebView extends WebView implements NestedScrollingChild3 {
                     }
                 }
                 if (mIsBeingDragged) {
+
+                    if (dispatchNestedPreScroll(0, deltaY, mScrollConsumed, mScrollOffset,
+                            ViewCompat.TYPE_TOUCH)) {
+                        deltaY -= mScrollConsumed[1];
+                        mNestedYOffset += mScrollOffset[1];
+                    }
+
                     mLastMotionY = y - mScrollOffset[1];
 
                     final int oldY = getScrollY();
