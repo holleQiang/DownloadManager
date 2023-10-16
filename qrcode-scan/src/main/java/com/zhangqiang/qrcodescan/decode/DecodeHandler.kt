@@ -24,8 +24,6 @@ class DecodeThread(
     companion object {
         const val TAG = "DecodeThread"
         const val MSG_CAPTURE = 0
-        const val MSG_DECODE = 1
-        const val MSG_AUTO_FOCUS = 2
     }
 
     private var mDecodeHandler: Handler? = null

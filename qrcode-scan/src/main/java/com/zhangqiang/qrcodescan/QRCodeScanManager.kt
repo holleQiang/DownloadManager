@@ -33,13 +33,12 @@ class QRCodeScanManager {
     }
 
     fun dispatchDecodeResult(result: String): Boolean {
-        var handed = false
         for (processor in processors) {
             if (processor.process(result)) {
-                handed = true
+                return true
             }
         }
-        return handed
+        return false
     }
 }
 

@@ -55,17 +55,7 @@ public class MainActivity extends BaseActivity {
         handDownloadIntent();
 
         QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
-        QRCodeScanManager.Companion.getInstance().addProcessor(new Processor() {
-            @Override
-            public boolean process(@NonNull String text) {
-                try {
-                    IntentUtils.openActivityByUri(MainActivity.this, Uri.parse(text));
-                } catch (Throwable e) {
-                    Toast.makeText(MainActivity.this, getString(R.string.cannot_found_app_to_process), Toast.LENGTH_SHORT).show();
-                }
-                return false;
-            }
-        });
+        QRCodeScanManager.Companion.getInstance().addProcessor(fallbackProcessor);
 
 //        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
 //        FTPDownloadRequest request = new FTPDownloadRequest.Builder()
@@ -162,6 +152,7 @@ public class MainActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         QRCodeScanManager.Companion.getInstance().removeProcessor(mHttpProcessor);
+        QRCodeScanManager.Companion.getInstance().removeProcessor(fallbackProcessor);
     }
 
     private void showTaskCreateDialog(String url) {
@@ -175,7 +166,6 @@ public class MainActivity extends BaseActivity {
                 pendingScanUrl = urls.get(0);
             } else {
                 processHttpUrl(urls.get(0));
-                WebManager.getInstance().openWebViewActivity(MainActivity.this, urls.get(0));
             }
         }
     };
@@ -184,4 +174,15 @@ public class MainActivity extends BaseActivity {
         QRCodeResultProcessUtils.processHttpUrl(this, url);
     }
 
+    private final Processor fallbackProcessor = new Processor() {
+        @Override
+        public boolean process(@NonNull String text) {
+            try {
+                IntentUtils.openActivityByUri(MainActivity.this, Uri.parse(text));
+            } catch (Throwable e) {
+                Toast.makeText(MainActivity.this, getString(R.string.cannot_found_app_to_process), Toast.LENGTH_SHORT).show();
+            }
+            return false;
+        }
+    };
 }

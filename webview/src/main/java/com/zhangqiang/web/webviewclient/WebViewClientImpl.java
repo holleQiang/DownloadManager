@@ -63,6 +63,16 @@ public class WebViewClientImpl extends WebViewClient {
     }
 
     @Override
+    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (request.isRedirect()) {
+                return false;
+            }
+        }
+        return super.shouldOverrideUrlLoading(view, request);
+    }
+
+    @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         webContext.dispatchPageStarted(view, url, favicon);
