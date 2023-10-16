@@ -62,7 +62,7 @@ public class RetryFailInterceptor implements FailInterceptor {
         if (count < 2) {
             handler.postDelayed(forceStartTask, 2000);
         } else if (count < 5) {
-            handler.postDelayed(forceStartTask, 000);
+            handler.postDelayed(forceStartTask, 5000);
         } else {
             //重试结束，抛出异常
             //移除监听
