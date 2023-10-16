@@ -34,6 +34,7 @@ import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.RetryFailInterceptor;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import java.util.UUID;
 
 public class HttpDownloadPlugin implements DownloadPlugin {
 
+    public static final String TAG = HttpDownloadPlugin.class.getSimpleName();
     private final Context context;
     private final HttpTaskService httpTaskService;
     private final HttpDefaultTaskService httpDefaultTaskService;
@@ -103,20 +105,21 @@ public class HttpDownloadPlugin implements DownloadPlugin {
                 downloadManager.addDownloadTasks(httpDownloadTasks);
             }
         });
-//        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
-//            @Override
-//            public void onAvailableChanged(boolean available) {
-//                if (available) {
-//                    int taskCount = downloadManager.getTaskCount();
-//                    for (int i = 0; i < taskCount; i++) {
-//                        DownloadTask task = downloadManager.getTask(i);
-//                        if (task.getStatus() == Status.FAIL) {
-//                            task.start();
-//                        }
-//                    }
-//                }
-//            }
-//        });
+        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
+            @Override
+            public void onAvailableChanged(boolean available) {
+                if (available) {
+                    int taskCount = downloadManager.getTaskCount();
+                    for (int i = 0; i < taskCount; i++) {
+                        DownloadTask task = downloadManager.getTask(i);
+                        if (task.getStatus() == Status.FAIL) {
+                            LogUtils.i(TAG,"=====start from net available=============");
+                            task.start();
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
