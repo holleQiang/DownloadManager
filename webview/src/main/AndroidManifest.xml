@@ -4,7 +4,7 @@
 
     <application>
         <activity android:name="com.zhangqiang.web.activity.WebViewActivity"
-            android:launchMode="singleInstance"
+            android:launchMode="standard"
             android:taskAffinity="${applicationId}.web"/>
     </application>
 </manifest>

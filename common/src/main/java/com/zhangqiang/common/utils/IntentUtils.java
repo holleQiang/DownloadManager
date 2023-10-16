@@ -61,6 +61,7 @@ public class IntentUtils {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(uri);
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
 

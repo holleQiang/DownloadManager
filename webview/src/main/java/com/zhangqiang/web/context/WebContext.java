@@ -13,9 +13,11 @@ public class WebContext {
 
     private State mState = State.INITIAL;
     private WebView webView;
+    private final String id;
     private final String url;
 
-    public WebContext(String url) {
+    public WebContext(String id, String url) {
+        this.id = id;
         this.url = url;
     }
 
@@ -93,5 +95,9 @@ public class WebContext {
 
     public void removePageLoadListener(PageLoadListener listener){
         pageLoadListeners.remove(listener);
+    }
+
+    public String getId() {
+        return id;
     }
 }

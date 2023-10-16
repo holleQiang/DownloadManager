@@ -12,8 +12,8 @@ public class WebActivityContext extends WebContext {
     public FragmentActivity activity;
     private final List<OnActivityCreatedListener> onActivityCreatedListeners = new ArrayList<>();
 
-    public WebActivityContext(String url) {
-        super(url);
+    public WebActivityContext(String id,String url) {
+        super(id, url);
     }
 
     public void dispatchActivityCreate(FragmentActivity activity) {

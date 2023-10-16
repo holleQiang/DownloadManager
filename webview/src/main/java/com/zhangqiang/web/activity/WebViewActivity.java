@@ -10,6 +10,7 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zhangqiang.common.activity.BaseActivity;
@@ -40,12 +41,11 @@ public class WebViewActivity extends BaseActivity {
     private static final String INTENT_KEY_URL = "url";
     private static final String INTENT_KEY_WEB_ID = "web_id";
 
-    public static void open(Context context, String url, String id) {
+    public static Intent newIntent(Context context, String url, String id) {
         Intent intent = new Intent(context, WebViewActivity.class);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.putExtra(INTENT_KEY_URL, url);
         intent.putExtra(INTENT_KEY_WEB_ID, id);
-        context.startActivity(intent);
+        return intent;
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -55,6 +55,9 @@ public class WebViewActivity extends BaseActivity {
         WebContext webContext = WebManager.getInstance().getWebContext(getIntent().getStringExtra(INTENT_KEY_WEB_ID));
         if (webContext instanceof WebActivityContext) {
             mWebContext = (WebActivityContext) webContext;
+        }else if(savedInstanceState != null){
+            mWebContext = WebManager.getInstance().fromActivityRestore(savedInstanceState.getString(INTENT_KEY_WEB_ID),
+                    savedInstanceState.getString(INTENT_KEY_URL));
         }else {
             throw new IllegalArgumentException("webContext error");
         }
@@ -89,22 +92,27 @@ public class WebViewActivity extends BaseActivity {
         settings.setAllowFileAccessFromFileURLs(true);
         mWebContext.dispatchWebViewCreate(mWebView);
 
-        loadResource("https://www.baidu.com");
+        loadResource(savedInstanceState,"https://www.baidu.com");
     }
 
-    private void loadResource(String defaultUrl) {
-        String urlFromIntent = getIntent().getStringExtra(INTENT_KEY_URL);
-        if (TextUtils.isEmpty(urlFromIntent)) {
-            urlFromIntent = defaultUrl;
+    private void loadResource(Bundle savedInstanceState, String defaultUrl) {
+        String targetUrl;
+        if (savedInstanceState != null) {
+            targetUrl = savedInstanceState.getString(INTENT_KEY_URL);
+        }else{
+            targetUrl = getIntent().getStringExtra(INTENT_KEY_URL);
         }
-        mWebView.loadUrl(urlFromIntent);
+        if (TextUtils.isEmpty(targetUrl)) {
+            targetUrl = defaultUrl;
+        }
+        mWebView.loadUrl(targetUrl);
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        loadResource(null);
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(INTENT_KEY_WEB_ID, mWebContext.getId());
+        outState.putString(INTENT_KEY_URL,mWebContext.getUrl());
     }
 
     @Override

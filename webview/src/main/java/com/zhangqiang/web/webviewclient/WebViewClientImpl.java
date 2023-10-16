@@ -13,6 +13,8 @@ import androidx.annotation.RequiresApi;
 
 import com.zhangqiang.common.utils.IntentUtils;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.manager.OpenOptions;
+import com.zhangqiang.web.manager.WebManager;
 
 /**
  * description :
@@ -31,11 +33,6 @@ public class WebViewClientImpl extends WebViewClient {
     @Nullable
     @Override
     public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-//        String scheme = request.getUrl().getScheme();
-//        if ("baiduboxapp".equals(scheme)
-//        || "baiduboxlite".equals(scheme)) {
-//            return new WebResourceResponse("text/html","utf-8",null);
-//        }
         return super.shouldInterceptRequest(view, request);
     }
 
@@ -50,7 +47,11 @@ public class WebViewClientImpl extends WebViewClient {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         if ("http".equals(scheme) || "https".equals(scheme)) {
-            return false;
+            WebManager.getInstance().openWebViewActivity(view.getContext(), url,
+                    new OpenOptions.Builder()
+                            .setNewTask(false)
+                            .build());
+            return true;
         } else {
             try {
                 IntentUtils.openActivityByUri(view.getContext(), uri);
@@ -67,7 +68,6 @@ public class WebViewClientImpl extends WebViewClient {
         webContext.dispatchPageStarted(view, url, favicon);
 
     }
-
 
 
     @Override
