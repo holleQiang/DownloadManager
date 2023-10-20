@@ -38,16 +38,10 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = new Intent(this, DownloadService.class);
-        startService(intent);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
-
         setSupportActionBar(mBinding.mToolBar);
 
-//        DownloadManageFragment downloadManageFragment = new DownloadManageFragment();
-//        getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
-//                .commit();
         DownloadManagerFragment downloadManageFragment = new DownloadManagerFragment();
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_fragment_container, downloadManageFragment)
                 .commit();
@@ -56,26 +50,6 @@ public class MainActivity extends BaseActivity {
 
         QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
         QRCodeScanManager.Companion.getInstance().addProcessor(fallbackProcessor);
-
-//        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-//        FTPDownloadRequest request = new FTPDownloadRequest.Builder()
-//                .setHost("10.93.45.211")
-//                .setPort(21)
-//                .setUserName("mobile")
-//                .setPassword("test")
-//                .setFtpDir("/test")
-//                .setFtpFileName("utils.ts")
-//                .setSaveDir(dirFile.getAbsolutePath())
-//                .build();
-//        DownloadManager.getInstance(this).enqueue(request);
-
-
-//        File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-//        TorrentDownloadRequest request = new TorrentDownloadRequest.Builder()
-//                .setSaveDir(dirFile.getAbsolutePath())
-//                .setFileName("test")
-//                .build();
-//        DownloadManager.getInstance(this).enqueue(request);
     }
 
     @Override
@@ -106,6 +80,8 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = new Intent(this, DownloadService.class);
+        startService(intent);
         if (pendingScanUrl != null) {
             processHttpUrl(pendingScanUrl);
             pendingScanUrl = null;

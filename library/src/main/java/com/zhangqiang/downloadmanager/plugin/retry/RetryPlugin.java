@@ -9,12 +9,14 @@ import java.util.List;
 
 public class RetryPlugin extends SimpleDownloadPlugin {
     @Override
-    public void apply(DownloadManager downloadManager) {
+    public void onApply(DownloadManager downloadManager) {
+        super.onApply(downloadManager);
         downloadManager.addOnTaskAddedListener(onTaskAddedListener);
     }
 
     @Override
-    public void drop(DownloadManager downloadManager) {
+    public void onDrop(DownloadManager downloadManager) {
+        super.onDrop(downloadManager);
         downloadManager.removeOnTaskAddedListener(onTaskAddedListener);
     }
 

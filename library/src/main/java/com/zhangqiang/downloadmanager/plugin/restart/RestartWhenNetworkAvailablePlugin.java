@@ -21,12 +21,14 @@ public class RestartWhenNetworkAvailablePlugin extends SimpleDownloadPlugin {
     }
 
     @Override
-    public void apply(DownloadManager downloadManager) {
+    public void onApply(DownloadManager downloadManager) {
+        super.onApply(downloadManager);
         NetWorkManager.getInstance(context).addOnAvailableChangedListener(onAvailableChangedListener);
     }
 
     @Override
-    public void drop(DownloadManager downloadManager) {
+    public void onDrop(DownloadManager downloadManager) {
+        super.onDrop(downloadManager);
         NetWorkManager.getInstance(context).removeOnAvailableChangedListener(onAvailableChangedListener);
     }
 

@@ -5,15 +5,28 @@ import com.zhangqiang.downloadmanager.manager.DownloadManager;
 public class SimpleDownloadPlugin implements DownloadPlugin {
 
     private DownloadManager downloadManager;
+    private boolean available;
 
     @Override
-    public void apply(DownloadManager downloadManager) {
+    public final void apply(DownloadManager downloadManager) {
+        available = true;
         this.downloadManager = downloadManager;
+        onApply(downloadManager);
+    }
+
+    protected void onApply(DownloadManager downloadManager) {
+
     }
 
     @Override
-    public void drop(DownloadManager downloadManager) {
+    public final void drop() {
+        onDrop(downloadManager);
+        available = false;
         this.downloadManager = null;
+    }
+
+    protected void onDrop(DownloadManager downloadManager) {
+
     }
 
     @Override
@@ -28,5 +41,9 @@ public class SimpleDownloadPlugin implements DownloadPlugin {
 
     public DownloadManager getDownloadManager() {
         return downloadManager;
+    }
+
+    public boolean isAvailable() {
+        return available;
     }
 }

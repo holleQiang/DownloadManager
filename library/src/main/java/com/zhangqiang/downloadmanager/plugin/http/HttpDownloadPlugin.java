@@ -61,7 +61,8 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
     }
 
     @Override
-    public void apply(DownloadManager downloadManager) {
+    protected void onApply(DownloadManager downloadManager) {
+        super.onApply(downloadManager);
         downloadManager.addDownloadTaskFactory(new HttpDownloadTaskFactory());
         downloadManager.addOnDownloadTaskDeleteListener(new OnDownloadTaskDeleteListener() {
             @Override
@@ -108,7 +109,8 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
     }
 
     @Override
-    public void drop(DownloadManager downloadManager) {
+    public void onDrop(DownloadManager downloadManager) {
+        super.onDrop(downloadManager);
     }
 
     private List<HttpDownloadTask> loadLocalDownloadTasks() {

@@ -37,7 +37,8 @@ public class FtpDownloadPlugin extends SimpleDownloadPlugin {
     }
 
     @Override
-    public void apply(DownloadManager downloadManager) {
+    protected void onApply(DownloadManager downloadManager) {
+        super.onApply(downloadManager);
         downloadManager.addDownloadTaskFactory(new FtpDownloadTaskFactory());
         downloadManager.addOnDownloadTaskDeleteListener(new OnDownloadTaskDeleteListener() {
             @Override
@@ -169,8 +170,8 @@ public class FtpDownloadPlugin extends SimpleDownloadPlugin {
     }
 
     @Override
-    public void drop(DownloadManager downloadManager) {
-
+    protected void onDrop(DownloadManager downloadManager) {
+        super.onDrop(downloadManager);
     }
 
     @Override

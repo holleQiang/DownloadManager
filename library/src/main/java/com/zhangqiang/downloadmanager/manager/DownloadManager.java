@@ -49,7 +49,7 @@ public class DownloadManager {
     public void unRegisterPlugin(DownloadPlugin plugin) {
         synchronized (downloadPlugins) {
             downloadPlugins.remove(plugin);
-            plugin.drop(this);
+            plugin.drop();
         }
     }
 
