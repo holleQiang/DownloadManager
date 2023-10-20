@@ -56,6 +56,8 @@ public class RetryFailInterceptor implements FailInterceptor {
     @Override
     public void onIntercept(FailChain chain) {
 
+        chain.getThrowable().printStackTrace();
+
         int count = retryCount.get();
         if (count == 0) {
             //第一次重试添加监听

@@ -142,9 +142,6 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                 }
                 try {
                     int code = response.code();
-                    if (code == 200 && (getThreadSize() > 1 || getInitialLength() > 0)) {
-                        throw new RuntimeException("url doest not support range download");
-                    }
                     ResponseBody responseBody = response.body();
                     if ((code == 200 || code == 206) && responseBody != null) {
 
