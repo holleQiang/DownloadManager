@@ -13,6 +13,7 @@ import com.zhangqiang.downloadmanager.plugin.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.plugin.http.range.RangePart;
 import com.zhangqiang.downloadmanager.plugin.http.utils.FiledSetter;
 import com.zhangqiang.downloadmanager.plugin.http.utils.HttpUtils;
+import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
@@ -31,6 +32,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -47,7 +49,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     private final int threadSize;
     private final HttpPartDownloadTaskFactory httpPartDownloadTaskFactory;
     private List<HttpPartDownloadTask> partDownloadTasks;
-    private int successPartDownloadTaskCount;
+    private final AtomicInteger successPartDownloadTaskCount = new AtomicInteger(0);
     private Call downloadCall;
     private String saveFileName;
     private final List<OnHttpPartDownloadTasksReadyListener> onHttpPartDownloadTasksReadyListeners = new ArrayList<>();
@@ -106,7 +108,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
     protected void onStart() {
         LogUtils.i(TAG, "开始下载");
         if (partDownloadTasks != null) {
-            if (this.successPartDownloadTaskCount == partDownloadTasks.size()) {
+            if (this.successPartDownloadTaskCount.get() == partDownloadTasks.size()) {
                 handleAllTaskSuccessFuture = ExecutorManager.getInstance().submit(new Runnable() {
                     @Override
                     public void run() {
@@ -357,8 +359,6 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
             if (status == Status.SUCCESS) {
                 successCount++;
                 continue;
-            } else if (status == Status.DOWNLOADING) {
-                startScheduleProgress();
             }
             partDownloadTask.addStatusChangeListener(new OnStatusChangeListener() {
                 @Override
@@ -366,10 +366,8 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                     if (newStatus == Status.SUCCESS) {
                         LogUtils.i(TAG, "206 子任务完成下载");
 
-                        successPartDownloadTaskCount++;
-                        if (successPartDownloadTaskCount == partDownloadTasks.size()) {
+                        if (successPartDownloadTaskCount.incrementAndGet() == partDownloadTasks.size()) {
                             LogUtils.i(TAG, "206 所有子任务完成");
-                            stopScheduleProgressChange();
                             //保证100%进度回调
                             dispatchProgressChange();
                             handleAllPartDownloadTasksSuccess();
@@ -381,11 +379,6 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                                 downloadTask.cancel();
                             }
                         }
-                        stopScheduleProgressChange();
-                    } else if (newStatus == Status.CANCELED) {
-                        stopScheduleProgressChange();
-                    } else if (newStatus == Status.DOWNLOADING) {
-                        startScheduleProgress();
                     }
                 }
             });
@@ -408,7 +401,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                 }
             });
         }
-        this.successPartDownloadTaskCount = successCount;
+        this.successPartDownloadTaskCount.set(successCount);
     }
 
     private void startPartDownloadTasks() {

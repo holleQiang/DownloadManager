@@ -1,5 +1,7 @@
 package com.zhangqiang.downloadmanager.task;
 
+import android.util.Log;
+
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
 import com.zhangqiang.downloadmanager.schedule.IntervalTask;
 import com.zhangqiang.downloadmanager.schedule.Schedule;
@@ -46,8 +48,14 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
             }
         }
     };
+    private final IntervalTask speedTask = new IntervalTask(3000) {
+        @Override
+        public void run() {
+            getSpeedHelper().calculateSpeed();
+            Log.i("Test","====calculateSpeed=============");
+        }
+    };
     private final List<FailInterceptor> failInterceptors = new ArrayList<>();
-    private final AtomicBoolean running  = new AtomicBoolean(false);
 
 
     public DownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority) {
@@ -76,27 +84,26 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
 
-    public void start() {
+    public synchronized void start() {
         if (status.get() == Status.DOWNLOADING) {
             throw new IllegalStateException("cannot start from downloading status");
         }
         Status oldStatus = status.getAndSet(Status.DOWNLOADING);
         dispatchStatusChange(Status.DOWNLOADING, oldStatus);
+        startScheduleProgress();
         performStart();
     }
 
-    public void forceStart() {
+    public synchronized void forceStart() {
         if (getStatus() != Status.DOWNLOADING) {
             throw new IllegalStateException("cannot call forceStart when status are not downloading");
         }
+        startScheduleProgress();
         performStart();
     }
 
     private void performStart() {
         try {
-            if (!running.compareAndSet(false,true)) {
-                throw new IllegalStateException("start when running");
-            }
             onStart();
         } catch (Throwable e) {
             dispatchFail(e);
@@ -105,14 +112,12 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     protected abstract void onStart();
 
-    public void cancel() {
+    public synchronized void cancel() {
 
         if (!status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
             throw new IllegalStateException("cancel not from downloading status");
         }
-        if (!running.compareAndSet(true,false)) {
-            throw new IllegalStateException("dispatch cancel when not running");
-        }
+        stopScheduleProgressChange();
         onCancel();
         dispatchStatusChange(Status.CANCELED, Status.DOWNLOADING);
     }
@@ -135,17 +140,19 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         return status.get();
     }
 
-    protected void dispatchSuccess() {
+    protected synchronized void dispatchSuccess() {
         if (!status.compareAndSet(Status.DOWNLOADING, Status.SUCCESS)) {
             throw new IllegalStateException("dispatch success from no downloading status");
         }
-        if (!running.compareAndSet(true,false)) {
-            throw new IllegalStateException("dispatch success when not running");
-        }
+        stopScheduleProgressChange();
         dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);
     }
 
-    protected void dispatchFail(Throwable e) {
+    protected synchronized void dispatchFail(Throwable e) {
+        if (status.get() == Status.CANCELED) {
+            return;
+        }
+        stopScheduleProgressChange();
         synchronized (failInterceptors) {
             List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
             finalInterceptors.add(new DispatchFailInterceptor());
@@ -158,14 +165,8 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         @Override
         public void onIntercept(FailChain chain) {
-            if (status.get() == Status.CANCELED) {
-                return;
-            }
             if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
                 throw new IllegalStateException("dispatch fail from  status:" + status);
-            }
-            if (!running.compareAndSet(true,false)) {
-                throw new IllegalStateException("dispatch fail when not running");
             }
             Throwable e = chain.getThrowable();
             errorMessage = e.getMessage();
@@ -243,12 +244,12 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     protected void startScheduleProgress() {
         Schedule.getInstance().startSchedule(progressTask);
-        getSpeedHelper().start();
+        Schedule.getInstance().startSchedule(speedTask);
     }
 
     protected void stopScheduleProgressChange() {
         Schedule.getInstance().stopSchedule(progressTask);
-        getSpeedHelper().stop();
+        Schedule.getInstance().stopSchedule(speedTask);
     }
 
     protected void dispatchCurrentLength(long currentLength) {
@@ -269,37 +270,24 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         return currentLength;
     }
 
-    private void dispatchFileSaveStart() {
-        startScheduleProgress();
-    }
-
-    private void dispatchFileSaveEnd() {
-        stopScheduleProgressChange();
-    }
-
     private void dispatchFileSaveLength(long length) {
         dispatchCurrentLength(getCurrentLength() + length);
     }
 
     protected void performSaveFile(InputStream inputStream) throws IOException {
-        try {
-            File saveDir = new File(getSaveDir());
-            if (!saveDir.exists() || !saveDir.isDirectory()) {
-                if (!saveDir.mkdirs()) {
-                    throw new IOException("create dir fail: " + saveDir.getAbsolutePath());
-                }
+        File saveDir = new File(getSaveDir());
+        if (!saveDir.exists() || !saveDir.isDirectory()) {
+            if (!saveDir.mkdirs()) {
+                throw new IOException("create dir fail: " + saveDir.getAbsolutePath());
             }
-            File saveFile = new File(getSaveDir(), getSaveFileName());
-            dispatchFileSaveStart();
-            FileUtils.writeToFileFrom(inputStream, saveFile, getCurrentLength(), new FileUtils.WriteFileListener() {
-                @Override
-                public void onWriteFile(byte[] buffer, int offset, int len) {
-                    dispatchFileSaveLength(len);
-                }
-            });
-        } finally {
-            dispatchFileSaveEnd();
         }
+        File saveFile = new File(getSaveDir(), getSaveFileName());
+        FileUtils.writeToFileFrom(inputStream, saveFile, getCurrentLength(), new FileUtils.WriteFileListener() {
+            @Override
+            public void onWriteFile(byte[] buffer, int offset, int len) {
+                dispatchFileSaveLength(len);
+            }
+        });
     }
 
     public void addFailInterceptor(FailInterceptor interceptor) {

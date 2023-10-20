@@ -1,5 +1,7 @@
 package com.zhangqiang.sample;
 
+import android.content.Intent;
+
 import androidx.multidex.MultiDexApplication;
 
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
@@ -12,6 +14,7 @@ import com.zhangqiang.sample.business.container.processor.HttpProcessor;
 import com.zhangqiang.sample.business.container.processor.QRCodeProcessor;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.utils.ProcessUtils;
 import com.zhangqiang.sample.web.DownloadPlugin;
 import com.zhangqiang.web.manager.WebManager;
@@ -38,6 +41,9 @@ public class DMApplication extends MultiDexApplication {
             DownloadManager.getInstance().registerPlugin(new RestartWhenNetworkAvailablePlugin(this));
             DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(this));
             DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(this));
+
+            Intent intent = new Intent(this, DownloadService.class);
+            startService(intent);
         }
 
         ContainerProcessorManager.getInstance().registerProcessor(new QRCodeProcessor());

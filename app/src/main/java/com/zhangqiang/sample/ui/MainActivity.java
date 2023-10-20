@@ -38,6 +38,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         setSupportActionBar(mBinding.mToolBar);
@@ -80,8 +81,6 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        Intent intent = new Intent(this, DownloadService.class);
-        startService(intent);
         if (pendingScanUrl != null) {
             processHttpUrl(pendingScanUrl);
             pendingScanUrl = null;
