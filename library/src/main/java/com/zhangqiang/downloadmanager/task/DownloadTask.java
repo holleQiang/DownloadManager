@@ -47,7 +47,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         }
     };
     private final List<FailInterceptor> failInterceptors = new ArrayList<>();
-    private final AtomicBoolean forceStartCalled  = new AtomicBoolean(false);
+    private final AtomicBoolean running  = new AtomicBoolean(false);
 
 
     public DownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority) {
@@ -89,14 +89,14 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         if (getStatus() != Status.DOWNLOADING) {
             throw new IllegalStateException("cannot call forceStart when status are not downloading");
         }
-        if (!forceStartCalled.compareAndSet(false,true)) {
-            throw new IllegalStateException("force start are require called once");
-        }
         performStart();
     }
 
     private void performStart() {
         try {
+            if (!running.compareAndSet(false,true)) {
+                throw new IllegalStateException("start when running");
+            }
             onStart();
         } catch (Throwable e) {
             dispatchFail(e);
@@ -109,6 +109,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         if (!status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
             throw new IllegalStateException("cancel not from downloading status");
+        }
+        if (!running.compareAndSet(true,false)) {
+            throw new IllegalStateException("dispatch cancel when not running");
         }
         onCancel();
         dispatchStatusChange(Status.CANCELED, Status.DOWNLOADING);
@@ -136,6 +139,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         if (!status.compareAndSet(Status.DOWNLOADING, Status.SUCCESS)) {
             throw new IllegalStateException("dispatch success from no downloading status");
         }
+        if (!running.compareAndSet(true,false)) {
+            throw new IllegalStateException("dispatch success when not running");
+        }
         dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);
     }
 
@@ -157,6 +163,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
             }
             if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
                 throw new IllegalStateException("dispatch fail from  status:" + status);
+            }
+            if (!running.compareAndSet(true,false)) {
+                throw new IllegalStateException("dispatch fail when not running");
             }
             Throwable e = chain.getThrowable();
             errorMessage = e.getMessage();
