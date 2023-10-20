@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
@@ -46,6 +47,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         }
     };
     private final List<FailInterceptor> failInterceptors = new ArrayList<>();
+    private final AtomicBoolean forceStartCalled  = new AtomicBoolean(false);
 
 
     public DownloadTask(String id, String saveDir, String targetFileName, long createTime, int priority) {
@@ -86,6 +88,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     public void forceStart() {
         if (getStatus() != Status.DOWNLOADING) {
             throw new IllegalStateException("cannot call forceStart when status are not downloading");
+        }
+        if (!forceStartCalled.compareAndSet(false,true)) {
+            throw new IllegalStateException("force start are require called once");
         }
         performStart();
     }
