@@ -5,6 +5,7 @@ import androidx.multidex.MultiDexApplication;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.ftp.FtpDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.http.HttpDownloadPlugin;
+import com.zhangqiang.downloadmanager.plugin.restart.RestartWhenNetworkAvailablePlugin;
 import com.zhangqiang.sample.business.container.ContainerProcessorManager;
 import com.zhangqiang.sample.business.container.processor.FtpProtocolProcessor;
 import com.zhangqiang.sample.business.container.processor.HttpProcessor;
@@ -33,6 +34,8 @@ public class DMApplication extends MultiDexApplication {
         String processName = getApplicationContext().getApplicationInfo().processName;
 
         if(ProcessUtils.isMainProcess(this)){
+            //从网络可用中恢复插件
+            DownloadManager.getInstance().registerPlugin(new RestartWhenNetworkAvailablePlugin(this));
             DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(this));
             DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(this));
         }

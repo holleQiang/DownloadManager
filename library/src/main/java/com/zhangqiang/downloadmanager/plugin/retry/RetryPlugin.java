@@ -2,12 +2,12 @@ package com.zhangqiang.downloadmanager.plugin.retry;
 
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.OnTaskAddedListener;
-import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
+import com.zhangqiang.downloadmanager.plugin.SimpleDownloadPlugin;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 
 import java.util.List;
 
-public class RetryPlugin implements DownloadPlugin {
+public class RetryPlugin extends SimpleDownloadPlugin {
     @Override
     public void apply(DownloadManager downloadManager) {
         downloadManager.addOnTaskAddedListener(onTaskAddedListener);

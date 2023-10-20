@@ -6,6 +6,7 @@ import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
+import com.zhangqiang.downloadmanager.plugin.SimpleDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.ftp.bean.FTPTaskBean;
 import com.zhangqiang.downloadmanager.plugin.ftp.callback.ResourceInfo;
 import com.zhangqiang.downloadmanager.plugin.ftp.request.FtpDownloadRequest;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class FtpDownloadPlugin implements DownloadPlugin {
+public class FtpDownloadPlugin extends SimpleDownloadPlugin {
 
     private final FTPTaskService ftpTaskService;
     private final Map<FTPDownloadTask, FTPTaskBean> mappings = new HashMap<>();

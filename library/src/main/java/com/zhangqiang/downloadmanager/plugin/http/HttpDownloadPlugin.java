@@ -7,6 +7,7 @@ import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
 import com.zhangqiang.downloadmanager.manager.network.NetWorkManager;
 import com.zhangqiang.downloadmanager.manager.network.OnAvailableChangedListener;
+import com.zhangqiang.downloadmanager.plugin.SimpleDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpDefaultTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskBean;
 import com.zhangqiang.downloadmanager.plugin.http.bean.HttpPartTaskItemBean;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class HttpDownloadPlugin implements DownloadPlugin {
+public class HttpDownloadPlugin extends SimpleDownloadPlugin {
 
     public static final String TAG = HttpDownloadPlugin.class.getSimpleName();
     private final Context context;
@@ -102,21 +103,6 @@ public class HttpDownloadPlugin implements DownloadPlugin {
             public void run() {
                 List<HttpDownloadTask> httpDownloadTasks = loadLocalDownloadTasks();
                 downloadManager.addDownloadTasks(httpDownloadTasks);
-            }
-        });
-        NetWorkManager.getInstance(context).addOnAvailableChangedListener(new OnAvailableChangedListener() {
-            @Override
-            public void onAvailableChanged(boolean available) {
-                if (available) {
-                    int taskCount = downloadManager.getTaskCount();
-                    for (int i = 0; i < taskCount; i++) {
-                        DownloadTask task = downloadManager.getTask(i);
-                        if (task.getStatus() == Status.FAIL) {
-                            LogUtils.i(TAG,"=====start from net available=============");
-                            task.start();
-                        }
-                    }
-                }
             }
         });
     }

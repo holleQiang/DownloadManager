@@ -9,4 +9,6 @@ public interface DownloadPlugin {
     void drop(DownloadManager downloadManager);
 
     String getName();
+
+    String getDescribe();
 }
