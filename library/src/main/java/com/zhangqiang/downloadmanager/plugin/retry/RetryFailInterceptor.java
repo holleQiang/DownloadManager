@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.task.interceptor.fail;
+package com.zhangqiang.downloadmanager.plugin.retry;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -6,6 +6,8 @@ import android.os.Looper;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.FailChain;
+import com.zhangqiang.downloadmanager.task.interceptor.fail.FailInterceptor;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 import java.util.concurrent.atomic.AtomicInteger;

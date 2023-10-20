@@ -103,7 +103,6 @@ public class FtpDownloadPlugin implements DownloadPlugin {
                             makeResourceInfo(ftpTaskBean),
                             ftpTaskBean.getSaveFileName()
                     );
-                    ftpDownloadTask.forceStart();
                 } else if (state == FTPTaskBean.STATE_SUCCESS) {
                     ftpDownloadTask = new FTPDownloadTask(ftpTaskBean.getId(),
                             ftpTaskBean.getSaveDir(),
@@ -169,7 +168,7 @@ public class FtpDownloadPlugin implements DownloadPlugin {
     }
 
     @Override
-    public void drop() {
+    public void drop(DownloadManager downloadManager) {
 
     }
 

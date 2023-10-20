@@ -1,5 +1,6 @@
 package com.zhangqiang.downloadmanager.manager;
 
+import com.zhangqiang.downloadmanager.plugin.retry.RetryPlugin;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
@@ -26,9 +27,12 @@ public class DownloadManager {
     private final List<OnTaskCountChangeListener> onTaskCountChangeListeners = new ArrayList<>();
     private final List<OnActiveTaskCountChangeListener> onActiveTaskCountChangeListeners = new ArrayList<>();
     private final List<OnDownloadTaskDeleteListener> onDownloadTaskDeleteListeners = new ArrayList<>();
+    private final List<OnTaskAddedListener> onTaskAddedListeners = new ArrayList<>();
     private final AtomicInteger maxActiveTaskSize = new AtomicInteger(Integer.MAX_VALUE);
 
     private DownloadManager() {
+        //默认注册重试插件
+        registerPlugin(new RetryPlugin());
     }
 
     public static DownloadManager getInstance() {
@@ -45,7 +49,7 @@ public class DownloadManager {
     public void unRegisterPlugin(DownloadPlugin plugin) {
         synchronized (downloadPlugins) {
             downloadPlugins.remove(plugin);
-            plugin.drop();
+            plugin.drop(this);
         }
     }
 
@@ -70,6 +74,7 @@ public class DownloadManager {
                     downloadTasks.add(downloadTask);
                     sortTasks();
                     dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() - 1);
+                    dispatchTaskAdded(Collections.singletonList(downloadTask));
                     startMaxPriorityIdlTasks();
                     return downloadTask;
                 }
@@ -109,13 +114,23 @@ public class DownloadManager {
             if (tasks == null || tasks.isEmpty()) {
                 return;
             }
-            for (DownloadTask downloadTask : tasks) {
-                configDownloadTask(downloadTask);
-            }
             final int oldCount = getTaskCount();
             this.downloadTasks.addAll(tasks);
             sortTasks();
             dispatchTaskCountChange(getTaskCount(), oldCount);
+            dispatchTaskAdded(new ArrayList<>(tasks));
+            int downloadingTaskCount = 0;
+            for (DownloadTask downloadTask : tasks) {
+                configDownloadTask(downloadTask);
+                if (downloadTask.getStatus() == Status.DOWNLOADING) {
+                    downloadingTaskCount++;
+                    downloadTask.forceStart();
+                }
+            }
+            if (downloadingTaskCount > 0) {
+                int oldActiveCount = activeTaskCount.getAndAdd(downloadingTaskCount);
+                dispatchActiveTaskCountChange(oldActiveCount + downloadingTaskCount, oldActiveCount);
+            }
         }
     }
 
@@ -298,6 +313,26 @@ public class DownloadManager {
                 }
             }
             return minPriorityTask;
+        }
+    }
+
+    public void addOnTaskAddedListener(OnTaskAddedListener listener) {
+        synchronized (onTaskAddedListeners) {
+            onTaskAddedListeners.add(listener);
+        }
+    }
+
+    public void removeOnTaskAddedListener(OnTaskAddedListener listener) {
+        synchronized (onTaskAddedListeners) {
+            onTaskAddedListeners.remove(listener);
+        }
+    }
+
+    private void dispatchTaskAdded(List<DownloadTask> tasks) {
+        synchronized (onTaskAddedListeners) {
+            for (int i = onTaskAddedListeners.size() - 1; i >= 0; i--) {
+                onTaskAddedListeners.get(i).onTaskAdded(tasks);
+            }
         }
     }
 }

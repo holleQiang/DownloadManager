@@ -6,7 +6,7 @@ public interface DownloadPlugin {
 
     void apply(DownloadManager downloadManager);
 
-    void drop();
+    void drop(DownloadManager downloadManager);
 
     String getName();
 }
