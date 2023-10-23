@@ -85,7 +85,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
 
     public synchronized void start() {
-        if (status.get() == Status.DOWNLOADING) {
+        if (getStatus() == Status.DOWNLOADING) {
             throw new IllegalStateException("cannot start from downloading status");
         }
         Status oldStatus = status.getAndSet(Status.DOWNLOADING);
@@ -149,7 +149,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
     protected synchronized void dispatchFail(Throwable e) {
-        if (status.get() == Status.CANCELED) {
+        if (getStatus() == Status.CANCELED) {
             return;
         }
         stopScheduleProgressChange();
