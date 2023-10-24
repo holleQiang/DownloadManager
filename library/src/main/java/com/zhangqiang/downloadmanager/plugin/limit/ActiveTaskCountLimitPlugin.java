@@ -23,13 +23,6 @@ public class ActiveTaskCountLimitPlugin extends SimpleDownloadPlugin {
     @Override
     protected void onApply(DownloadManager downloadManager) {
         super.onApply(downloadManager);
-//        downloadManager.addTaskCountChangeListener(new OnTaskCountChangeListener() {
-//            @Override
-//            public void onTaskCountChange(int newCount, int oldCount) {
-//                tryStartIdleTask();
-//                tryCancelDownloadingTask();
-//            }
-//        });
         downloadManager.addOnTaskAddedListener(new OnTaskAddedListener() {
             @Override
             public void onTaskAdded(List<DownloadTask> tasks) {
