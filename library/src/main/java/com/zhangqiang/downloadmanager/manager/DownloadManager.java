@@ -1,5 +1,8 @@
 package com.zhangqiang.downloadmanager.manager;
 
+import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.Chain;
+import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.EnqueueInterceptor;
+import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.RealEnqueueChain;
 import com.zhangqiang.downloadmanager.plugin.retry.RetryPlugin;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
@@ -29,6 +32,7 @@ public class DownloadManager {
     private final List<OnDownloadTaskDeleteListener> onDownloadTaskDeleteListeners = new ArrayList<>();
     private final List<OnTaskAddedListener> onTaskAddedListeners = new ArrayList<>();
     private final AtomicInteger maxActiveTaskSize = new AtomicInteger(Integer.MAX_VALUE);
+    private final List<EnqueueInterceptor> enqueueInterceptors = new ArrayList<>();
 
     private DownloadManager() {
         //默认注册重试插件
@@ -66,20 +70,32 @@ public class DownloadManager {
     }
 
     public DownloadTask enqueue(DownloadRequest request) {
-        synchronized (downloadTasks) {
-            for (int i = 0; i < downloadTaskFactories.size(); i++) {
-                DownloadTask downloadTask = downloadTaskFactories.get(i).createTask(request);
-                if (downloadTask != null) {
-                    configDownloadTask(downloadTask);
-                    downloadTasks.add(downloadTask);
-                    sortTasks();
-                    dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() - 1);
-                    dispatchTaskAdded(Collections.singletonList(downloadTask));
-                    startMaxPriorityIdlTasks();
-                    return downloadTask;
+        synchronized (enqueueInterceptors) {
+            List<EnqueueInterceptor> interceptors = new ArrayList<>();
+            interceptors.add(new RealEnqueueInterceptor());
+            return new RealEnqueueChain(request,interceptors,0).proceed(request);
+        }
+    }
+
+    private final class RealEnqueueInterceptor implements EnqueueInterceptor{
+
+        @Override
+        public DownloadTask onIntercept(Chain chain) {
+            synchronized (downloadTasks) {
+                for (int i = 0; i < downloadTaskFactories.size(); i++) {
+                    DownloadTask downloadTask = downloadTaskFactories.get(i).createTask(chain.getRequest());
+                    if (downloadTask != null) {
+                        configDownloadTask(downloadTask);
+                        downloadTasks.add(downloadTask);
+                        sortTasks();
+                        dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() - 1);
+                        dispatchTaskAdded(Collections.singletonList(downloadTask));
+                        startMaxPriorityIdlTasks();
+                        return downloadTask;
+                    }
                 }
+                throw new IllegalArgumentException("cannot find download task factory");
             }
-            throw new IllegalArgumentException("cannot find download task factory");
         }
     }
 

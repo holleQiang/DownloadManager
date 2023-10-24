@@ -202,6 +202,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         @Override
         public void onIntercept(FailChain chain) {
+            if(getStatus() == Status.CANCELED){
+                return;
+            }
             if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
                 throw new IllegalStateException("cannot dispatch fail from  status:" + status);
             }
