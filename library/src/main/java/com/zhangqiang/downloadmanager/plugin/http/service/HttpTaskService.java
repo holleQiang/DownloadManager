@@ -60,8 +60,6 @@ public class HttpTaskService {
             } else if (httpTaskType == HttpTaskBean.TYPE_PART) {
                 httpTaskBean.setHttpPartTask(httpPartTaskService.get(childId));
             }
-            httpTaskBean.setPriority(httpTaskEntity.getPriority());
-
             httpTaskBeans.add(httpTaskBean);
         }
         return httpTaskBeans;
@@ -101,7 +99,6 @@ public class HttpTaskService {
                 httpTaskEntity.setChildId(httpPartTask.getId());
             }
         }
-        httpTaskEntity.setPriority(httpTaskBean.getPriority());
         return httpTaskEntity;
     }
 

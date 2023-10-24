@@ -125,7 +125,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
-                        httpTaskBean.getPriority(),
                         httpTaskBean.getUrl(),
                         context,
                         httpTaskBean.getThreadSize(),
@@ -138,7 +137,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
-                        httpTaskBean.getPriority(),
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
@@ -155,7 +153,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
-                        httpTaskBean.getPriority(),
                         Status.SUCCESS,
                         null,
                         httpTaskBean.getUrl(),
@@ -171,7 +168,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
-                        httpTaskBean.getPriority(),
                         Status.FAIL,
                         httpTaskBean.getErrorMsg(),
                         httpTaskBean.getUrl(),
@@ -187,7 +183,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpTaskBean.getSaveDir(),
                         httpTaskBean.getTargetFileName(),
                         httpTaskBean.getCreateTime(),
-                        httpTaskBean.getPriority(),
                         Status.CANCELED,
                         null,
                         httpTaskBean.getUrl(),
@@ -257,7 +252,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.IDLE,
                         null,
                         httpTaskBean.getUrl(),
@@ -272,7 +266,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
@@ -287,7 +280,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
@@ -302,7 +294,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.DOWNLOADING,
                         null,
                         httpTaskBean.getUrl(),
@@ -317,7 +308,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.SUCCESS,
                         null,
                         httpTaskBean.getUrl(),
@@ -332,7 +322,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.FAIL,
                         item.getErrorMsg(),
                         httpTaskBean.getUrl(),
@@ -347,7 +336,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         item.getSaveDir(),
                         item.getSaveFileName(),
                         item.getCreateTime(),
-                        item.getPriority(),
                         Status.CANCELED,
                         null,
                         httpTaskBean.getUrl(),
@@ -366,9 +354,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
         return partDownloadTasks;
     }
 
-    private int getDefaultPriority() {
-        return 0;
-    }
 
     class HttpDownloadTaskFactory implements DownloadTaskFactory {
 
@@ -381,7 +366,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         downloadRequest.getSaveDir(),
                         downloadRequest.getTargetFileName(),
                         System.currentTimeMillis(),
-                        getDefaultPriority(),
                         httpDownloadRequest.getUrl(),
                         context,
                         httpDownloadRequest.getThreadSize(),
@@ -562,7 +546,6 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                     saveDir,
                     targetFileName,
                     System.currentTimeMillis(),
-                    getDefaultPriority(),
                     url,
                     context,
                     startPosition,

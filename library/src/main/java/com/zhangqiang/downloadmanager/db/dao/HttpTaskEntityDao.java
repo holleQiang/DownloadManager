@@ -39,7 +39,6 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         public final static Property ErrorMsg = new Property(12, String.class, "errorMsg", false, "ERROR_MSG");
         public final static Property Type = new Property(13, int.class, "type", false, "TYPE");
         public final static Property ChildId = new Property(14, String.class, "childId", false, "CHILD_ID");
-        public final static Property Priority = new Property(15, int.class, "priority", false, "PRIORITY");
     }
 
 
@@ -69,8 +68,7 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
                 "\"STATE\" INTEGER NOT NULL ," + // 11: state
                 "\"ERROR_MSG\" TEXT," + // 12: errorMsg
                 "\"TYPE\" INTEGER NOT NULL ," + // 13: type
-                "\"CHILD_ID\" TEXT," + // 14: childId
-                "\"PRIORITY\" INTEGER NOT NULL );"); // 15: priority
+                "\"CHILD_ID\" TEXT);"); // 14: childId
     }
 
     /** Drops the underlying database table. */
@@ -125,7 +123,6 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         if (childId != null) {
             stmt.bindString(15, childId);
         }
-        stmt.bindLong(16, entity.getPriority());
     }
 
     @Override
@@ -174,7 +171,6 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         if (childId != null) {
             stmt.bindString(15, childId);
         }
-        stmt.bindLong(16, entity.getPriority());
     }
 
     @Override
@@ -199,8 +195,7 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
             cursor.getInt(offset + 11), // state
             cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12), // errorMsg
             cursor.getInt(offset + 13), // type
-            cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14), // childId
-            cursor.getInt(offset + 15) // priority
+            cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14) // childId
         );
         return entity;
     }
@@ -222,7 +217,6 @@ public class HttpTaskEntityDao extends AbstractDao<HttpTaskEntity, String> {
         entity.setErrorMsg(cursor.isNull(offset + 12) ? null : cursor.getString(offset + 12));
         entity.setType(cursor.getInt(offset + 13));
         entity.setChildId(cursor.isNull(offset + 14) ? null : cursor.getString(offset + 14));
-        entity.setPriority(cursor.getInt(offset + 15));
      }
     
     @Override

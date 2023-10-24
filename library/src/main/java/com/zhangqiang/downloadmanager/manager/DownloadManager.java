@@ -3,6 +3,7 @@ package com.zhangqiang.downloadmanager.manager;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.Chain;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.EnqueueInterceptor;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.RealEnqueueChain;
+import com.zhangqiang.downloadmanager.plugin.limit.OnActiveTaskCountChangeListener;
 import com.zhangqiang.downloadmanager.plugin.retry.RetryPlugin;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
@@ -26,12 +27,9 @@ public class DownloadManager {
     private final List<DownloadPlugin> downloadPlugins = new ArrayList<>();
     private final List<DownloadTaskFactory> downloadTaskFactories = new ArrayList<>();
     private final List<DownloadTask> downloadTasks = new ArrayList<>();
-    private final AtomicInteger activeTaskCount = new AtomicInteger(0);
     private final List<OnTaskCountChangeListener> onTaskCountChangeListeners = new ArrayList<>();
-    private final List<OnActiveTaskCountChangeListener> onActiveTaskCountChangeListeners = new ArrayList<>();
     private final List<OnDownloadTaskDeleteListener> onDownloadTaskDeleteListeners = new ArrayList<>();
     private final List<OnTaskAddedListener> onTaskAddedListeners = new ArrayList<>();
-    private final AtomicInteger maxActiveTaskSize = new AtomicInteger(Integer.MAX_VALUE);
     private final List<EnqueueInterceptor> enqueueInterceptors = new ArrayList<>();
 
     private DownloadManager() {
@@ -90,7 +88,7 @@ public class DownloadManager {
                         sortTasks();
                         dispatchTaskCountChange(downloadTasks.size(), downloadTasks.size() - 1);
                         dispatchTaskAdded(Collections.singletonList(downloadTask));
-                        startMaxPriorityIdlTasks();
+                        downloadTask.start();
                         return downloadTask;
                     }
                 }
@@ -99,17 +97,13 @@ public class DownloadManager {
         }
     }
 
+
+
     private void configDownloadTask(DownloadTask downloadTask) {
         downloadTask.addStatusChangeListener(new OnStatusChangeListener() {
             @Override
             public void onStatusChange(Status newStatus, Status oldStatus) {
-                if (newStatus == Status.DOWNLOADING) {
-                    int curr = activeTaskCount.incrementAndGet();
-                    dispatchActiveTaskCountChange(curr, curr - 1);
-                } else {
-                    int curr = activeTaskCount.decrementAndGet();
-                    dispatchActiveTaskCountChange(curr, curr + 1);
-                }
+
             }
         });
     }
@@ -135,17 +129,11 @@ public class DownloadManager {
             sortTasks();
             dispatchTaskCountChange(getTaskCount(), oldCount);
             dispatchTaskAdded(new ArrayList<>(tasks));
-            int downloadingTaskCount = 0;
             for (DownloadTask downloadTask : tasks) {
                 configDownloadTask(downloadTask);
                 if (downloadTask.getStatus() == Status.DOWNLOADING) {
-                    downloadingTaskCount++;
                     downloadTask.forceStart();
                 }
-            }
-            if (downloadingTaskCount > 0) {
-                int oldActiveCount = activeTaskCount.getAndAdd(downloadingTaskCount);
-                dispatchActiveTaskCountChange(oldActiveCount + downloadingTaskCount, oldActiveCount);
             }
         }
     }
@@ -169,22 +157,11 @@ public class DownloadManager {
         }
     }
 
-    public int getActiveTaskCount() {
-        return activeTaskCount.get();
-    }
 
     private void dispatchTaskCountChange(int newCount, int oldCount) {
         synchronized (onTaskCountChangeListeners) {
             for (int i = onTaskCountChangeListeners.size() - 1; i >= 0; i--) {
                 onTaskCountChangeListeners.get(i).onTaskCountChange(newCount, oldCount);
-            }
-        }
-    }
-
-    private void dispatchActiveTaskCountChange(int newCount, int oldCount) {
-        synchronized (onActiveTaskCountChangeListeners) {
-            for (int i = onActiveTaskCountChangeListeners.size() - 1; i >= 0; i--) {
-                onActiveTaskCountChangeListeners.get(i).onActiveTaskCountChange(newCount, oldCount);
             }
         }
     }
@@ -217,18 +194,6 @@ public class DownloadManager {
         }
     }
 
-    public void addActiveTaskCountChangeListener(OnActiveTaskCountChangeListener listener) {
-        synchronized (onActiveTaskCountChangeListeners) {
-            onActiveTaskCountChangeListeners.add(listener);
-        }
-    }
-
-    public void removeActiveTaskCountChangeListener(OnActiveTaskCountChangeListener listener) {
-        synchronized (onActiveTaskCountChangeListeners) {
-            onActiveTaskCountChangeListeners.remove(listener);
-        }
-    }
-
     public void addOnDownloadTaskDeleteListener(OnDownloadTaskDeleteListener listener) {
         synchronized (onDownloadTaskDeleteListeners) {
             onDownloadTaskDeleteListeners.add(listener);
@@ -246,89 +211,6 @@ public class DownloadManager {
             for (int i = onDownloadTaskDeleteListeners.size() - 1; i >= 0; i--) {
                 onDownloadTaskDeleteListeners.get(i).onDownloadTaskDelete(downloadTask);
             }
-        }
-    }
-
-    public void setMaxActiveTaskSize(int maxSize) {
-        maxActiveTaskSize.set(maxSize);
-        int activeTaskCount = getActiveTaskCount();
-        if (maxSize < activeTaskCount) {
-            cancelMinPriorityDownloadTasks();
-        } else if (maxSize > activeTaskCount) {
-            startMaxPriorityIdlTasks();
-        }
-    }
-
-    public int getMaxActiveTaskSize() {
-        return maxActiveTaskSize.get();
-    }
-
-
-    private DownloadTask findMaxPriorityIdlTask() {
-        synchronized (downloadTasks) {
-            int maxPriority = Integer.MIN_VALUE;
-            DownloadTask maxPriorityTask = null;
-            for (DownloadTask downloadTask : downloadTasks) {
-                if (downloadTask.getStatus() == Status.IDLE) {
-                    int priority = downloadTask.getPriority();
-                    if (priority > maxPriority) {
-                        maxPriority = priority;
-                        maxPriorityTask = downloadTask;
-                    }
-                }
-            }
-            return maxPriorityTask;
-        }
-    }
-
-    private void startMaxPriorityIdlTasks() {
-        int activeTaskCount = getActiveTaskCount();
-        int maxActiveTaskSize = getMaxActiveTaskSize();
-        if (activeTaskCount >= maxActiveTaskSize) {
-            return;
-        }
-        int index = 0;
-        while (index < maxActiveTaskSize - activeTaskCount) {
-            DownloadTask maxPriorityIdlTask = findMaxPriorityIdlTask();
-            if (maxPriorityIdlTask == null) {
-                break;
-            }
-            maxPriorityIdlTask.start();
-            index++;
-        }
-    }
-
-    private void cancelMinPriorityDownloadTasks() {
-        int activeTaskCount = getActiveTaskCount();
-        int maxActiveTaskSize = getMaxActiveTaskSize();
-        if (activeTaskCount <= maxActiveTaskSize) {
-            return;
-        }
-        int index = 0;
-        while (index < activeTaskCount - maxActiveTaskSize) {
-            DownloadTask maxPriorityIdlTask = findMinPriorityDownloadingTask();
-            if (maxPriorityIdlTask == null) {
-                break;
-            }
-            maxPriorityIdlTask.cancel();
-            index++;
-        }
-    }
-
-    private DownloadTask findMinPriorityDownloadingTask() {
-        synchronized (downloadTasks) {
-            int minPriority = Integer.MAX_VALUE;
-            DownloadTask minPriorityTask = null;
-            for (DownloadTask downloadTask : downloadTasks) {
-                if (downloadTask.getStatus() == Status.DOWNLOADING) {
-                    int priority = downloadTask.getPriority();
-                    if (priority < minPriority) {
-                        minPriority = priority;
-                        minPriorityTask = downloadTask;
-                    }
-                }
-            }
-            return minPriorityTask;
         }
     }
 

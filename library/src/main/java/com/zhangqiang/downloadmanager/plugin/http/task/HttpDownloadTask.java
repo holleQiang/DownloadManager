@@ -60,11 +60,10 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             String saveDir,
                             String targetFileName,
                             long createTime,
-                            int priority,
                             String url,
                             Context context,
                             int threadSize, HttpPartDownloadTaskFactory httpPartDownloadTaskFactory) {
-        super(id, saveDir, targetFileName, createTime,priority, url);
+        super(id, saveDir, targetFileName, createTime, url);
         this.context = context;
         this.threadSize = threadSize;
         this.httpPartDownloadTaskFactory = httpPartDownloadTaskFactory;
@@ -75,7 +74,6 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             String saveDir,
                             String targetFileName,
                             long createTime,
-                            int priority,
                             Status status,
                             String errorMessage,
                             String url,
@@ -86,7 +84,7 @@ public class HttpDownloadTask extends AbstractHttpDownloadTask {
                             HttpPartDownloadTaskFactory httpPartDownloadTaskFactory,
                             List<HttpPartDownloadTask> partDownloadTasks,
                             String saveFileName) {
-        super(id, saveDir, targetFileName, createTime,priority, status, errorMessage, currentLength, url, resourceInfo);
+        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength, url, resourceInfo);
         this.context = context;
         this.threadSize = threadSize;
         this.httpPartDownloadTaskFactory = httpPartDownloadTaskFactory;

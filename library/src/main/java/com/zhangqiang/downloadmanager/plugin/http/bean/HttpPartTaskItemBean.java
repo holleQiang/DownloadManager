@@ -35,10 +35,6 @@ public class HttpPartTaskItemBean {
     private int state;
     private long createTime;
     private String errorMsg;
-    /**
-     * 优先级
-     */
-    private int priority;
 
     public String getId() {
         return id;
@@ -117,12 +113,4 @@ public class HttpPartTaskItemBean {
         return this;
     }
 
-    public int getPriority() {
-        return priority;
-    }
-
-    public HttpPartTaskItemBean setPriority(int priority) {
-        this.priority = priority;
-        return this;
-    }
 }

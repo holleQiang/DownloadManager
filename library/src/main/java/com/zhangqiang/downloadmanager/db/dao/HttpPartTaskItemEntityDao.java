@@ -33,7 +33,6 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         public final static Property State = new Property(6, int.class, "state", false, "STATE");
         public final static Property CreateTime = new Property(7, long.class, "createTime", false, "CREATE_TIME");
         public final static Property ErrorMsg = new Property(8, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property Priority = new Property(9, int.class, "priority", false, "PRIORITY");
     }
 
 
@@ -57,8 +56,7 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
                 "\"END_POSITION\" INTEGER NOT NULL ," + // 5: endPosition
                 "\"STATE\" INTEGER NOT NULL ," + // 6: state
                 "\"CREATE_TIME\" INTEGER NOT NULL ," + // 7: createTime
-                "\"ERROR_MSG\" TEXT," + // 8: errorMsg
-                "\"PRIORITY\" INTEGER NOT NULL );"); // 9: priority
+                "\"ERROR_MSG\" TEXT);"); // 8: errorMsg
     }
 
     /** Drops the underlying database table. */
@@ -91,7 +89,6 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         if (errorMsg != null) {
             stmt.bindString(9, errorMsg);
         }
-        stmt.bindLong(10, entity.getPriority());
     }
 
     @Override
@@ -118,7 +115,6 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         if (errorMsg != null) {
             stmt.bindString(9, errorMsg);
         }
-        stmt.bindLong(10, entity.getPriority());
     }
 
     @Override
@@ -137,8 +133,7 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
             cursor.getLong(offset + 5), // endPosition
             cursor.getInt(offset + 6), // state
             cursor.getLong(offset + 7), // createTime
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // errorMsg
-            cursor.getInt(offset + 9) // priority
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // errorMsg
         );
         return entity;
     }
@@ -154,7 +149,6 @@ public class HttpPartTaskItemEntityDao extends AbstractDao<HttpPartTaskItemEntit
         entity.setState(cursor.getInt(offset + 6));
         entity.setCreateTime(cursor.getLong(offset + 7));
         entity.setErrorMsg(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
-        entity.setPriority(cursor.getInt(offset + 9));
      }
     
     @Override

@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.manager;
+package com.zhangqiang.downloadmanager.plugin.limit;
 
 public interface OnActiveTaskCountChangeListener {
 
