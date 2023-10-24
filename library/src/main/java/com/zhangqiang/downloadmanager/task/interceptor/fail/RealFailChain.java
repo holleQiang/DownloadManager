@@ -15,7 +15,7 @@ public class RealFailChain extends FailChain {
 
     @Override
     public void proceed(Throwable e) {
-        if (index >= failInterceptors.size()) {
+        if (index < 0 || index >= failInterceptors.size()) {
             throw new IndexOutOfBoundsException("illegal index");
         }
         RealFailChain next = new RealFailChain(e, failInterceptors, index + 1);
