@@ -1,7 +1,5 @@
 package com.zhangqiang.downloadmanager.plugin.ftp.bean;
 
-import java.util.Date;
-
 public class FTPTaskBean {
     public static final int STATE_IDLE = 0;
     public static final int STATE_DOWNLOADING = 1;

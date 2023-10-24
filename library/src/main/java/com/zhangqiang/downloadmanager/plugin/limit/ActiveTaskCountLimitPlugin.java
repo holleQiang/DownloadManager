@@ -2,7 +2,6 @@ package com.zhangqiang.downloadmanager.plugin.limit;
 
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.OnTaskAddedListener;
-import com.zhangqiang.downloadmanager.manager.OnTaskCountChangeListener;
 import com.zhangqiang.downloadmanager.plugin.SimpleDownloadPlugin;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;

@@ -1,10 +1,7 @@
 package com.zhangqiang.downloadmanager.speed;
 
 import android.os.SystemClock;
-import android.util.Log;
 
-import com.zhangqiang.downloadmanager.schedule.IntervalTask;
-import com.zhangqiang.downloadmanager.schedule.Schedule;
 import com.zhangqiang.downloadmanager.task.CurrentLengthOwner;
 
 import java.util.ArrayList;

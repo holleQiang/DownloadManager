@@ -1,11 +1,8 @@
 package com.zhangqiang.downloadmanager.db.entity;
 
 import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
-
-import java.util.Date;
-
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 
 @Entity
 public class FTPTaskEntity {

@@ -2,8 +2,6 @@ package com.zhangqiang.downloadmanager.plugin.http.bean;
 
 import androidx.annotation.IntDef;
 
-import java.util.Date;
-
 public class HttpDefaultTaskBean {
 
     public static final int STATE_IDLE = 0;

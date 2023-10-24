@@ -5,8 +5,6 @@ import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 
-import java.util.Date;
-
 @Entity
 public class HttpDefaultTaskEntity {
 

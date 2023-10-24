@@ -5,7 +5,6 @@ import android.content.Context;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.manager.OnDownloadTaskDeleteListener;
-import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.SimpleDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.ftp.bean.FTPTaskBean;
 import com.zhangqiang.downloadmanager.plugin.ftp.callback.ResourceInfo;

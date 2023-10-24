@@ -3,15 +3,14 @@ package com.zhangqiang.downloadmanager.manager;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.Chain;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.EnqueueInterceptor;
 import com.zhangqiang.downloadmanager.manager.interceptor.enqueue.RealEnqueueChain;
-import com.zhangqiang.downloadmanager.plugin.limit.OnActiveTaskCountChangeListener;
-import com.zhangqiang.downloadmanager.plugin.retry.RetryPlugin;
-import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.plugin.DownloadPlugin;
+import com.zhangqiang.downloadmanager.plugin.retry.RetryPlugin;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.DownloadTaskFactory;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
+import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class DownloadManager {
 

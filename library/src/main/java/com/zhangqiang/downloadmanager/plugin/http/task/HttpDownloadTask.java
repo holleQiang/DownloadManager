@@ -8,21 +8,20 @@ import androidx.annotation.NonNull;
 
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.plugin.http.okhttp.OKHttpClients;
-import com.zhangqiang.downloadmanager.plugin.http.response.OkHttpResponse;
 import com.zhangqiang.downloadmanager.plugin.http.part.PartInfo;
 import com.zhangqiang.downloadmanager.plugin.http.range.RangePart;
+import com.zhangqiang.downloadmanager.plugin.http.response.OkHttpResponse;
 import com.zhangqiang.downloadmanager.plugin.http.utils.FiledSetter;
 import com.zhangqiang.downloadmanager.plugin.http.utils.HttpUtils;
-import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
+import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
+import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
+import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
+import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.IOUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
 import com.zhangqiang.downloadmanager.utils.RangePartUtils;
-import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
-import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
-import com.zhangqiang.downloadmanager.task.OnTaskFailListener;
-import com.zhangqiang.downloadmanager.task.Status;
 
 import java.io.File;
 import java.io.FileInputStream;
