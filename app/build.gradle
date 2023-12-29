@@ -38,6 +38,8 @@ dependencies {
     implementation "com.tencent:mmkv-static:${rootProject.ext.versions['mmkv-static']}"
     implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
     implementation "com.github.bumptech.glide:glide:${rootProject.ext.versions.glide}"
+    // 高斯模糊
+    implementation "jp.wasabeef:glide-transformations:${rootProject.ext.versions['glide-transformations']}"
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

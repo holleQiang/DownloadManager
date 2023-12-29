@@ -22,6 +22,7 @@ import com.zhangqiang.downloadmanager.manager.RemoveTaskOptions;
 import com.zhangqiang.downloadmanager.plugin.ftp.task.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.task.HttpDownloadTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
+import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.impl.BaseObserver;
@@ -63,26 +64,14 @@ public class DownloadManagerFragment extends BaseFragment {
 
         DownloadManager.getInstance().addTaskCountChangeListener(onTaskCountChangeListener);
         updateTaskList();
-
         handleDebugMode();
-
     }
 
-    final OnTaskCountChangeListener onTaskCountChangeListener = new OnTaskCountChangeListener() {
-        @Override
-        public void onTaskCountChange(int newCount, int oldCount) {
-            FragmentActivity activity = getActivity();
-            if (activity == null) {
-                return;
-            }
-            activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateTaskList();
-                }
-            });
-        }
-    };
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshCells();
+    }
 
     @Override
     public void onDestroyView() {
@@ -186,5 +175,35 @@ public class DownloadManagerFragment extends BaseFragment {
                         }
                     }
                 });
+    }
+
+    final OnTaskCountChangeListener onTaskCountChangeListener = new OnTaskCountChangeListener() {
+        @Override
+        public void onTaskCountChange(int newCount, int oldCount) {
+            FragmentActivity activity = getActivity();
+            if (activity == null) {
+                return;
+            }
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateTaskList();
+                }
+            });
+        }
+    };
+
+    private void refreshCells() {
+        int dataCount = cellRVAdapter.getDataCount();
+        for (int i = 0; i < dataCount; i++) {
+            Cell cell = cellRVAdapter.getDataAt(i);
+            if (cell instanceof HttpDownloadTaskCell) {
+                HttpDownloadTaskCell httpDownloadTaskCell = (HttpDownloadTaskCell) cell;
+                if (httpDownloadTaskCell.getData().getStatus() == Status.SUCCESS) {
+                    //文件被删除可以立即感知到
+                    httpDownloadTaskCell.invalidate();
+                }
+            }
+        }
     }
 }

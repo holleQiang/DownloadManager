@@ -6,4 +6,5 @@
     <color name="transparent">#00000000</color>
     <color name="input_bg">#eeeeee</color>
     <color name="dialog_bg">#FFFFFF</color>
+    <color name="button_disable">#aaaaaa</color>
 </resources>

@@ -12,6 +12,15 @@ public class FileUtils {
 
     public static final String TAG = FileUtils.class.getSimpleName();
 
+    public static String getSuffix(String fileName) {
+        int index = fileName.lastIndexOf(".");
+        if (index < 0) {
+            return null;
+        } else {
+            return fileName.substring(index + 1);
+        }
+    }
+
     public interface WriteFileListener {
 
         void onWriteFile(byte[] buffer, int offset, int len);

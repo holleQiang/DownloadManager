@@ -7,10 +7,10 @@ import com.zhangqiang.sample.utils.ImageUtils;
 
 import java.io.File;
 
-public class ImageIconProvider implements FileIconProvider,BackgroundProvider{
+public class VideoIconProvider implements FileIconProvider{
     @Override
     public int defaultIconResource() {
-        return R.mipmap.ic_image_default1;
+        return R.mipmap.ic_video_default;
     }
 
     @Override
@@ -18,8 +18,4 @@ public class ImageIconProvider implements FileIconProvider,BackgroundProvider{
         ImageUtils.loadImageFromFile(imageView,file);
     }
 
-    @Override
-    public void loadBackground(ImageView view, File file) {
-        ImageUtils.loadBlurImageFromFile(view,file);
-    }
 }

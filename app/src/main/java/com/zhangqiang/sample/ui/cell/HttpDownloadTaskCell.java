@@ -17,6 +17,7 @@ import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
+import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.downloadmanager.plugin.http.task.HttpDownloadTask;
@@ -29,7 +30,11 @@ import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.ui.cell.icon.ApkIconProvider;
+import com.zhangqiang.sample.ui.cell.icon.BackgroundProvider;
+import com.zhangqiang.sample.ui.cell.icon.DefaultIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.FileIconProvider;
+import com.zhangqiang.sample.ui.cell.icon.ImageIconProvider;
+import com.zhangqiang.sample.ui.cell.icon.VideoIconProvider;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.ResourceUtils;
@@ -215,16 +220,36 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
     private void updateIcon(ViewHolder viewHolder) {
         HttpDownloadTask downloadTask = getData();
         Status status = downloadTask.getStatus();
-        ResourceInfo resourceInfo = downloadTask.getResourceInfo();
-        FileIconProvider fileIconProvider = new ApkIconProvider(lifecycleOwner, viewHolder.getView().getContext());
+        FileIconProvider fileIconProvider;
+        BackgroundProvider backgroundProvider = null;
+        String saveFileName = downloadTask.getSaveFileName();
+        String suffix = FileUtils.getSuffix(saveFileName);
+        File file = new File(downloadTask.getSaveDir(), saveFileName);
+        if ("apk".equalsIgnoreCase(suffix)) {
+            fileIconProvider = new ApkIconProvider(lifecycleOwner, viewHolder.getView().getContext());
+        } else if ("jpg".equalsIgnoreCase(suffix)
+                || "png".equalsIgnoreCase(suffix)
+                || "webp".equalsIgnoreCase(suffix)
+                || "jpeg".equalsIgnoreCase(suffix)) {
+            ImageIconProvider imageIconProvider = new ImageIconProvider();
+            fileIconProvider = imageIconProvider;
+            backgroundProvider = imageIconProvider;
+        } else if ("mp4".equalsIgnoreCase(suffix)) {
+            fileIconProvider = new VideoIconProvider();
+        } else {
+            fileIconProvider = new DefaultIconProvider();
+        }
         if (status == Status.SUCCESS) {
-            File file = new File(downloadTask.getSaveDir(), downloadTask.getSaveFileName());
             if (file.exists()) {
                 fileIconProvider.loadFileIcon(viewHolder.getView(R.id.iv_file_icon), file);
+//                if (backgroundProvider != null) {
+//                    backgroundProvider.loadBackground(viewHolder.getView(R.id.iv_background), file);
+//                }
                 return;
             }
         }
         viewHolder.setImageResource(R.id.iv_file_icon, fileIconProvider.defaultIconResource());
+        viewHolder.setImageDrawable(R.id.iv_background, null);
     }
 
     private void updatePartInfo(ViewHolder viewHolder) {
@@ -324,14 +349,25 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         Status status = data.getStatus();
         if (status == Status.IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
+            viewHolder.setEnable(R.id.bt_state, true);
         } else if (status == Status.DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
+            viewHolder.setEnable(R.id.bt_state, true);
         } else if (status == Status.SUCCESS) {
-            viewHolder.setText(R.id.bt_state, R.string.open);
+            File file = new File(data.getSaveDir(), data.getSaveFileName());
+            if (file.exists()) {
+                viewHolder.setText(R.id.bt_state, R.string.open);
+                viewHolder.setEnable(R.id.bt_state, true);
+            } else {
+                viewHolder.setText(R.id.bt_state, R.string.file_not_exists);
+                viewHolder.setEnable(R.id.bt_state, false);
+            }
         } else if (status == Status.FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
+            viewHolder.setEnable(R.id.bt_state, true);
         } else if (status == Status.CANCELED) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
+            viewHolder.setEnable(R.id.bt_state, true);
         }
     }
 

@@ -3,29 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/iv_background"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:contentDescription="@string/background"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/iv_file_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
         android:contentDescription="@string/file_logo"
+        android:scaleType="centerCrop"
         android:src="@mipmap/ic_apk_default"
         app:layout_constraintBottom_toBottomOf="@+id/tv_progress"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@+id/tv_file_name" />
 
     <TextView
         android:id="@+id/tv_file_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:ellipsize="middle"
         android:singleLine="true"
         android:textColor="#333333"
@@ -33,7 +42,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_file_icon"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="文件名文件名文件名文件名文件名文件名文件名" />
+        tools:text="文件名文件名文件名文件名文件名文件名文件名名文件名文件名" />
 
 
     <ProgressBar
@@ -82,7 +91,7 @@
         android:textColor="#666666"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/tv_speed"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tv_file_name"
         app:layout_constraintTop_toTopOf="@id/tv_speed"
         tools:text="剩余时间1分钟" />
 
@@ -94,8 +103,8 @@
         android:textColor="#ff4a43"
         android:textSize="12sp"
         android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tv_file_name"
+        app:layout_constraintStart_toStartOf="@id/iv_file_icon"
         app:layout_constraintTop_toBottomOf="@id/tv_progress"
         tools:text="网络错误" />
 
@@ -105,6 +114,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/bt_download"
         android:gravity="center"
         android:paddingLeft="8dp"
@@ -113,8 +123,9 @@
         android:paddingBottom="10dp"
         android:textColor="#ffffff"
         android:textSize="13sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tv_file_name"
+        app:layout_constraintStart_toStartOf="@id/iv_file_icon"
         app:layout_constraintTop_toBottomOf="@id/tv_error"
         tools:text="下载中..." />
 
@@ -122,15 +133,20 @@
         android:id="@+id/cb_show_part_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:minHeight="48dp"
         android:text="@string/look_part_info"
-        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/iv_file_icon"
         app:layout_constraintTop_toBottomOf="@id/bt_state" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_part_info"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/tv_file_name"
+        app:layout_constraintStart_toStartOf="@id/iv_file_icon"
         app:layout_constraintTop_toBottomOf="@id/cb_show_part_info" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
