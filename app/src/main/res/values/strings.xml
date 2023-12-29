@@ -51,5 +51,8 @@
     <string name="add_link">添加链接</string>
     <string name="open_file_dir">打开文件所在目录</string>
     <string name="http_download_thread_size">Http下载任务线程数量</string>
+    <string name="file_logo">file logo</string>
+    <string name="debug_mode">调式模式</string>
+    <string name="debug_switch">开关</string>
 
 </resources>

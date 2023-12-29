@@ -21,6 +21,7 @@ public class SettingsManager {
     private Option<Integer> maxRunningTaskCountOption;
     private Option<String> saveDirOption;
     private Option<Integer> httpDownloadThreadSize;
+    private Option<Boolean> debugMode;
 
     private SettingsManager() {
     }
@@ -38,6 +39,7 @@ public class SettingsManager {
         maxRunningTaskCountOption = Options.ofInt("max_running_task_count", 3, valueStore);
         saveDirOption = Options.ofString("save_dir", "Download", valueStore);
         httpDownloadThreadSize = Options.ofInt("http_thread_size", 2, valueStore);
+        debugMode = Options.ofBoolean("debug_mode", false, valueStore);
     }
 
     public Option<Integer> getMaxRunningTaskCountOption() {
@@ -58,5 +60,9 @@ public class SettingsManager {
 
     public Option<Integer> getHttpDownloadThreadSize() {
         return httpDownloadThreadSize;
+    }
+
+    public Option<Boolean> getDebugMode() {
+        return debugMode;
     }
 }

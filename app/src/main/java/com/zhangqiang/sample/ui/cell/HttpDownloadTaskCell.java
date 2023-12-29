@@ -6,7 +6,7 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.ProgressBar;
 
-import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,9 +28,9 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
+import com.zhangqiang.sample.ui.cell.icon.ApkIconProvider;
+import com.zhangqiang.sample.ui.cell.icon.FileIconProvider;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
-import com.zhangqiang.sample.utils.ClipboardUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.ResourceUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
@@ -44,11 +44,18 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
 
     private static final String TAG = HttpDownloadTaskCell.class.getSimpleName();
     private boolean showPartInfo;
-    private View.OnLongClickListener onItemLongClickListener;
+    private final LifecycleOwner lifecycleOwner;
+    private final View.OnLongClickListener onItemLongClickListener;
+    private boolean debugMode;
 
-    public HttpDownloadTaskCell(HttpDownloadTask data, View.OnLongClickListener onItemLongClickListener) {
+    public HttpDownloadTaskCell(HttpDownloadTask data,
+                                LifecycleOwner lifecycleOwner,
+                                View.OnLongClickListener onItemLongClickListener,
+                                boolean debugMode) {
         super(R.layout.item_download, data, null);
+        this.lifecycleOwner = lifecycleOwner;
         this.onItemLongClickListener = onItemLongClickListener;
+        this.debugMode = debugMode;
     }
 
 
@@ -59,9 +66,15 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         final Context context = view.getContext();
         final HttpDownloadTask downloadTask = getData();
 
-        updateState(viewHolder);
-        updateInfo(viewHolder);
+        updateIcon(viewHolder);
+        updateButton(viewHolder);
+        updateFailView(viewHolder);
+        updateFileName(viewHolder);
         updateProgress(viewHolder);
+        updatePartInfo(viewHolder);
+        updateSpeed(viewHolder);
+        updateDebugView(viewHolder);
+
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -77,7 +90,6 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                 }
             }
         });
-        updateSpeed(viewHolder);
         view.setOnLongClickListener(onItemLongClickListener);
         viewHolder.setOnCheckedChangeListener(R.id.cb_show_part_info, null);
         viewHolder.setChecked(R.id.cb_show_part_info, showPartInfo);
@@ -88,7 +100,6 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                 updatePartInfo(viewHolder);
             }
         });
-        updatePartInfo(viewHolder);
         Object tag = view.getTag();
         if (tag != null) {
             view.removeOnAttachStateChangeListener((View.OnAttachStateChangeListener) tag);
@@ -100,7 +111,10 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                     view.post(new Runnable() {
                         @Override
                         public void run() {
-                            updateState();
+                            updateButton();
+                            updateFileIcon();
+                            updateFailView();
+                            updateSpeed();
                         }
                     });
                 }
@@ -134,7 +148,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                     view.post(new Runnable() {
                         @Override
                         public void run() {
-                            updateInfo();
+                            updateFileName();
                         }
                     });
                 }
@@ -145,7 +159,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                     view.post(new Runnable() {
                         @Override
                         public void run() {
-                            updateInfo();
+                            updateFileName();
                         }
                     });
                 }
@@ -171,6 +185,46 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         };
         view.addOnAttachStateChangeListener(onAttachStateChangeListener);
         view.setTag(onAttachStateChangeListener);
+    }
+
+    private void updateDebugView(ViewHolder viewHolder) {
+        viewHolder.setVisibility(R.id.cb_show_part_info, debugMode ? View.VISIBLE : View.GONE);
+        viewHolder.setVisibility(R.id.rv_part_info, debugMode ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateFailView(ViewHolder viewHolder) {
+        HttpDownloadTask data = getData();
+        Status status = data.getStatus();
+        if (status == Status.FAIL) {
+            viewHolder.setVisibility(R.id.tv_error, View.VISIBLE);
+            viewHolder.setText(R.id.tv_error, data.getErrorMessage());
+        } else {
+            viewHolder.setVisibility(R.id.tv_error, View.GONE);
+        }
+    }
+
+    private void updateFailView() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateFailView(viewHolder);
+            }
+        });
+    }
+
+    private void updateIcon(ViewHolder viewHolder) {
+        HttpDownloadTask downloadTask = getData();
+        Status status = downloadTask.getStatus();
+        ResourceInfo resourceInfo = downloadTask.getResourceInfo();
+        FileIconProvider fileIconProvider = new ApkIconProvider(lifecycleOwner, viewHolder.getView().getContext());
+        if (status == Status.SUCCESS) {
+            File file = new File(downloadTask.getSaveDir(), downloadTask.getSaveFileName());
+            if (file.exists()) {
+                fileIconProvider.loadFileIcon(viewHolder.getView(R.id.iv_file_icon), file);
+                return;
+            }
+        }
+        viewHolder.setImageResource(R.id.iv_file_icon, fileIconProvider.defaultIconResource());
     }
 
     private void updatePartInfo(ViewHolder viewHolder) {
@@ -216,38 +270,42 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
 
     private void updateSpeed(ViewHolder viewHolder) {
         HttpDownloadTask data = getData();
-        long speed = data.getSpeedHelper().getSpeed();
-        viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(speed) + "/s");
-
-        String resetTimeStr;
-        long contentLength = getContentLength();
-        if (contentLength == 0) {
-            resetTimeStr = "剩余时间：" + "未知";
-        } else if (contentLength <= data.getCurrentLength()) {
-
-            if (data.getStatus() == Status.SUCCESS) {
-                resetTimeStr = "已完成";
-            } else {
-                resetTimeStr = "剩余时间：0秒";
-            }
-        } else if (speed == 0) {
-            resetTimeStr = "剩余时间：" + "未知";
+        Status status = data.getStatus();
+        if (status != Status.DOWNLOADING) {
+            viewHolder.setVisibility(R.id.tv_rest_time, View.GONE);
+            viewHolder.setVisibility(R.id.tv_speed, View.GONE);
         } else {
-            long resetLength = contentLength - data.getCurrentLength();
-            long resetTime = resetLength / speed;
-            if (resetTime <= 0) {
+            viewHolder.setVisibility(R.id.tv_rest_time, View.VISIBLE);
+            viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
+
+            long speed = data.getSpeedHelper().getSpeed();
+            viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(speed) + "/s");
+
+            String resetTimeStr;
+            long contentLength = getContentLength();
+            if (contentLength == 0) {
+                resetTimeStr = "剩余时间：" + "未知";
+            } else if (contentLength <= data.getCurrentLength()) {
                 resetTimeStr = "剩余时间：0秒";
-            } else if (resetTime < 60) {
-                resetTimeStr = "剩余时间：" + resetTime + "秒";
-            } else if (resetTime < 60 * 60) {
-                resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
-            } else if (resetTime < 60 * 60 * 24) {
-                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
+            } else if (speed == 0) {
+                resetTimeStr = "剩余时间：" + "未知";
             } else {
-                resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
+                long resetLength = contentLength - data.getCurrentLength();
+                long resetTime = resetLength / speed;
+                if (resetTime <= 0) {
+                    resetTimeStr = "剩余时间：0秒";
+                } else if (resetTime < 60) {
+                    resetTimeStr = "剩余时间：" + resetTime + "秒";
+                } else if (resetTime < 60 * 60) {
+                    resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
+                } else if (resetTime < 60 * 60 * 24) {
+                    resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
+                } else {
+                    resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
+                }
             }
+            viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
         }
-        viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
     }
 
     public void updateSpeed() {
@@ -260,57 +318,43 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         });
     }
 
-    private void updateState(ViewHolder viewHolder) {
+    private void updateButton(ViewHolder viewHolder) {
         HttpDownloadTask data = getData();
 
         Status status = data.getStatus();
         if (status == Status.IDLE) {
             viewHolder.setText(R.id.bt_state, R.string.waiting);
-            changeVisibleByError(viewHolder, false);
-            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == Status.DOWNLOADING) {
             viewHolder.setText(R.id.bt_state, R.string.pause);
-            changeVisibleByError(viewHolder, false);
-            viewHolder.setVisibility(R.id.tv_speed, View.VISIBLE);
         } else if (status == Status.SUCCESS) {
             viewHolder.setText(R.id.bt_state, R.string.open);
-            changeVisibleByError(viewHolder, false);
-            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == Status.FAIL) {
             viewHolder.setText(R.id.bt_state, R.string.fail);
-            changeVisibleByError(viewHolder, true);
-            viewHolder.setText(R.id.tv_error, data.getErrorMessage());
-            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         } else if (status == Status.CANCELED) {
             viewHolder.setText(R.id.bt_state, R.string.continue_download);
-            changeVisibleByError(viewHolder, false);
-            viewHolder.setVisibility(R.id.tv_speed, View.INVISIBLE);
         }
     }
 
-    private void updateInfo(ViewHolder viewHolder) {
+    private void updateFileName(ViewHolder viewHolder) {
         HttpDownloadTask data = getData();
         viewHolder.setText(R.id.tv_file_name, data.getSaveFileName());
     }
 
-    private void changeVisibleByError(ViewHolder viewHolder, boolean isError) {
-
-        viewHolder.setVisibility(R.id.tv_error, isError ? View.VISIBLE : View.INVISIBLE);
-        viewHolder.setVisibility(R.id.pb_download_progress, isError ? View.INVISIBLE : View.VISIBLE);
-        viewHolder.setVisibility(R.id.tv_speed, isError ? View.INVISIBLE : View.VISIBLE);
-        viewHolder.setVisibility(R.id.tv_progress, isError ? View.INVISIBLE : View.VISIBLE);
-        viewHolder.setVisibility(R.id.tv_rest_time, isError ? View.INVISIBLE : View.VISIBLE);
-        viewHolder.setVisibility(R.id.cb_show_part_info, isError ? View.INVISIBLE : View.VISIBLE);
-    }
-
     private void updateProgress(ViewHolder viewHolder) {
         HttpDownloadTask data = getData();
-        long currentLength = data.getCurrentLength();
+        Status status = data.getStatus();
         long totalLength = getContentLength();
-        int progress = (int) ((float) currentLength / totalLength * 100);
-        viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
-        ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
-        progressBar.setProgress(progress);
+        if (status == Status.SUCCESS) {
+            viewHolder.setVisibility(R.id.pb_download_progress, View.GONE);
+            viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(totalLength));
+        } else {
+            viewHolder.setVisibility(R.id.pb_download_progress, View.VISIBLE);
+            long currentLength = data.getCurrentLength();
+            int progress = (int) ((float) currentLength / totalLength * 100);
+            viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(currentLength) + "/" + StringUtils.formatFileLength(totalLength));
+            ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
+            progressBar.setProgress(progress);
+        }
     }
 
 
@@ -324,21 +368,30 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         });
     }
 
-    public void updateInfo() {
+    public void updateFileName() {
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {
-                updateInfo(viewHolder);
+                updateFileName(viewHolder);
             }
         });
     }
 
-    public void updateState() {
+    public void updateButton() {
         LogUtils.i(TAG, "======updateState=========" + getData().getStatus());
         invalidate(new Action() {
             @Override
             public void onBind(ViewHolder viewHolder) {
-                updateState(viewHolder);
+                updateButton(viewHolder);
+            }
+        });
+    }
+
+    private void updateFileIcon() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateIcon(viewHolder);
             }
         });
     }
@@ -346,5 +399,12 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
     private long getContentLength() {
         ResourceInfo resourceInfo = getData().getResourceInfo();
         return resourceInfo == null ? 0 : resourceInfo.getContentLength();
+    }
+
+    public void setDebugMode(boolean debugMode) {
+        if (this.debugMode != debugMode) {
+            this.debugMode = debugMode;
+            invalidate();
+        }
     }
 }

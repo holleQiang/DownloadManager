@@ -9,10 +9,21 @@
     android:paddingTop="10dp"
     android:paddingBottom="10dp">
 
+    <ImageView
+        android:id="@+id/iv_file_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/file_logo"
+        android:src="@mipmap/ic_apk_default"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_progress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <TextView
         android:id="@+id/tv_file_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:layout_marginEnd="10dp"
         android:layout_marginRight="10dp"
         android:ellipsize="middle"
@@ -20,22 +31,9 @@
         android:textColor="#333333"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_file_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="文件名文件名文件名文件名文件名文件名文件名" />
-
-    <TextView
-        android:id="@+id/tv_error"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:textColor="#ff4a43"
-        android:textSize="12sp"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tv_file_name"
-        app:layout_constraintTop_toBottomOf="@id/tv_file_name"
-        tools:text="网络错误" />
 
 
     <ProgressBar
@@ -43,8 +41,9 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:progress="50"
         android:layout_marginTop="3dp"
+        android:progress="50"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="@id/tv_file_name"
         app:layout_constraintStart_toStartOf="@id/tv_file_name"
         app:layout_constraintTop_toBottomOf="@id/tv_file_name" />
@@ -53,40 +52,27 @@
         android:id="@+id/tv_progress"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="3dp"
         android:layout_marginEnd="10dp"
         android:layout_marginRight="10dp"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@+id/cb_show_part_info"
-        app:layout_constraintStart_toStartOf="@id/pb_download_progress"
+        app:layout_constraintStart_toEndOf="@id/iv_file_icon"
         app:layout_constraintTop_toBottomOf="@id/pb_download_progress"
         tools:text="30kb/1M" />
-
-    <CheckBox
-        android:id="@+id/cb_show_part_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/look_part_info"
-        app:layout_constraintBottom_toBottomOf="@id/tv_progress"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_progress" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_part_info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/cb_show_part_info" />
 
     <TextView
         android:id="@+id/tv_speed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/rv_part_info"
+        app:layout_constraintBottom_toBottomOf="@id/tv_progress"
+        app:layout_constraintEnd_toStartOf="@+id/tv_rest_time"
+        app:layout_constraintTop_toTopOf="@id/tv_progress"
         tools:text="30kb/s" />
 
     <TextView
@@ -95,16 +81,30 @@
         android:layout_height="wrap_content"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tv_speed"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/tv_speed"
         tools:text="剩余时间1分钟" />
+
+    <TextView
+        android:id="@+id/tv_error"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#ff4a43"
+        android:textSize="12sp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_progress"
+        tools:text="网络错误" />
 
 
     <TextView
         android:id="@+id/bt_state"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="18dp"
         android:background="@drawable/bt_download"
         android:gravity="center"
         android:paddingLeft="8dp"
@@ -113,10 +113,24 @@
         android:paddingBottom="10dp"
         android:textColor="#ffffff"
         android:textSize="13sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_rest_time"
+        app:layout_constraintTop_toBottomOf="@id/tv_error"
         tools:text="下载中..." />
+
+    <CheckBox
+        android:id="@+id/cb_show_part_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/look_part_info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bt_state" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_part_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/cb_show_part_info" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

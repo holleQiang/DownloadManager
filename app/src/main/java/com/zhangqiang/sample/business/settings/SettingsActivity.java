@@ -57,8 +57,14 @@ public class SettingsActivity extends BaseActivity {
                         mBinding.etThreadSize.setText(String.valueOf(integer));
                     }
                 });
+        SettingsManager.getInstance().getDebugMode().toObservable().compose(RxJavaUtils.bindLifecycle(this))
+                        .subscribe(new BaseObserver<Boolean>() {
+                            @Override
+                            public void onNext(Boolean aBoolean) {
+                                mBinding.cbDebugMode.setChecked(aBoolean);
+                            }
+                        });
         initialPluginInfo();
-
     }
 
 
@@ -83,6 +89,7 @@ public class SettingsActivity extends BaseActivity {
             if (!TextUtils.isEmpty(threadSize)) {
                 SettingsManager.getInstance().getHttpDownloadThreadSize().set(Integer.valueOf(threadSize));
             }
+            SettingsManager.getInstance().getDebugMode().set(mBinding.cbDebugMode.isChecked());
             finish();
         }
         return super.onOptionsItemSelected(item);

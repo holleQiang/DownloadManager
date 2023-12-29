@@ -22,7 +22,7 @@ public class NetWorkManager {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
-        context.registerReceiver(new BroadcastReceiver() {
+        mContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 boolean available = isAvailable();
