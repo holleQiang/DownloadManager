@@ -29,20 +29,25 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
+import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.ui.cell.icon.ApkIconProvider;
-import com.zhangqiang.sample.ui.cell.icon.BackgroundProvider;
 import com.zhangqiang.sample.ui.cell.icon.DefaultIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.FileIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.ImageIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.VideoIconProvider;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.IntentUtils;
+import com.zhangqiang.sample.utils.PackageUtils;
 import com.zhangqiang.sample.utils.ResourceUtils;
+import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
 
@@ -79,7 +84,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         updatePartInfo(viewHolder);
         updateSpeed(viewHolder);
         updateDebugView(viewHolder);
-
+        updateApkInfoView(viewHolder);
         viewHolder.setOnClickListener(R.id.bt_state, new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -120,6 +125,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                             updateFileIcon();
                             updateFailView();
                             updateSpeed();
+                            updateApkInfoView();
                         }
                     });
                 }
@@ -192,6 +198,49 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         view.setTag(onAttachStateChangeListener);
     }
 
+    private void updateApkInfoView(ViewHolder viewHolder) {
+        HttpDownloadTask data = getData();
+        Status status = data.getStatus();
+        if (status == Status.SUCCESS) {
+            String saveFileName = data.getSaveFileName();
+            String suffix = FileUtils.getSuffix(saveFileName);
+            File file = new File(data.getSaveDir(), saveFileName);
+            if (file.exists()) {
+                if ("apk".equalsIgnoreCase(suffix)) {
+                    viewHolder.setVisibility(R.id.tv_apk_version_name, View.VISIBLE);
+                    viewHolder.setText(R.id.tv_apk_version_name, null);
+                    Observable.just(file)
+                            .map(new Function<File, PackageUtils.PackageInfoBean>() {
+
+                                @Override
+                                public PackageUtils.PackageInfoBean apply(File file) throws Exception {
+                                    return PackageUtils.getPackageInfo(viewHolder.getView().getContext(), file.getAbsolutePath());
+                                }
+                            })
+                            .compose(RxJavaUtils.applyIOMainSchedules())
+                            .compose(RxJavaUtils.bindLifecycle(lifecycleOwner)).subscribe(new BaseObserver<PackageUtils.PackageInfoBean>() {
+                                @Override
+                                public void onNext(PackageUtils.PackageInfoBean packageInfoBean) {
+                                    viewHolder.setText(R.id.tv_apk_version_name,
+                                            viewHolder.getView().getResources().getString(R.string.app_version, packageInfoBean.getVersionName()));
+                                }
+                            });
+                    return;
+                }
+            }
+        }
+        viewHolder.setVisibility(R.id.tv_apk_version_name, View.GONE);
+    }
+
+    private void updateApkInfoView() {
+        invalidate(new Action() {
+            @Override
+            public void onBind(ViewHolder viewHolder) {
+                updateApkInfoView(viewHolder);
+            }
+        });
+    }
+
     private void updateDebugView(ViewHolder viewHolder) {
         viewHolder.setVisibility(R.id.cb_show_part_info, debugMode ? View.VISIBLE : View.GONE);
         viewHolder.setVisibility(R.id.rv_part_info, debugMode ? View.VISIBLE : View.GONE);
@@ -221,7 +270,6 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         HttpDownloadTask downloadTask = getData();
         Status status = downloadTask.getStatus();
         FileIconProvider fileIconProvider;
-        BackgroundProvider backgroundProvider = null;
         String saveFileName = downloadTask.getSaveFileName();
         String suffix = FileUtils.getSuffix(saveFileName);
         File file = new File(downloadTask.getSaveDir(), saveFileName);
@@ -231,9 +279,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                 || "png".equalsIgnoreCase(suffix)
                 || "webp".equalsIgnoreCase(suffix)
                 || "jpeg".equalsIgnoreCase(suffix)) {
-            ImageIconProvider imageIconProvider = new ImageIconProvider();
-            fileIconProvider = imageIconProvider;
-            backgroundProvider = imageIconProvider;
+            fileIconProvider = new ImageIconProvider();
         } else if ("mp4".equalsIgnoreCase(suffix)) {
             fileIconProvider = new VideoIconProvider();
         } else {
@@ -242,14 +288,10 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
         if (status == Status.SUCCESS) {
             if (file.exists()) {
                 fileIconProvider.loadFileIcon(viewHolder.getView(R.id.iv_file_icon), file);
-//                if (backgroundProvider != null) {
-//                    backgroundProvider.loadBackground(viewHolder.getView(R.id.iv_background), file);
-//                }
                 return;
             }
         }
         viewHolder.setImageResource(R.id.iv_file_icon, fileIconProvider.defaultIconResource());
-        viewHolder.setImageDrawable(R.id.iv_background, null);
     }
 
     private void updatePartInfo(ViewHolder viewHolder) {
@@ -443,4 +485,5 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
             invalidate();
         }
     }
+
 }

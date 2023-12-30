@@ -56,5 +56,6 @@
     <string name="debug_switch">开关</string>
     <string name="file_not_exists">已删除</string>
     <string name="background">background</string>
+    <string name="app_version">版本：%s</string>
 
 </resources>
