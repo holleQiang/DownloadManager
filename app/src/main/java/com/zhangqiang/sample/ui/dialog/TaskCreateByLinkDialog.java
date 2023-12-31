@@ -18,9 +18,12 @@ import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
+import com.zhangqiang.sample.base.permission.PermissionHelper;
 import com.zhangqiang.sample.databinding.DialogTaskCreateByLinkBinding;
+import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.utils.DownloadUtils;
+import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.io.File;
 
@@ -58,25 +61,28 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
         binding.btDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1000);
+
+                getPermissionHelper().requestPermissionsObservable(getActivity(),Manifest.permission.WRITE_EXTERNAL_STORAGE, 1000)
+                        .compose(RxJavaUtils.bindLifecycle(TaskCreateByLinkDialog.this))
+                        .map(PermissionHelper.applyPermissionGrant())
+                        .subscribe(new BaseObserver<Boolean>() {
+                            @Override
+                            public void onNext(Boolean grant) {
+                                if (grant) {
+                                    String link = binding.etLink.getText().toString();
+                                    if (TextUtils.isEmpty(link)) {
+                                        Toast.makeText(getActivity(), "请输入链接", Toast.LENGTH_SHORT).show();
+                                        return;
+                                    }
+                                    if (!DownloadUtils.downloadLink(link)) {
+                                        Toast.makeText(getActivity(), "不支持下载此链接", Toast.LENGTH_SHORT).show();
+                                    }else {
+                                        getDialog().dismiss();
+                                    }
+                                }
+                            }
+                        });
             }
         });
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 1000 && grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            String link = binding.etLink.getText().toString();
-            if (TextUtils.isEmpty(link)) {
-                Toast.makeText(getActivity(), "请输入链接", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (!DownloadUtils.downloadLink(link)) {
-                Toast.makeText(getActivity(), "不支持下载此链接", Toast.LENGTH_SHORT).show();
-            }else {
-                getDialog().dismiss();
-            }
-        }
     }
 }

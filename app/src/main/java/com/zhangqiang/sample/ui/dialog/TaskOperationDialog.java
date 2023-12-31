@@ -1,13 +1,9 @@
 package com.zhangqiang.sample.ui.dialog;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.Nullable;
-
-import android.view.View;
 
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
@@ -25,6 +21,8 @@ public class TaskOperationDialog extends BaseDialogFragment {
         void onRestart();
 
         void onOpenDirClick();
+
+        void onLookupQRCodeClick();
     }
 
     private OperationListener operationListener;
@@ -94,6 +92,15 @@ public class TaskOperationDialog extends BaseDialogFragment {
             public void onClick(View v) {
                 if (operationListener != null) {
                     operationListener.onOpenDirClick();
+                }
+                getDialog().dismiss();
+            }
+        });
+        binding.btLookupQrcode.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (operationListener != null) {
+                    operationListener.onLookupQRCodeClick();
                 }
                 getDialog().dismiss();
             }

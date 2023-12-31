@@ -11,13 +11,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zhangqiang.sample.base.permission.FragmentPermissionHelper;
+import com.zhangqiang.sample.base.permission.PermissionHelper;
+import com.zhangqiang.sample.base.permission.PermissionHelperOwner;
 import com.zhangqiang.visiblehelper.FragmentVisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelperOwner;
 
-public abstract class BaseDialogFragment extends DialogFragment implements VisibleHelperOwner {
+public abstract class BaseDialogFragment extends DialogFragment implements VisibleHelperOwner, PermissionHelperOwner {
 
     private final FragmentVisibleHelper visibleHelper = new FragmentVisibleHelper(this);
+    private final PermissionHelper permissionHelper = new FragmentPermissionHelper(this);
 
     @NonNull
     @Override
@@ -74,5 +78,16 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
     public void onStop() {
         super.onStop();
         visibleHelper.onStop();
+    }
+
+    @Override
+    public PermissionHelper getPermissionHelper() {
+        return permissionHelper;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        getPermissionHelper().onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

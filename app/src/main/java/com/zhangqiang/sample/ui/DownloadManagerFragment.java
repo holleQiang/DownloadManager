@@ -29,6 +29,7 @@ import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.ui.cell.FTPDownloadTaskCell;
 import com.zhangqiang.sample.ui.cell.HttpDownloadTaskCell;
+import com.zhangqiang.sample.ui.dialog.ShowQRCodeDialog;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.ClipboardUtils;
@@ -121,6 +122,12 @@ public class DownloadManagerFragment extends BaseFragment {
                     public void onOpenDirClick() {
                         IntentUtils.openDir(v.getContext(), downloadTask.getSaveDir());
                     }
+
+                    @Override
+                    public void onLookupQRCodeClick() {
+                        String link = downloadTask.buildLink();
+                        ShowQRCodeDialog.newInstance(link).show(getChildFragmentManager(), "lookup_qrcode");
+                    }
                 }).show(getChildFragmentManager(), "task_operate_dialog");
                 return true;
             }
@@ -153,6 +160,12 @@ public class DownloadManagerFragment extends BaseFragment {
                     @Override
                     public void onOpenDirClick() {
                         IntentUtils.openDir(v.getContext(), downloadTask.getSaveDir());
+                    }
+
+                    @Override
+                    public void onLookupQRCodeClick() {
+                        String link = downloadTask.getUrl();
+                        ShowQRCodeDialog.newInstance(link).show(getChildFragmentManager(), "lookup_qrcode");
                     }
                 }).show(getChildFragmentManager(), "task_operate_dialog");
                 return true;

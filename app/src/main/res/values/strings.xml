@@ -57,5 +57,11 @@
     <string name="file_not_exists">已删除</string>
     <string name="background">background</string>
     <string name="app_version">版本：%s</string>
+    <string name="look_up_qr_code">查看二维码</string>
+    <string name="close">关闭</string>
+    <string name="save">保存</string>
+    <string name="save_success">保存成功</string>
+    <string name="save_fail">保存失败</string>
+    <string name="media_file_refresh">媒体文件库刷新</string>
 
 </resources>
