@@ -60,6 +60,9 @@ public class WebContext {
     }
 
     public void addOnStateChangeListener(OnStateChangeListener listener) {
+        if (onStateChangeListeners.contains(listener)) {
+            return;
+        }
         onStateChangeListeners.add(listener);
     }
 

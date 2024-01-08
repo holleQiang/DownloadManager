@@ -1,25 +1,24 @@
-package com.zhangqiang.web.hybrid;
+package com.zhangqiang.web.hybrid.methods;
+
+import com.zhangqiang.web.hybrid.method.CallbackJavascriptBuilder;
+import com.zhangqiang.web.hybrid.method.HybridMethod;
 
 public class DOMChangeMonitorMethod extends HybridMethod {
 
     private final OnDOMChangedListener onDOMChangedListener;
 
     public DOMChangeMonitorMethod(OnDOMChangedListener onDOMChangedListener) {
+        super("dom_change_monitor");
         this.onDOMChangedListener = onDOMChangedListener;
     }
 
     @Override
-    public String getMethodName() {
-        return "dom_change_monitor";
-    }
-
-    @Override
-    protected void onJSCall(String arg) {
+    protected void onCallback(String arg) {
         onDOMChangedListener.onDOMChanged();
     }
 
     @Override
-    public String buildInvokeJS(CallbackJSBuilder callbackJSBuilder) {
+    protected String onBuildJavascript(CallbackJavascriptBuilder callbackJavascriptBuilder) {
         return "(function(){\n" +
                 "   const observer = new MutationObserver(function (mutationList, observer){\n" +
                 "       const length = mutationList.length;\n" +
@@ -27,8 +26,7 @@ public class DOMChangeMonitorMethod extends HybridMethod {
                 "           const record = mutationList[i];\n" +
                 "           console.log(`--record---type:${record.type}---target:${record.target}---attributeName:${record.attributeName}`);\n" +
                 "       };\n" +
-                callbackJSBuilder.buildCallbackJS(null,
-                        new CallbackJSBuilder.Options().setLinePrefix("      ")) +
+                callbackJavascriptBuilder.buildCallbackJavascript(null, "       ") +
                 "   });\n" +
                 "   const options = {\n" +
                 "       childList:true,\n" +

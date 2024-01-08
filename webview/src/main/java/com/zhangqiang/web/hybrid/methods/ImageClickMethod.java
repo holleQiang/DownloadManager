@@ -1,6 +1,7 @@
-package com.zhangqiang.web.image;
+package com.zhangqiang.web.hybrid.methods;
 
-import com.zhangqiang.web.hybrid.HybridMethod;
+import com.zhangqiang.web.hybrid.method.CallbackJavascriptBuilder;
+import com.zhangqiang.web.hybrid.method.HybridMethod;
 import com.zhangqiang.web.hybrid.CallbackJSBuilder;
 
 public class ImageClickMethod extends HybridMethod {
@@ -10,32 +11,28 @@ public class ImageClickMethod extends HybridMethod {
     private final OnImageClickListener onImageClickListener;
 
     public ImageClickMethod(OnImageClickListener onImageClickListener) {
+        super(METHOD_NAME);
         this.onImageClickListener = onImageClickListener;
     }
 
     @Override
-    public String getMethodName() {
-        return METHOD_NAME;
-    }
-
-    @Override
-    protected void onJSCall(String arg) {
+    protected void onCallback(String arg) {
         onImageClickListener.onImageClick(arg);
     }
 
     @Override
-    public String buildInvokeJS(CallbackJSBuilder builder) {
+    protected String onBuildJavascript(CallbackJavascriptBuilder callbackJavascriptBuilder) {
         //通过js代码找到标签为img的代码块，设置点击的监听方法与本地的openImage方法进行连接
         CallbackJSBuilder.Options options = new CallbackJSBuilder.Options();
         options.setLinePrefix("         ");
         return "(function(){\n" +
                 "   const imgElements = document.getElementsByTagName(\"img\");\n" +
                 "   for(var i=0;i<imgElements.length;i++){\n" +
-                "       const imgElement = imgElements[i];\n"+
-                "       imgElement.style['pointer-events']='auto';\n"+
+                "       const imgElement = imgElements[i];\n" +
+                "       imgElement.style['pointer-events']='auto';\n" +
                 "       imgElement.onclick=function(){\n" +
-                "       console.log(`---------${this.src}`);\n"+
-                builder.buildCallbackJS("this.src", options) +
+                "       console.log(`---------${this.src}`);\n" +
+                callbackJavascriptBuilder.buildCallbackJavascript("this.src", "       ") +
                 "       }\n" +
                 "   };\n" +
                 "})();";

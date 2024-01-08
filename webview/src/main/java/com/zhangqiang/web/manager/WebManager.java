@@ -11,7 +11,10 @@ import com.zhangqiang.web.activity.WebViewActivity;
 import com.zhangqiang.web.context.OnStateChangeListener;
 import com.zhangqiang.web.context.State;
 import com.zhangqiang.web.context.WebContext;
-import com.zhangqiang.web.hybrid.HybridPlugin;
+import com.zhangqiang.web.hybrid.plugin.HybridPlugin;
+import com.zhangqiang.web.hybrid.plugin.JSCallPlugin;
+import com.zhangqiang.web.plugin.PluginContext;
+import com.zhangqiang.web.plugin.WebPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +35,28 @@ public class WebManager {
 
     private WebManager() {
         registerPlugin(new HybridPlugin());
+        registerPlugin(new JSCallPlugin());
+    }
+
+    public void applyPlugins(){
+        PluginContext pluginContext = new PluginContext(this);
+        for (WebPlugin webPlugin : webPlugins) {
+            webPlugin.apply(pluginContext);
+        }
+    }
+
+    public interface Filter{
+        boolean onFilter(WebPlugin plugin);
+    }
+
+    public List<WebPlugin> findPlugins(Filter filter){
+        List<WebPlugin> targets = new ArrayList<>();
+        for (WebPlugin webPlugin : webPlugins) {
+            if(filter.onFilter(webPlugin)){
+                targets.add(webPlugin);
+            }
+        }
+        return targets;
     }
 
     public void openWebViewActivity(Context context, String url){
@@ -65,7 +90,6 @@ public class WebManager {
 
     public void registerPlugin(WebPlugin webPlugin) {
         webPlugins.add(webPlugin);
-        webPlugin.apply(this);
     }
 
     public void addOnOpenWebViewActivityListener(OnOpenWebViewActivityListener listener) {

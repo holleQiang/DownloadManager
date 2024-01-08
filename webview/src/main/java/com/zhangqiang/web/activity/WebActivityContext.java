@@ -11,6 +11,7 @@ public class WebActivityContext extends WebContext {
 
     public FragmentActivity activity;
     private final List<OnActivityCreatedListener> onActivityCreatedListeners = new ArrayList<>();
+    private final List<OnActivityDestroyListener> onActivityDestroyListeners = new ArrayList<>();
 
     public WebActivityContext(String id,String url) {
         super(id, url);
@@ -25,6 +26,9 @@ public class WebActivityContext extends WebContext {
 
     public void dispatchActivityDestroy() {
         this.activity = null;
+        for (int i = onActivityDestroyListeners.size() - 1; i >= 0; i--) {
+            onActivityDestroyListeners.get(i).onActivityDestroy();
+        }
     }
 
     public FragmentActivity getActivity() {
@@ -32,10 +36,24 @@ public class WebActivityContext extends WebContext {
     }
 
     public void addOnActivityCreatedListener(OnActivityCreatedListener listener){
+        if(onActivityCreatedListeners.contains(listener)){
+            return;
+        }
         onActivityCreatedListeners.add(listener);
     }
 
     public void removeOnActivityCreatedListener(OnActivityCreatedListener listener){
         onActivityCreatedListeners.remove(listener);
+    }
+
+    public void addOnActivityDestroyListener(OnActivityDestroyListener listener){
+        if(onActivityDestroyListeners.contains(listener)){
+            return;
+        }
+        onActivityDestroyListeners.add(listener);
+    }
+
+    public void removeOnActivityDestroyListener(OnActivityDestroyListener listener){
+        onActivityDestroyListeners.remove(listener);
     }
 }

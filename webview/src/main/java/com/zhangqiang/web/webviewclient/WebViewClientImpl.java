@@ -47,11 +47,7 @@ public class WebViewClientImpl extends WebViewClient {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         if ("http".equals(scheme) || "https".equals(scheme)) {
-            WebManager.getInstance().openWebViewActivity(view.getContext(), url,
-                    new OpenOptions.Builder()
-                            .setNewTask(false)
-                            .build());
-            return true;
+            return false;
         } else {
             try {
                 IntentUtils.openActivityByUri(view.getContext(), uri);
@@ -76,7 +72,6 @@ public class WebViewClientImpl extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         webContext.dispatchPageStarted(view, url, favicon);
-
     }
 
 
@@ -89,13 +84,6 @@ public class WebViewClientImpl extends WebViewClient {
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
         webContext.dispatchPageFinished(view, url);
-//        new Handler(webContext.looper).postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                WebInterface.javaScriptInterface.call(new RemoveElementByIDMethod("ahsdow"));
-//            }
-//        },1000);
     }
-
 
 }

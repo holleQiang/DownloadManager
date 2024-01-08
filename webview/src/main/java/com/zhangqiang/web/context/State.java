@@ -4,6 +4,8 @@ public enum State {
 
     INITIAL,
     OPENING,
+    OPEN_FAIL,
+    OPEN_SUCCESS,
     WEB_VIEW_CREATE,
-    WEB_VIEW_DESTROY, OPEN_FAIL, OPEN_SUCCESS,
+    WEB_VIEW_DESTROY,
 }

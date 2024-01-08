@@ -50,12 +50,13 @@ public class DMApplication extends MultiDexApplication {
 
             Intent intent = new Intent(this, DownloadService.class);
             startService(intent);
+
+            WebManager.getInstance().registerPlugin(new DownloadPlugin());
+            WebManager.getInstance().applyPlugins();
         }
 
         ContainerProcessorManager.getInstance().registerProcessor(new QRCodeProcessor());
         ContainerProcessorManager.getInstance().registerProcessor(new HttpProcessor());
         ContainerProcessorManager.getInstance().registerProcessor(new FtpProtocolProcessor());
-
-        WebManager.getInstance().registerPlugin(new DownloadPlugin());
     }
 }

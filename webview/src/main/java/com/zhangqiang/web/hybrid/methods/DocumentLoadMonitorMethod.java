@@ -1,4 +1,7 @@
-package com.zhangqiang.web.hybrid;
+package com.zhangqiang.web.hybrid.methods;
+
+import com.zhangqiang.web.hybrid.method.CallbackJavascriptBuilder;
+import com.zhangqiang.web.hybrid.method.HybridMethod;
 
 public class DocumentLoadMonitorMethod extends HybridMethod {
 
@@ -6,30 +9,25 @@ public class DocumentLoadMonitorMethod extends HybridMethod {
     private final OnDocumentLoadedListener onDocumentLoadedListener;
 
     public DocumentLoadMonitorMethod(OnDocumentLoadedListener onDocumentLoadedListener) {
+        super(METHOD_NAME);
         this.onDocumentLoadedListener = onDocumentLoadedListener;
     }
 
     @Override
-    public String getMethodName() {
-        return METHOD_NAME;
-    }
-
-    @Override
-    protected void onJSCall(String arg) {
+    protected void onCallback(String arg) {
         onDocumentLoadedListener.onDocumentLoaded();
     }
 
     @Override
-    public String buildInvokeJS(CallbackJSBuilder builder) {
-        CallbackJSBuilder.Options options = new CallbackJSBuilder.Options();
-        options.setLinePrefix("         ");
+    protected String onBuildJavascript(CallbackJavascriptBuilder callbackJavascriptBuilder) {
         return "(function (){\n" +
                 "   document.addEventListener('DOMContentLoaded',function(){\n" +
-                "   console.log('-----------DOMContentLoaded------------');\n"+
-                builder.buildCallbackJS(null, options) +
+                "         console.log('-----------DOMContentLoaded------------');\n" +
+                callbackJavascriptBuilder.buildCallbackJavascript(null, "         ") +
                 "   });\n" +
                 "})()";
     }
+
 
     public interface OnDocumentLoadedListener {
         void onDocumentLoaded();
