@@ -37,12 +37,12 @@ public class MediaRefreshPlugin extends SimpleDownloadPlugin {
                     task.addStatusChangeListener(new OnStatusChangeListener() {
                         @Override
                         public void onStatusChange(Status newStatus, Status oldStatus) {
-                            if (newStatus == Status.SUCCESS) {
+                            if (oldStatus == Status.DOWNLOADING && newStatus == Status.SUCCESS) {
                                 String saveDir = task.getSaveDir();
                                 String saveFileName = task.getSaveFileName();
                                 File file = new File(saveDir, saveFileName);
-                                if(file.exists()){
-                                    FileUtils.refreshMediaFile(context,file);
+                                if (file.exists()) {
+                                    FileUtils.refreshMediaFile(context, file);
                                 }
                             }
                         }

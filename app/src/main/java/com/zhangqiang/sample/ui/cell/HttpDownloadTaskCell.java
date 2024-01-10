@@ -359,17 +359,7 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
             } else {
                 long resetLength = contentLength - data.getCurrentLength();
                 long resetTime = resetLength / speed;
-                if (resetTime <= 0) {
-                    resetTimeStr = "剩余时间：0秒";
-                } else if (resetTime < 60) {
-                    resetTimeStr = "剩余时间：" + resetTime + "秒";
-                } else if (resetTime < 60 * 60) {
-                    resetTimeStr = "剩余时间：" + resetTime / 60 + "分钟";
-                } else if (resetTime < 60 * 60 * 24) {
-                    resetTimeStr = "剩余时间：" + resetTime / 60 / 60 + "小时";
-                } else {
-                    resetTimeStr = "剩余时间：" + resetTime / 60 / 60 / 24 + "天";
-                }
+                resetTimeStr = StringUtils.getRestTime(resetTime);
             }
             viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
         }

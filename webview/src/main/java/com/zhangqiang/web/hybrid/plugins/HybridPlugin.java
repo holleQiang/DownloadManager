@@ -1,4 +1,4 @@
-package com.zhangqiang.web.hybrid.plugin;
+package com.zhangqiang.web.hybrid.plugins;
 
 import android.graphics.Bitmap;
 import android.webkit.WebView;

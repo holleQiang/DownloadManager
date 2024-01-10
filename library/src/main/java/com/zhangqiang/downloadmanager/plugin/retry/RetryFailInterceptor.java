@@ -48,7 +48,7 @@ public class RetryFailInterceptor implements FailInterceptor {
         @Override
         public void run() {
             int count = retryCount.incrementAndGet();
-            LogUtils.i(TAG, "重试第：" + count + "次");
+            LogUtils.i(TAG, "重试第：" + count + "次"+",downloadTask.Status:"+downloadTask.getStatus());
             downloadTask.forceStart();
         }
     };

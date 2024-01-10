@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 
 import com.zhangqiang.common.utils.IntentUtils;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.log.WebLogger;
 import com.zhangqiang.web.manager.OpenOptions;
 import com.zhangqiang.web.manager.WebManager;
 
@@ -78,6 +79,8 @@ public class WebViewClientImpl extends WebViewClient {
     @Override
     public void onLoadResource(WebView view, String url) {
         super.onLoadResource(view, url);
+        webContext.dispatchLoadResource(view, url);
+        WebLogger.info("=====onLoadResource======"+url);
     }
 
     @Override

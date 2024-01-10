@@ -19,7 +19,7 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.SettingsActivity;
 import com.zhangqiang.sample.databinding.ActivityMainBinding;
-import com.zhangqiang.sample.service.DownloadService;
+import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.ui.dialog.TaskCreateByLinkDialog;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
@@ -51,6 +51,9 @@ public class MainActivity extends BaseActivity {
 
         QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
         QRCodeScanManager.Companion.getInstance().addProcessor(fallbackProcessor);
+
+        String saveDir = SettingsManager.getInstance().getSaveDir();
+//        DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(saveDir,null,""));
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.zhangqiang.web.hybrid.plugin;
+package com.zhangqiang.web.hybrid.plugins;
 
 import android.os.Build;
 import android.os.Handler;

@@ -24,4 +24,6 @@ public class WebChromeClientImpl extends WebChromeClient {
         progressBar.setProgress(newProgress);
         progressBar.setVisibility(newProgress != 100 ? View.VISIBLE : View.GONE);
     }
+
+
 }

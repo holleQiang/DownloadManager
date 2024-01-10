@@ -26,4 +26,18 @@ public class StringUtils {
             return GB_FORMAT.format((float) length / GB);
         }
     }
+
+    public static String getRestTime(long resetTime) {
+        if (resetTime <= 0) {
+            return "剩余时间：0秒";
+        } else if (resetTime < 60) {
+            return "剩余时间：" + resetTime + "秒";
+        } else if (resetTime < 60 * 60) {
+            return "剩余时间：" + resetTime / 60 + "分钟" + resetTime % 60 + "秒";
+        } else if (resetTime < 60 * 60 * 24) {
+            return "剩余时间：" + resetTime / 60 / 60 + "小时" + resetTime % (60 * 60) / 60 + "分钟" + resetTime % 60 + "秒";
+        } else {
+            return "剩余时间：" + resetTime / 60 / 60 / 24 + "天" + resetTime % (60 * 60 * 24) / 24 + "小时";
+        }
+    }
 }

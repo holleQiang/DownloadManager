@@ -11,8 +11,8 @@ import com.zhangqiang.web.activity.WebViewActivity;
 import com.zhangqiang.web.context.OnStateChangeListener;
 import com.zhangqiang.web.context.State;
 import com.zhangqiang.web.context.WebContext;
-import com.zhangqiang.web.hybrid.plugin.HybridPlugin;
-import com.zhangqiang.web.hybrid.plugin.JSCallPlugin;
+import com.zhangqiang.web.hybrid.plugins.HybridPlugin;
+import com.zhangqiang.web.hybrid.plugins.JSCallPlugin;
 import com.zhangqiang.web.plugin.PluginContext;
 import com.zhangqiang.web.plugin.WebPlugin;
 

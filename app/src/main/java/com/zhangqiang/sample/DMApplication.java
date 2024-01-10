@@ -1,6 +1,7 @@
 package com.zhangqiang.sample;
 
 import android.content.Intent;
+import android.os.Environment;
 
 import androidx.multidex.MultiDexApplication;
 
@@ -19,7 +20,13 @@ import com.zhangqiang.sample.plugins.media.refresh.MediaRefreshPlugin;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.utils.ProcessUtils;
 import com.zhangqiang.sample.web.DownloadPlugin;
+import com.zhangqiang.web.hybrid.plugins.m3u8.download.M3u8DownloadPlugin;
+import com.zhangqiang.web.hybrid.plugins.m3u8.download.M3u8DownloadRequest;
+import com.zhangqiang.web.hybrid.plugins.m3u8.M3u8PickCallback;
+import com.zhangqiang.web.hybrid.plugins.m3u8.M3u8PickPlugin;
 import com.zhangqiang.web.manager.WebManager;
+
+import java.io.File;
 
 public class DMApplication extends MultiDexApplication {
 
@@ -47,11 +54,19 @@ public class DMApplication extends MultiDexApplication {
             DownloadManager.getInstance().registerPlugin(new HttpDownloadPlugin(this));
             DownloadManager.getInstance().registerPlugin(new FtpDownloadPlugin(this));
             DownloadManager.getInstance().registerPlugin(new MediaRefreshPlugin(this));
+            DownloadManager.getInstance().registerPlugin(new M3u8DownloadPlugin());
 
             Intent intent = new Intent(this, DownloadService.class);
             startService(intent);
 
             WebManager.getInstance().registerPlugin(new DownloadPlugin());
+            WebManager.getInstance().registerPlugin(new M3u8PickPlugin(new M3u8PickCallback() {
+                @Override
+                public void onReceiveM3u8Resource(String url) {
+                    File saveDir = new File(Environment.getExternalStorageDirectory(),SettingsManager.getInstance().getSaveDir());
+                    DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(saveDir.getAbsolutePath(),null,url));
+                }
+            }));
             WebManager.getInstance().applyPlugins();
         }
 

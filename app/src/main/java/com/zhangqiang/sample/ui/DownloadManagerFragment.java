@@ -27,6 +27,7 @@ import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
 import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
+import com.zhangqiang.sample.ui.cell.M3u8DownloadTaskCell;
 import com.zhangqiang.sample.ui.cell.FTPDownloadTaskCell;
 import com.zhangqiang.sample.ui.cell.HttpDownloadTaskCell;
 import com.zhangqiang.sample.ui.dialog.ShowQRCodeDialog;
@@ -37,6 +38,7 @@ import com.zhangqiang.sample.utils.DownloadUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
+import com.zhangqiang.web.hybrid.plugins.m3u8.download.M3u8DownloadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,9 +92,50 @@ public class DownloadManagerFragment extends BaseFragment {
                 cells.add(makeHttpDownloadTaskCell((HttpDownloadTask) task, debugMode));
             } else if (task instanceof FTPDownloadTask) {
                 cells.add(makeFtpDownloadTaskCell(((FTPDownloadTask) task)));
+            }else if (task instanceof M3u8DownloadTask) {
+                cells.add(makeM3u8DownloadTask(((M3u8DownloadTask) task)));
             }
         }
         cellRVAdapter.setDataList(cells);
+    }
+
+    private Cell makeM3u8DownloadTask(M3u8DownloadTask downloadTask) {
+        return new M3u8DownloadTaskCell((M3u8DownloadTask) downloadTask, new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                TaskOperationDialog taskOperationDialog = TaskOperationDialog.newInstance();
+                taskOperationDialog.setOperationListener(new TaskOperationDialog.OperationListener() {
+
+                    @Override
+                    public void onDelete(boolean deleteFile) {
+                        DownloadManager.getInstance().deleteTask(downloadTask, new RemoveTaskOptions().setDeleteFile(deleteFile));
+                    }
+
+                    @Override
+                    public void onCopyLink() {
+                        ClipboardUtils.copy(v.getContext(), downloadTask.getUrl());
+                    }
+
+                    @Override
+                    public void onRestart() {
+                        DownloadManager.getInstance().deleteTask(downloadTask, new RemoveTaskOptions().setDeleteFile(true));
+                        DownloadUtils.downloadFtpUrl(downloadTask.getUrl());
+                    }
+
+                    @Override
+                    public void onOpenDirClick() {
+                        IntentUtils.openDir(v.getContext(), downloadTask.getSaveDir());
+                    }
+
+                    @Override
+                    public void onLookupQRCodeClick() {
+                        String link = downloadTask.getUrl();
+                        ShowQRCodeDialog.newInstance(link).show(getChildFragmentManager(), "lookup_qrcode");
+                    }
+                }).show(getChildFragmentManager(), "task_operate_dialog");
+                return true;
+            }
+        });
     }
 
     private Cell makeFtpDownloadTaskCell(FTPDownloadTask downloadTask) {

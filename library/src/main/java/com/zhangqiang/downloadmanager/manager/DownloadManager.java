@@ -67,13 +67,13 @@ public class DownloadManager {
 
     public DownloadTask enqueue(DownloadRequest request) {
         synchronized (enqueueInterceptors) {
-            List<EnqueueInterceptor> interceptors = new ArrayList<>();
+            List<EnqueueInterceptor> interceptors = new ArrayList<>(enqueueInterceptors);
             interceptors.add(new RealEnqueueInterceptor());
-            return new RealEnqueueChain(request,interceptors,0).proceed(request);
+            return new RealEnqueueChain(request, interceptors, 0).proceed(request);
         }
     }
 
-    private final class RealEnqueueInterceptor implements EnqueueInterceptor{
+    private final class RealEnqueueInterceptor implements EnqueueInterceptor {
 
         @Override
         public DownloadTask onIntercept(Chain chain) {
@@ -94,7 +94,6 @@ public class DownloadManager {
             }
         }
     }
-
 
 
     private void configDownloadTask(DownloadTask downloadTask) {
@@ -229,6 +228,21 @@ public class DownloadManager {
             for (int i = onTaskAddedListeners.size() - 1; i >= 0; i--) {
                 onTaskAddedListeners.get(i).onTaskAdded(tasks);
             }
+        }
+    }
+
+    public void addEnqueueInterceptor(EnqueueInterceptor interceptor) {
+        synchronized (this.enqueueInterceptors) {
+            if (this.enqueueInterceptors.contains(interceptor)) {
+                return;
+            }
+            this.enqueueInterceptors.add(interceptor);
+        }
+    }
+
+    public void removeEnqueueInterceptor(EnqueueInterceptor interceptor) {
+        synchronized (this.enqueueInterceptors) {
+            this.enqueueInterceptors.remove(interceptor);
         }
     }
 }

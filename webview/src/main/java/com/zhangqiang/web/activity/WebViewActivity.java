@@ -14,8 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zhangqiang.common.activity.BaseActivity;
-import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
 import com.zhangqiang.web.webviewclient.WebViewClientImpl;
 import com.zhangqiang.webview.BuildConfig;

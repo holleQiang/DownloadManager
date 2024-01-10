@@ -8,19 +8,24 @@ import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.ftp.request.FtpDownloadRequest;
 import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
+import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.sample.manager.SettingsManager;
 
 import java.io.File;
 
 public class DownloadUtils {
 
-    public static void downloadHttpUrl(String httpUrl) {
+    public static DownloadTask downloadHttpUrl(String httpUrl) {
+        return downloadHttpUrl(httpUrl,null);
+    }
+
+    public static DownloadTask downloadHttpUrl(String httpUrl,String targetFileName) {
         File dirFile = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
         DownloadRequest downloadRequest = new HttpDownloadRequest(dirFile.getAbsolutePath(),
-                null,
+                targetFileName,
                 httpUrl,
                 SettingsManager.getInstance().getHttpDownloadThreadSize().get());
-        DownloadManager.getInstance().enqueue(downloadRequest);
+        return DownloadManager.getInstance().enqueue(downloadRequest);
     }
 
     public static void downloadFtpUrl(String ftpUrl) {

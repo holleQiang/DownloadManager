@@ -10,6 +10,7 @@ public class WebContext {
 
     private final List<OnStateChangeListener> onStateChangeListeners = new ArrayList<>();
     private final List<PageLoadListener> pageLoadListeners = new ArrayList<>();
+    private final List<OnLoadResourceListener> onLoadResourceListeners = new ArrayList<>();
 
     private State mState = State.INITIAL;
     private WebView webView;
@@ -93,6 +94,9 @@ public class WebContext {
     }
 
     public void addPageLoadListener(PageLoadListener listener){
+        if(pageLoadListeners.contains(listener)){
+            return;
+        }
         pageLoadListeners.add(listener);
     }
 
@@ -103,4 +107,22 @@ public class WebContext {
     public String getId() {
         return id;
     }
+
+    public void dispatchLoadResource(WebView view, String url) {
+        for (int i = onLoadResourceListeners.size() - 1; i >= 0; i--) {
+            onLoadResourceListeners.get(i).onLoadResource(view, url);
+        }
+    }
+
+    public void addOnLoadResourceListener(OnLoadResourceListener listener){
+        if(onLoadResourceListeners.contains(listener)){
+            return;
+        }
+        onLoadResourceListeners.add(listener);
+    }
+
+    public void removeOnLoadResourceListener(OnLoadResourceListener listener){
+        onLoadResourceListeners.remove(listener);
+    }
+
 }

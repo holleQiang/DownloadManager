@@ -16,17 +16,22 @@ public class NetWorkManager {
     private final List<OnAvailableChangedListener> onAvailableChangedListeners = new ArrayList<>();
     private final Context mContext;
     private ConnectivityManager mConnectivityManager;
+    private boolean isAvailable;
 
     private NetWorkManager(Context context) {
         mContext = context.getApplicationContext();
+        isAvailable = isNetWorkAvailable();
         IntentFilter filter = new IntentFilter();
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         filter.addCategory(Intent.CATEGORY_DEFAULT);
         mContext.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                boolean available = isAvailable();
-                notifyAvailableChanged(available);
+                boolean available = isNetWorkAvailable();
+                if (available != isAvailable) {
+                    isAvailable = available;
+                    notifyAvailableChanged(available);
+                }
             }
         }, filter);
     }
@@ -59,13 +64,17 @@ public class NetWorkManager {
         }
     }
 
-    public boolean isAvailable() {
+    private boolean isNetWorkAvailable() {
         ConnectivityManager connectivityManager = getConnectivityManager();
         if (connectivityManager != null) {
             NetworkInfo activeNetworkInfo = mConnectivityManager.getActiveNetworkInfo();
             return activeNetworkInfo != null && activeNetworkInfo.isAvailable();
         }
         return false;
+    }
+
+    public boolean isAvailable() {
+        return isAvailable;
     }
 
     private synchronized ConnectivityManager getConnectivityManager() {
