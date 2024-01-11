@@ -53,7 +53,6 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         @Override
         public void run() {
             getSpeedHelper().calculateSpeed();
-            Log.i("Test", "====calculateSpeed=============");
         }
     };
     private final List<Interceptor> startInterceptors = new ArrayList<>();
@@ -140,7 +139,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         @Override
         public void onIntercept(Chain chain) {
             if (!status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
-                throw new IllegalStateException("cancel not from downloading status");
+                throw new IllegalStateException("cancel not from downloading status:" + status.get());
             }
             stopScheduleProgressChange();
             onCancel();
@@ -202,6 +201,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
                 return;
             }
             if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
+                chain.getThrowable().printStackTrace();
                 throw new IllegalStateException("cannot dispatch fail from  status:" + status);
             }
             stopScheduleProgressChange();

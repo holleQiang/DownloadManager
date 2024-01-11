@@ -26,6 +26,7 @@ public class DaoMaster extends AbstractDaoMaster {
         HttpPartTaskEntityDao.createTable(db, ifNotExists);
         HttpPartTaskItemEntityDao.createTable(db, ifNotExists);
         HttpTaskEntityDao.createTable(db, ifNotExists);
+        M3u8TaskEntityDao.createTable(db, ifNotExists);
     }
 
     /** Drops underlying database table using DAOs. */
@@ -35,6 +36,7 @@ public class DaoMaster extends AbstractDaoMaster {
         HttpPartTaskEntityDao.dropTable(db, ifExists);
         HttpPartTaskItemEntityDao.dropTable(db, ifExists);
         HttpTaskEntityDao.dropTable(db, ifExists);
+        M3u8TaskEntityDao.dropTable(db, ifExists);
     }
 
     /**
@@ -58,6 +60,7 @@ public class DaoMaster extends AbstractDaoMaster {
         registerDaoClass(HttpPartTaskEntityDao.class);
         registerDaoClass(HttpPartTaskItemEntityDao.class);
         registerDaoClass(HttpTaskEntityDao.class);
+        registerDaoClass(M3u8TaskEntityDao.class);
     }
 
     public DaoSession newSession() {

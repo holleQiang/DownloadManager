@@ -21,6 +21,7 @@ import com.zhangqiang.downloadmanager.manager.OnTaskCountChangeListener;
 import com.zhangqiang.downloadmanager.manager.RemoveTaskOptions;
 import com.zhangqiang.downloadmanager.plugin.ftp.task.FTPDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.task.HttpDownloadTask;
+import com.zhangqiang.downloadmanager.plugin.m3u8.task.M3u8DownloadTask;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
@@ -38,7 +39,6 @@ import com.zhangqiang.sample.utils.DownloadUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
-import com.zhangqiang.web.hybrid.plugins.m3u8.download.M3u8DownloadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +92,7 @@ public class DownloadManagerFragment extends BaseFragment {
                 cells.add(makeHttpDownloadTaskCell((HttpDownloadTask) task, debugMode));
             } else if (task instanceof FTPDownloadTask) {
                 cells.add(makeFtpDownloadTaskCell(((FTPDownloadTask) task)));
-            }else if (task instanceof M3u8DownloadTask) {
+            } else if (task instanceof M3u8DownloadTask) {
                 cells.add(makeM3u8DownloadTask(((M3u8DownloadTask) task)));
             }
         }
@@ -119,7 +119,7 @@ public class DownloadManagerFragment extends BaseFragment {
                     @Override
                     public void onRestart() {
                         DownloadManager.getInstance().deleteTask(downloadTask, new RemoveTaskOptions().setDeleteFile(true));
-                        DownloadUtils.downloadFtpUrl(downloadTask.getUrl());
+                        DownloadUtils.downloadM3u8Url(downloadTask.getUrl(), downloadTask.getSaveFileName());
                     }
 
                     @Override
@@ -197,7 +197,7 @@ public class DownloadManagerFragment extends BaseFragment {
                     @Override
                     public void onRestart() {
                         DownloadManager.getInstance().deleteTask(downloadTask, new RemoveTaskOptions().setDeleteFile(true));
-                        DownloadUtils.downloadHttpUrl(downloadTask.getUrl());
+                        DownloadUtils.downloadHttpUrl(downloadTask.getUrl(),downloadTask.getSaveFileName());
                     }
 
                     @Override

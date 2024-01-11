@@ -1,4 +1,4 @@
-package com.zhangqiang.web.hybrid.plugins.m3u8;
+package com.zhangqiang.web.hybrid.plugins;
 
 import android.net.Uri;
 import android.webkit.WebView;
@@ -11,9 +11,16 @@ import com.zhangqiang.web.plugin.WebPlugin;
 
 public class M3u8PickPlugin implements WebPlugin {
 
-    private final M3u8PickCallback callback;
+    public interface Callback {
 
-    public M3u8PickPlugin(M3u8PickCallback callback) {
+        void onReceiveM3u8Resource(String url);
+    }
+
+
+
+    private final Callback callback;
+
+    public M3u8PickPlugin(Callback callback) {
         this.callback = callback;
     }
 

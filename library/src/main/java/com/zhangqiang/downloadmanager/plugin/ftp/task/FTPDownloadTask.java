@@ -164,7 +164,7 @@ public class FTPDownloadTask extends DownloadTask {
                     dispatchProgressChange();
                     dispatchSuccess();
                     LogUtils.i(TAG, "========ftp 下载成功");
-                } catch (IOException e) {
+                } catch (Throwable e) {
                     dispatchFail(new DownloadException(1000, e));
                 } finally {
                     try {

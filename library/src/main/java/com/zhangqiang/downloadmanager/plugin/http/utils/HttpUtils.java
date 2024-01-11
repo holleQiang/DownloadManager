@@ -23,7 +23,7 @@ public class HttpUtils {
     }
 
     public static void setRangeParams(FiledSetter setter, long start, long end) {
-        setter.setField("Range", "bytes=" + start + "-" + end);
+        setter.setField("Range", "bytes=" + start + "-" + (end == -1 ? "" : end));
 
 //        String eTag = getETag();
 //        if (!TextUtils.isEmpty(eTag)) {

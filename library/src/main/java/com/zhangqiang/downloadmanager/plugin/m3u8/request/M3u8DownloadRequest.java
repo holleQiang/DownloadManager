@@ -1,4 +1,4 @@
-package com.zhangqiang.web.hybrid.plugins.m3u8.download;
+package com.zhangqiang.downloadmanager.plugin.m3u8.request;
 
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
 

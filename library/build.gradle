@@ -42,4 +42,7 @@ dependencies {
 
     /* FTP  */
     implementation "commons-net:commons-net:${rootProject.ext.versions['commons-net']}"
+
+    /* ffmpeg */
+    implementation 'com.arthenica:mobile-ffmpeg-full:4.4'
 }

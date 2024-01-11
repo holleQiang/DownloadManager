@@ -6,9 +6,10 @@ import android.widget.ProgressBar;
 import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
-import com.zhangqiang.downloadmanager.plugin.ftp.callback.ResourceInfo;
-import com.zhangqiang.downloadmanager.plugin.ftp.task.OnResourceInfoReadyListener;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
+import com.zhangqiang.downloadmanager.plugin.m3u8.task.M3u8DownloadTask;
+import com.zhangqiang.downloadmanager.plugin.m3u8.task.OnResourceInfoReadyListener;
+import com.zhangqiang.downloadmanager.plugin.m3u8.task.ResourceInfo;
 import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
@@ -17,7 +18,6 @@ import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.downloadmanager.utils.StringUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.utils.IntentUtils;
-import com.zhangqiang.web.hybrid.plugins.m3u8.download.M3u8DownloadTask;
 
 import java.io.File;
 
@@ -35,7 +35,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
     protected void onBindViewHolder(ViewHolder viewHolder) {
         super.onBindViewHolder(viewHolder);
         View view = viewHolder.getView();
-        final DownloadTask downloadTask = getData();
+        final M3u8DownloadTask downloadTask = getData();
         updateState(viewHolder);
         updateInfo(viewHolder);
         updateProgress(viewHolder);
@@ -76,6 +76,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
             final OnProgressChangeListener onProgressChangeListener = new OnProgressChangeListener() {
                 @Override
                 public void onProgressChange() {
+                    LogUtils.i(TAG,"=====onProgressChange======"+downloadTask.getCurrentDuration());
                     view.post(new Runnable() {
                         @Override
                         public void run() {
@@ -87,6 +88,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
             final OnResourceInfoReadyListener onResourceInfoReadyListener = new OnResourceInfoReadyListener() {
                 @Override
                 public void onResourceInfoReady(ResourceInfo resourceInfo) {
+                    LogUtils.i(TAG,"=====onResourceInfoReady======"+resourceInfo);
                     view.post(new Runnable() {
                         @Override
                         public void run() {
@@ -113,6 +115,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
                 downloadTask.addStatusChangeListener(onStatusChangeListener);
                 downloadTask.addOnProgressChangeListener(onProgressChangeListener);
                 downloadTask.getSpeedHelper().addOnSpeedChangeListener(onSpeedChangeListener);
+                downloadTask.addOnResourceInfoReadyListener(onResourceInfoReadyListener);
             }
 
             @Override
@@ -120,6 +123,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
                 downloadTask.removeStatusChangeListener(onStatusChangeListener);
                 downloadTask.removeOnProgressChangeListener(onProgressChangeListener);
                 downloadTask.getSpeedHelper().removeOnSpeedChangeListener(onSpeedChangeListener);
+                downloadTask.removeOnResourceInfoReadyListener(onResourceInfoReadyListener);
             }
         };
         view.addOnAttachStateChangeListener(onAttachStateChangeListener);
@@ -242,7 +246,11 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
     }
 
     private long getTotalDuration() {
-        return getData().getTotalDuration();
+        ResourceInfo resourceInfo = getData().getResourceInfo();
+        if (resourceInfo == null) {
+            return 0;
+        }
+        return resourceInfo.getTotalDuration();
     }
 
 }
