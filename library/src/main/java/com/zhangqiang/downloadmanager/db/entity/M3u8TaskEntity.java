@@ -31,6 +31,8 @@ public class M3u8TaskEntity {
 
     @NotNull
     private long createTime;
+
+    private long duration;
     /**
      * 状态
      */
@@ -40,20 +42,21 @@ public class M3u8TaskEntity {
     /**
      * 子任务id
      */
-    private String childId;
-    @Generated(hash = 14760288)
+    private String tsIds;
+    @Generated(hash = 1533615442)
     public M3u8TaskEntity(String id, @NotNull String url, @NotNull String saveDir,
-            String targetFileName, String saveFileName, long createTime, int state,
-            String errorMsg, String childId) {
+            String targetFileName, String saveFileName, long createTime,
+            long duration, int state, String errorMsg, String tsIds) {
         this.id = id;
         this.url = url;
         this.saveDir = saveDir;
         this.targetFileName = targetFileName;
         this.saveFileName = saveFileName;
         this.createTime = createTime;
+        this.duration = duration;
         this.state = state;
         this.errorMsg = errorMsg;
-        this.childId = childId;
+        this.tsIds = tsIds;
     }
     @Generated(hash = 1623796849)
     public M3u8TaskEntity() {
@@ -94,6 +97,12 @@ public class M3u8TaskEntity {
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
     }
+    public long getDuration() {
+        return this.duration;
+    }
+    public void setDuration(long duration) {
+        this.duration = duration;
+    }
     public int getState() {
         return this.state;
     }
@@ -106,10 +115,10 @@ public class M3u8TaskEntity {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
-    public String getChildId() {
-        return this.childId;
+    public String getTsIds() {
+        return this.tsIds;
     }
-    public void setChildId(String childId) {
-        this.childId = childId;
+    public void setTsIds(String tsIds) {
+        this.tsIds = tsIds;
     }
 }

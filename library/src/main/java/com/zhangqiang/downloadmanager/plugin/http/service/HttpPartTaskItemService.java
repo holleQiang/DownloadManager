@@ -63,6 +63,10 @@ public class HttpPartTaskItemService {
         getHttpPartTaskItemEntityDao().deleteByKey(id);
     }
 
+    public void removeByIds(List<String> ids) {
+        getHttpPartTaskItemEntityDao().deleteByKeyInTx(ids);
+    }
+
     public void remove(List<HttpPartTaskItemBean> items) {
         String[] keys = new String[items.size()];
         for (int i = 0; i < items.size(); i++) {

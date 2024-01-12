@@ -30,9 +30,10 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
         public final static Property TargetFileName = new Property(3, String.class, "targetFileName", false, "TARGET_FILE_NAME");
         public final static Property SaveFileName = new Property(4, String.class, "saveFileName", false, "SAVE_FILE_NAME");
         public final static Property CreateTime = new Property(5, long.class, "createTime", false, "CREATE_TIME");
-        public final static Property State = new Property(6, int.class, "state", false, "STATE");
-        public final static Property ErrorMsg = new Property(7, String.class, "errorMsg", false, "ERROR_MSG");
-        public final static Property ChildId = new Property(8, String.class, "childId", false, "CHILD_ID");
+        public final static Property Duration = new Property(6, long.class, "duration", false, "DURATION");
+        public final static Property State = new Property(7, int.class, "state", false, "STATE");
+        public final static Property ErrorMsg = new Property(8, String.class, "errorMsg", false, "ERROR_MSG");
+        public final static Property TsIds = new Property(9, String.class, "tsIds", false, "TS_IDS");
     }
 
 
@@ -54,9 +55,10 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
                 "\"TARGET_FILE_NAME\" TEXT," + // 3: targetFileName
                 "\"SAVE_FILE_NAME\" TEXT," + // 4: saveFileName
                 "\"CREATE_TIME\" INTEGER NOT NULL ," + // 5: createTime
-                "\"STATE\" INTEGER NOT NULL ," + // 6: state
-                "\"ERROR_MSG\" TEXT," + // 7: errorMsg
-                "\"CHILD_ID\" TEXT);"); // 8: childId
+                "\"DURATION\" INTEGER NOT NULL ," + // 6: duration
+                "\"STATE\" INTEGER NOT NULL ," + // 7: state
+                "\"ERROR_MSG\" TEXT," + // 8: errorMsg
+                "\"TS_IDS\" TEXT);"); // 9: tsIds
     }
 
     /** Drops the underlying database table. */
@@ -86,16 +88,17 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
             stmt.bindString(5, saveFileName);
         }
         stmt.bindLong(6, entity.getCreateTime());
-        stmt.bindLong(7, entity.getState());
+        stmt.bindLong(7, entity.getDuration());
+        stmt.bindLong(8, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(8, errorMsg);
+            stmt.bindString(9, errorMsg);
         }
  
-        String childId = entity.getChildId();
-        if (childId != null) {
-            stmt.bindString(9, childId);
+        String tsIds = entity.getTsIds();
+        if (tsIds != null) {
+            stmt.bindString(10, tsIds);
         }
     }
 
@@ -120,16 +123,17 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
             stmt.bindString(5, saveFileName);
         }
         stmt.bindLong(6, entity.getCreateTime());
-        stmt.bindLong(7, entity.getState());
+        stmt.bindLong(7, entity.getDuration());
+        stmt.bindLong(8, entity.getState());
  
         String errorMsg = entity.getErrorMsg();
         if (errorMsg != null) {
-            stmt.bindString(8, errorMsg);
+            stmt.bindString(9, errorMsg);
         }
  
-        String childId = entity.getChildId();
-        if (childId != null) {
-            stmt.bindString(9, childId);
+        String tsIds = entity.getTsIds();
+        if (tsIds != null) {
+            stmt.bindString(10, tsIds);
         }
     }
 
@@ -147,9 +151,10 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // targetFileName
             cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // saveFileName
             cursor.getLong(offset + 5), // createTime
-            cursor.getInt(offset + 6), // state
-            cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7), // errorMsg
-            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8) // childId
+            cursor.getLong(offset + 6), // duration
+            cursor.getInt(offset + 7), // state
+            cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8), // errorMsg
+            cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9) // tsIds
         );
         return entity;
     }
@@ -162,9 +167,10 @@ public class M3u8TaskEntityDao extends AbstractDao<M3u8TaskEntity, String> {
         entity.setTargetFileName(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
         entity.setSaveFileName(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
         entity.setCreateTime(cursor.getLong(offset + 5));
-        entity.setState(cursor.getInt(offset + 6));
-        entity.setErrorMsg(cursor.isNull(offset + 7) ? null : cursor.getString(offset + 7));
-        entity.setChildId(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setDuration(cursor.getLong(offset + 6));
+        entity.setState(cursor.getInt(offset + 7));
+        entity.setErrorMsg(cursor.isNull(offset + 8) ? null : cursor.getString(offset + 8));
+        entity.setTsIds(cursor.isNull(offset + 9) ? null : cursor.getString(offset + 9));
      }
     
     @Override

@@ -192,7 +192,7 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
             } else {
                 throw new IllegalArgumentException("unknown http task bean state:" + state);
             }
-            handleDownloadTaskCreate(httpDownloadTask, httpTaskBean);
+            handleDownloadTaskSave(httpDownloadTask, httpTaskBean);
             httpDownloadTasks.add(httpDownloadTask);
         }
         return httpDownloadTasks;
@@ -367,27 +367,29 @@ public class HttpDownloadPlugin extends SimpleDownloadPlugin {
                         httpDownloadRequest.getThreadSize(),
                         new HttpPartDownloadTaskFactoryImpl());
 
-                //保存数据库
-                HttpTaskBean httpTaskBean = new HttpTaskBean();
-                httpTaskBean.setId(httpDownloadTask.getId());
-                httpTaskBean.setUrl(httpDownloadTask.getUrl());
-                httpTaskBean.setThreadSize(httpDownloadTask.getThreadSize());
-                httpTaskBean.setSaveDir(httpDownloadTask.getSaveDir());
-                httpTaskBean.setTargetFileName(httpDownloadTask.getTargetFileName());
-                httpTaskBean.setCreateTime(httpDownloadTask.getCreateTime());
-                httpTaskBean.setSaveFileName(httpDownloadTask.getSaveFileName());
-                httpTaskBean.setType(HttpTaskBean.TYPE_UNKNOWN);
-                httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
-                httpTaskService.add(httpTaskBean);
 
-                handleDownloadTaskCreate(httpDownloadTask, httpTaskBean);
+
+                handleDownloadTaskCreate(httpDownloadTask);
                 return httpDownloadTask;
             }
             return null;
         }
     }
 
-    private void handleDownloadTaskCreate(HttpDownloadTask httpDownloadTask, HttpTaskBean httpTaskBean) {
+    private void handleDownloadTaskCreate(HttpDownloadTask httpDownloadTask) {
+        //保存数据库
+        HttpTaskBean httpTaskBean = new HttpTaskBean();
+        httpTaskBean.setId(httpDownloadTask.getId());
+        httpTaskBean.setUrl(httpDownloadTask.getUrl());
+        httpTaskBean.setThreadSize(httpDownloadTask.getThreadSize());
+        httpTaskBean.setSaveDir(httpDownloadTask.getSaveDir());
+        httpTaskBean.setTargetFileName(httpDownloadTask.getTargetFileName());
+        httpTaskBean.setCreateTime(httpDownloadTask.getCreateTime());
+        httpTaskBean.setSaveFileName(httpDownloadTask.getSaveFileName());
+        httpTaskBean.setType(HttpTaskBean.TYPE_UNKNOWN);
+        httpTaskBean.setState(HttpTaskBean.STATE_IDLE);
+        httpTaskService.add(httpTaskBean);
+
         handleDownloadTaskSave(httpDownloadTask, httpTaskBean);
     }
 

@@ -10,6 +10,7 @@ import com.arthenica.mobileffmpeg.Config;
 import com.arthenica.mobileffmpeg.FFmpeg;
 import com.zhangqiang.downloadmanager.manager.ExecutorManager;
 import com.zhangqiang.downloadmanager.plugin.http.okhttp.OKHttpClients;
+import com.zhangqiang.downloadmanager.plugin.http.task.HttpPartDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
@@ -46,28 +47,57 @@ public class M3u8DownloadTask extends DownloadTask {
     private final Context context;
     private final String url;
     private Call call;
-    private final TSDownloadTaskFactory factory;
+    private final TSDownloadBundleFactory factory;
     private final AtomicInteger successTSDownloadTaskCount = new AtomicInteger(0);
-    private List<TSDownloadTask> tsDownloadTasks;
+    private List<TSDownloadBundle> tsDownloadBundles;
     private Future<?> handleAllTaskSuccessFuture;
     private static final int MAX_ACTIVE_TS_TASK_COUNT = 5;
     private final AtomicInteger activeTSTaskCount = new AtomicInteger(0);
-    private ResourceInfo resourceInfo;
+    private M3u8ResourceInfo resourceInfo;
     private final List<OnResourceInfoReadyListener> onResourceInfoReadyListeners = new ArrayList<>();
+    private final List<OnTSDownloadBundlesReadyListener> onTSDownloadBundlesReadyListeners = new ArrayList<>();
     private long currentDuration;
 
-    public M3u8DownloadTask(String id, String saveDir, String targetFileName, long createTime, Context context, String url, TSDownloadTaskFactory factory) {
+    public M3u8DownloadTask(String id,
+                            String saveDir,
+                            String targetFileName,
+                            long createTime,
+                            Context context,
+                            String url,
+                            TSDownloadBundleFactory factory) {
         super(id, saveDir, targetFileName, createTime);
         this.context = context.getApplicationContext();
         this.url = url;
         this.factory = factory;
     }
 
+    public M3u8DownloadTask(String id,
+                            String saveDir,
+                            String targetFileName,
+                            long createTime,
+                            Status status,
+                            String errorMessage,
+                            long currentLength,
+                            Context context,
+                            String url,
+                            TSDownloadBundleFactory factory,
+                            List<TSDownloadBundle> tsDownloadBundles,
+                            M3u8ResourceInfo resourceInfo,
+                            long currentDuration) {
+        super(id, saveDir, targetFileName, createTime, status, errorMessage, currentLength);
+        this.context = context;
+        this.url = url;
+        this.factory = factory;
+        this.tsDownloadBundles = tsDownloadBundles;
+        this.resourceInfo = resourceInfo;
+        this.currentDuration = currentDuration;
+    }
+
     @Override
     protected void onStart() {
 
-        if (tsDownloadTasks != null) {
-            if (this.successTSDownloadTaskCount.get() == tsDownloadTasks.size()) {
+        if (tsDownloadBundles != null) {
+            if (this.successTSDownloadTaskCount.get() == tsDownloadBundles.size()) {
                 handleAllTaskSuccessFuture = ExecutorManager.getInstance().submit(new Runnable() {
                     @Override
                     public void run() {
@@ -109,21 +139,22 @@ public class M3u8DownloadTask extends DownloadTask {
                 for (TSInfo info : tsInfoList) {
                     totalDuration += info.getDuration() * 1000;
                 }
-                dispatchResourceInfoReady(new ResourceInfo(totalDuration));
+                dispatchResourceInfoReady(new M3u8ResourceInfo(totalDuration));
                 if (getStatus() == Status.CANCELED) {
                     return;
                 }
                 //创建临时目录，命名为filename的隐藏文件
                 File dir = getTempDir();
                 //创建ts下载任务
-                tsDownloadTasks = new ArrayList<>();
+                tsDownloadBundles = new ArrayList<>();
                 for (TSInfo info : tsInfoList) {
                     String tsUrl = buildUrl(info.getUri());
                     String fileName = Uri.parse(tsUrl).getLastPathSegment();
-                    TSDownloadTask downloadTask = factory.createTSDownloadTask(dir.getAbsolutePath(), fileName, tsUrl, 0, -1, info);
-                    tsDownloadTasks.add(downloadTask);
+                    TSDownloadBundle downloadBundle = factory.createTSDownloadBundle(dir.getAbsolutePath(), fileName, tsUrl, 0, -1, info);
+                    tsDownloadBundles.add(downloadBundle);
                 }
-                configTSDownloadTasks(tsDownloadTasks);
+                configTSDownloadBundles(tsDownloadBundles);
+                dispatchResourceInfoReady(tsDownloadBundles);
                 startTSDownloadTasks();
             }
 
@@ -151,10 +182,11 @@ public class M3u8DownloadTask extends DownloadTask {
     }
 
     private synchronized void cancelAllDownloadingTSDownloadTasks() {
-        if (tsDownloadTasks != null) {
-            for (TSDownloadTask tsDownloadTask : tsDownloadTasks) {
-                if (tsDownloadTask.getStatus() == Status.DOWNLOADING) {
-                    tsDownloadTask.cancel();
+        if (tsDownloadBundles != null) {
+            for (TSDownloadBundle downloadBundle : tsDownloadBundles) {
+                HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
+                if (downloadTask.getStatus() == Status.DOWNLOADING) {
+                    downloadTask.cancel();
                 }
             }
         }
@@ -174,8 +206,9 @@ public class M3u8DownloadTask extends DownloadTask {
         if (this.activeTSTaskCount.get() != 0) {
             throw new IllegalArgumentException("activeTSTaskCount are expected zero");
         }
-        for (TSDownloadTask tsDownloadTask : tsDownloadTasks) {
-            Status status = tsDownloadTask.getStatus();
+        for (TSDownloadBundle downloadBundle : tsDownloadBundles) {
+            HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
+            Status status = downloadTask.getStatus();
             if (status == Status.SUCCESS) {
                 continue;
             }
@@ -183,43 +216,45 @@ public class M3u8DownloadTask extends DownloadTask {
                 return;
             }
             if (status == Status.FAIL || status == Status.IDLE || status == Status.CANCELED) {
-                tsDownloadTask.start();
+                downloadTask.start();
             } else if (status == Status.DOWNLOADING) {
-                tsDownloadTask.forceStart();
+                downloadTask.forceStart();
             }
         }
     }
 
     private synchronized void tryStartIdleTSDownloadTasks() {
 
-        for (TSDownloadTask tsDownloadTask : tsDownloadTasks) {
+        for (TSDownloadBundle downloadBundle : tsDownloadBundles) {
             if (this.activeTSTaskCount.get() >= MAX_ACTIVE_TS_TASK_COUNT) {
                 return;
             }
-            Status status = tsDownloadTask.getStatus();
+            HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
+            Status status = downloadTask.getStatus();
             if (status == Status.IDLE) {
-                tsDownloadTask.start();
+                downloadTask.start();
             }
         }
     }
 
-    private void configTSDownloadTasks(List<TSDownloadTask> tsDownloadTasks) {
+    private void configTSDownloadBundles(List<TSDownloadBundle> tsDownloadTasks) {
 
         if (tsDownloadTasks == null) {
             return;
         }
         int successCount = 0;
-        for (TSDownloadTask tsDownloadTask : tsDownloadTasks) {
-            Status status = tsDownloadTask.getStatus();
+        for (TSDownloadBundle downloadBundle : tsDownloadTasks) {
+            HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
+            Status status = downloadTask.getStatus();
             if (status == Status.SUCCESS) {
                 successCount++;
                 continue;
             }
-            tsDownloadTask.addStatusChangeListener(new OnStatusChangeListener() {
+            downloadTask.addStatusChangeListener(new OnStatusChangeListener() {
                 @Override
                 public void onStatusChange(Status newStatus, Status oldStatus) {
                     if (newStatus == Status.SUCCESS) {
-                        currentDuration += tsDownloadTask.getInfo().getDuration() * 1000;
+                        currentDuration += downloadBundle.getInfo().getDuration() * 1000;
                         dispatchProgressChange();
 
                         if (successTSDownloadTaskCount.incrementAndGet() == tsDownloadTasks.size()) {
@@ -239,19 +274,19 @@ public class M3u8DownloadTask extends DownloadTask {
                     }
                 }
             });
-            tsDownloadTask.addTaskFailListener(new OnTaskFailListener() {
+            downloadTask.addTaskFailListener(new OnTaskFailListener() {
                 @Override
                 public void onTaskFail(Throwable e) {
-                    LogUtils.i(TAG, "206 子任务失败: " + tsDownloadTask.getSaveFileName());
+                    LogUtils.i(TAG, "206 子任务失败: " + downloadTask.getSaveFileName());
                     dispatchFail(new RuntimeException("子任务失败: " + e.getMessage(), e));
                 }
             });
-            tsDownloadTask.addOnProgressChangeListener(new OnProgressChangeListener() {
+            downloadTask.addOnProgressChangeListener(new OnProgressChangeListener() {
                 @Override
                 public void onProgressChange() {
                     long totalLength = 0;
-                    for (TSDownloadTask downloadTask : tsDownloadTasks) {
-                        totalLength += downloadTask.getCurrentLength();
+                    for (TSDownloadBundle downloadBundle : tsDownloadTasks) {
+                        totalLength += downloadBundle.getDownloadTask().getCurrentLength();
                     }
                     dispatchCurrentLength(totalLength);
                 }
@@ -283,12 +318,13 @@ public class M3u8DownloadTask extends DownloadTask {
     private void deleteTempFiles() {
         LogUtils.i(TAG, "删除临时文件....");
         String dir = "";
-        for (TSDownloadTask tsTask : tsDownloadTasks) {
-            File file = new File(tsTask.getSaveDir(), tsTask.getSaveFileName());
+        for (TSDownloadBundle downloadBundle : tsDownloadBundles) {
+            HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
+            File file = new File(downloadTask.getSaveDir(), downloadTask.getSaveFileName());
             if (!file.delete()) {
                 LogUtils.i(TAG, "删除临时文件失败");
             }
-            dir = tsTask.getSaveDir();
+            dir = downloadTask.getSaveDir();
         }
         if (!TextUtils.isEmpty(dir)) {
             try {
@@ -303,7 +339,8 @@ public class M3u8DownloadTask extends DownloadTask {
         //生成一个临时文件
         File tempFile = new File(getTempDir(), "tsFiles.txt");
         try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-            for (TSDownloadTask downloadTask : tsDownloadTasks) {
+            for (TSDownloadBundle downloadBundle : tsDownloadBundles) {
+                HttpPartDownloadTask downloadTask = downloadBundle.getDownloadTask();
                 String absolutePath = new File(downloadTask.getSaveDir(), downloadTask.getSaveFileName()).getAbsolutePath();
                 fos.write(String.format("file '%s'\n", absolutePath).getBytes("utf-8"));
             }
@@ -391,6 +428,9 @@ public class M3u8DownloadTask extends DownloadTask {
     }
 
     public void addOnResourceInfoReadyListener(OnResourceInfoReadyListener listener) {
+        if(onResourceInfoReadyListeners.contains(listener)){
+            return;
+        }
         onResourceInfoReadyListeners.add(listener);
     }
 
@@ -398,14 +438,31 @@ public class M3u8DownloadTask extends DownloadTask {
         onResourceInfoReadyListeners.remove(listener);
     }
 
-    protected void dispatchResourceInfoReady(ResourceInfo resourceInfo) {
+    protected void dispatchResourceInfoReady(M3u8ResourceInfo resourceInfo) {
         this.resourceInfo = resourceInfo;
         for (int i = onResourceInfoReadyListeners.size() - 1; i >= 0; i--) {
             onResourceInfoReadyListeners.get(i).onResourceInfoReady(resourceInfo);
         }
     }
 
-    public ResourceInfo getResourceInfo() {
+    public M3u8ResourceInfo getResourceInfo() {
         return resourceInfo;
+    }
+
+    public void addOnTSDownloadBundlesReadyListener(OnTSDownloadBundlesReadyListener listener) {
+        if(onTSDownloadBundlesReadyListeners.contains(listener)){
+            return;
+        }
+        onTSDownloadBundlesReadyListeners.add(listener);
+    }
+
+    public void removeOnTSDownloadBundlesReadyListener(OnTSDownloadBundlesReadyListener listener) {
+        onTSDownloadBundlesReadyListeners.remove(listener);
+    }
+
+    protected void dispatchResourceInfoReady(List<TSDownloadBundle> bundles) {
+        for (int i = onTSDownloadBundlesReadyListeners.size() - 1; i >= 0; i--) {
+            onTSDownloadBundlesReadyListeners.get(i).onTSBundlesReady(bundles);
+        }
     }
 }

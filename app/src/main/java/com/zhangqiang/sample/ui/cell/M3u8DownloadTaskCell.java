@@ -9,7 +9,7 @@ import com.zhangqiang.celladapter.vh.ViewHolder;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
 import com.zhangqiang.downloadmanager.plugin.m3u8.task.M3u8DownloadTask;
 import com.zhangqiang.downloadmanager.plugin.m3u8.task.OnResourceInfoReadyListener;
-import com.zhangqiang.downloadmanager.plugin.m3u8.task.ResourceInfo;
+import com.zhangqiang.downloadmanager.plugin.m3u8.task.M3u8ResourceInfo;
 import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
@@ -87,7 +87,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
             };
             final OnResourceInfoReadyListener onResourceInfoReadyListener = new OnResourceInfoReadyListener() {
                 @Override
-                public void onResourceInfoReady(ResourceInfo resourceInfo) {
+                public void onResourceInfoReady(M3u8ResourceInfo resourceInfo) {
                     LogUtils.i(TAG,"=====onResourceInfoReady======"+resourceInfo);
                     view.post(new Runnable() {
                         @Override
@@ -246,11 +246,11 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
     }
 
     private long getTotalDuration() {
-        ResourceInfo resourceInfo = getData().getResourceInfo();
+        M3u8ResourceInfo resourceInfo = getData().getResourceInfo();
         if (resourceInfo == null) {
             return 0;
         }
-        return resourceInfo.getTotalDuration();
+        return resourceInfo.getDuration();
     }
 
 }
