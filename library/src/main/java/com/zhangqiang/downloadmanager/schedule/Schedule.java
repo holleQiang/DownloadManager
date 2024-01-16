@@ -20,7 +20,9 @@ public class Schedule {
             public boolean handleMessage(@NonNull Message msg) {
 
                 IntervalTask intervalTask = ((IntervalTask) msg.obj);
-                intervalTask.run();
+                if(intervalTask.isAlive()){
+                    intervalTask.run();
+                }
 
                 if (intervalTask.isAlive()) {
                     Message message = handler.obtainMessage(0);

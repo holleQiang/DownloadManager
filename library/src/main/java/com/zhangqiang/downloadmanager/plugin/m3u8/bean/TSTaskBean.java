@@ -6,7 +6,7 @@ public class TSTaskBean {
 
     private String id;
     private String uri;
-    private long duration;
+    private float duration;
     private HttpPartTaskItemBean httpPartTaskItemBean;
 
     public String getId() {
@@ -18,11 +18,11 @@ public class TSTaskBean {
         return this;
     }
 
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 
-    public TSTaskBean setDuration(long duration) {
+    public TSTaskBean setDuration(float duration) {
         this.duration = duration;
         return this;
     }

@@ -4,7 +4,7 @@ public class StreamInfo {
     private final int programId;
     private final long bandWidth;
     private final Resolution resolution;
-    private  String uri;
+    private String uri;
 
     public StreamInfo(int programId, long bandWidth, Resolution resolution) {
         this.programId = programId;

@@ -76,7 +76,6 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
             final OnProgressChangeListener onProgressChangeListener = new OnProgressChangeListener() {
                 @Override
                 public void onProgressChange() {
-                    LogUtils.i(TAG,"=====onProgressChange======"+downloadTask.getCurrentDuration());
                     view.post(new Runnable() {
                         @Override
                         public void run() {
@@ -136,7 +135,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
         viewHolder.setText(R.id.tv_speed, StringUtils.formatFileLength(speed) + "/s");
 
         String resetTimeStr;
-        long totalDuration = getTotalDuration();
+        long totalDuration = (long) getTotalDuration();
         if (totalDuration == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else if (totalDuration <= downloadTask.getCurrentDuration()) {
@@ -149,7 +148,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
         } else if (speed == 0) {
             resetTimeStr = "剩余时间：" + "未知";
         } else {
-            long resetTime = (totalDuration - downloadTask.getCurrentDuration()) / 1000;
+            long resetTime = (long) (totalDuration - downloadTask.getCurrentDuration());
             resetTimeStr = StringUtils.getRestTime(resetTime);
         }
         viewHolder.setText(R.id.tv_rest_time, resetTimeStr);
@@ -208,8 +207,8 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
 
     private void updateProgress(ViewHolder viewHolder) {
         M3u8DownloadTask data = getData();
-        long currentDuration = data.getCurrentDuration();
-        long totalDuration = getTotalDuration();
+        long currentDuration = (long) (data.getCurrentDuration()*1000);
+        long totalDuration = (long) (getTotalDuration()*1000);
         int progress = (int) ((float) currentDuration / totalDuration * 100);
         viewHolder.setText(R.id.tv_progress, StringUtils.formatFileLength(data.getCurrentLength()) + "/" + StringUtils.formatFileLength(0));
         ProgressBar progressBar = viewHolder.getView(R.id.pb_download_progress);
@@ -245,7 +244,7 @@ public class M3u8DownloadTaskCell extends MultiCell<M3u8DownloadTask> {
         });
     }
 
-    private long getTotalDuration() {
+    private float getTotalDuration() {
         M3u8ResourceInfo resourceInfo = getData().getResourceInfo();
         if (resourceInfo == null) {
             return 0;

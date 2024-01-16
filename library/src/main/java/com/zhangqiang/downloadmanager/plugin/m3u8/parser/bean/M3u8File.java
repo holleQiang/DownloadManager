@@ -10,14 +10,16 @@ public class M3u8File {
     private final String playListType;
     private final List<TSInfo> infoList;
     private final List<StreamInfo> streamInfoList;
+    private final KeyInfo keyInfo;
 
-    public M3u8File(int version, int mediaSequence, int targetDuration, String playListType, List<TSInfo> infoItems, List<StreamInfo> streamInfoList) {
+    public M3u8File(int version, int mediaSequence, int targetDuration, String playListType, List<TSInfo> infoItems, List<StreamInfo> streamInfoList, KeyInfo keyInfo) {
         this.version = version;
         this.mediaSequence = mediaSequence;
         this.targetDuration = targetDuration;
         this.playListType = playListType;
         this.infoList = infoItems;
         this.streamInfoList = streamInfoList;
+        this.keyInfo = keyInfo;
     }
 
     public int getVersion() {
@@ -44,6 +46,10 @@ public class M3u8File {
         return streamInfoList;
     }
 
+    public KeyInfo getKeyInfo() {
+        return keyInfo;
+    }
+
     @Override
     public String toString() {
         return "M3u8File{" +
@@ -53,6 +59,7 @@ public class M3u8File {
                 ", playListType='" + playListType + '\'' +
                 ", infoList=" + infoList +
                 ", streamInfoList=" + streamInfoList +
+                ", keyInfo=" + keyInfo +
                 '}';
     }
 }

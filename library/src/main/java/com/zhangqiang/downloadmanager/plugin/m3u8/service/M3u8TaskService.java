@@ -2,12 +2,13 @@ package com.zhangqiang.downloadmanager.plugin.m3u8.service;
 
 import android.content.Context;
 
+import com.google.gson.Gson;
 import com.zhangqiang.downloadmanager.db.DBManager;
-import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.M3u8TaskEntityDao;
 import com.zhangqiang.downloadmanager.db.entity.M3u8TaskEntity;
 import com.zhangqiang.downloadmanager.plugin.m3u8.bean.M3u8TaskBean;
 import com.zhangqiang.downloadmanager.plugin.m3u8.bean.TSTaskBean;
+import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.M3u8File;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ public class M3u8TaskService {
     private final DBManager mDBManager;
 
     private final TSTaskService tsTaskService;
+    private final Gson gson = new Gson();
 
     public M3u8TaskService(Context context) {
         this.mDBManager = new DBManager(context);
@@ -26,7 +28,7 @@ public class M3u8TaskService {
 
     public List<M3u8TaskBean> getM3u8Tasks() {
         M3u8TaskEntityDao m3u8TaskEntityDao = getM3u8TaskEntityDao();
-        List<M3u8TaskEntity> list = m3u8TaskEntityDao.queryBuilder().orderDesc(HttpTaskEntityDao.Properties.CreateTime).list();
+        List<M3u8TaskEntity> list = m3u8TaskEntityDao.queryBuilder().orderDesc(M3u8TaskEntityDao.Properties.CreateTime).list();
 
         if (list != null) {
             List<M3u8TaskBean> beans = new ArrayList<>();
@@ -35,6 +37,7 @@ public class M3u8TaskService {
                 bean.setId(entity.getId());
                 bean.setCreateTime(entity.getCreateTime());
                 bean.setDuration(entity.getDuration());
+                bean.setM3u8FileInfo(gson.fromJson(entity.getM3u8Info(), M3u8File.class));
                 bean.setErrorMsg(entity.getErrorMsg());
                 bean.setState(entity.getState());
                 bean.setSaveDir(entity.getSaveDir());
@@ -74,6 +77,7 @@ public class M3u8TaskService {
         entity.setErrorMsg(bean.getErrorMsg());
         entity.setState(bean.getState());
         entity.setUrl(bean.getUrl());
+        entity.setM3u8Info(gson.toJson(bean.getM3u8FileInfo()));
         entity.setSaveFileName(bean.getSaveFileName());
         entity.setTargetFileName(bean.getTargetFileName());
         List<TSTaskBean> tsTaskBeans = bean.getTsTaskBeans();

@@ -10,14 +10,14 @@ public class TSTaskEntity {
     @Id
     private String id;
     @NotNull
-    private String url;
-    private long duration;
+    private String uri;
+    private float duration;
     private String childId;
-    @Generated(hash = 70770165)
-    public TSTaskEntity(String id, @NotNull String url, long duration,
+    @Generated(hash = 1544692718)
+    public TSTaskEntity(String id, @NotNull String uri, float duration,
             String childId) {
         this.id = id;
-        this.url = url;
+        this.uri = uri;
         this.duration = duration;
         this.childId = childId;
     }
@@ -30,10 +30,16 @@ public class TSTaskEntity {
     public void setId(String id) {
         this.id = id;
     }
-    public long getDuration() {
+    public String getUri() {
+        return this.uri;
+    }
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+    public float getDuration() {
         return this.duration;
     }
-    public void setDuration(long duration) {
+    public void setDuration(float duration) {
         this.duration = duration;
     }
     public String getChildId() {
@@ -42,10 +48,5 @@ public class TSTaskEntity {
     public void setChildId(String childId) {
         this.childId = childId;
     }
-    public String getUrl() {
-        return this.url;
-    }
-    public void setUrl(String url) {
-        this.url = url;
-    }
+
 }

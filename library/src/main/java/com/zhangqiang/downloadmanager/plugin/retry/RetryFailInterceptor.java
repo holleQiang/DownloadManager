@@ -58,15 +58,15 @@ public class RetryFailInterceptor implements FailInterceptor {
 
         chain.getThrowable().printStackTrace();
 
+        //添加监听
+        downloadTask.addStatusChangeListener(onStatusChangeListener);
+        //移除pending的任务
+        handler.removeCallbacksAndMessages(forceStartTask);
         int count = retryCount.get();
-        if (count == 0) {
-            //第一次重试添加监听
-            downloadTask.addStatusChangeListener(onStatusChangeListener);
-        }
         if (count < 2) {
-            handler.postDelayed(forceStartTask, 2000);
+            handler.postDelayed(forceStartTask, 1000);
         } else if (count < 5) {
-            handler.postDelayed(forceStartTask, 5000);
+            handler.postDelayed(forceStartTask, 1000);
         } else {
             //重试结束，抛出异常
             //移除监听

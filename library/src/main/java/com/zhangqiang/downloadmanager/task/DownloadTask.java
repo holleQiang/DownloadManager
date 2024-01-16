@@ -1,7 +1,6 @@
 package com.zhangqiang.downloadmanager.task;
 
-import android.util.Log;
-
+import com.zhangqiang.downloadmanager.plugin.http.task.AbstractHttpDownloadTask;
 import com.zhangqiang.downloadmanager.plugin.http.task.OnProgressChangeListener;
 import com.zhangqiang.downloadmanager.schedule.IntervalTask;
 import com.zhangqiang.downloadmanager.schedule.Schedule;
@@ -14,6 +13,7 @@ import com.zhangqiang.downloadmanager.task.interceptor.fail.FailChain;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.FailInterceptor;
 import com.zhangqiang.downloadmanager.task.interceptor.fail.RealFailChain;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +85,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
     }
 
 
-    public synchronized void start() {
+    public void start() {
 
         synchronized (startInterceptors) {
             List<Interceptor> interceptors = new ArrayList<>(startInterceptors);
@@ -107,7 +107,7 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         }
     }
 
-    public synchronized void forceStart() {
+    public void forceStart() {
         if (getStatus() != Status.DOWNLOADING) {
             throw new IllegalStateException("cannot call forceStart when status are not downloading");
         }
@@ -125,12 +125,15 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     protected abstract void onStart();
 
-    public synchronized void cancel() {
-
-        synchronized (cancelInterceptors) {
-            List<Interceptor> interceptors = new ArrayList<>(cancelInterceptors);
-            interceptors.add(new RealCancelInterceptor());
-            new RealCallChain(interceptors, 0).proceed();
+    public void cancel() {
+        long l = System.currentTimeMillis();
+        if (status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
+            LogUtils.i("Test","=====cancel 耗时========"+(System.currentTimeMillis()-l));
+            synchronized (cancelInterceptors) {
+                List<Interceptor> interceptors = new ArrayList<>(cancelInterceptors);
+                interceptors.add(new RealCancelInterceptor());
+                new RealCallChain(interceptors, 0).proceed();
+            }
         }
     }
 
@@ -138,11 +141,10 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         @Override
         public void onIntercept(Chain chain) {
-            if (!status.compareAndSet(Status.DOWNLOADING, Status.CANCELED)) {
-                throw new IllegalStateException("cancel not from downloading status:" + status.get());
-            }
             stopScheduleProgressChange();
+            long l = System.currentTimeMillis();
             onCancel();
+            LogUtils.i("Test","=====cancel 耗时2========"+(System.currentTimeMillis()-l));
             dispatchStatusChange(Status.CANCELED, Status.DOWNLOADING);
         }
     }
@@ -151,11 +153,14 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void addStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
         synchronized (onStatusChangeListeners) {
+            if (onStatusChangeListeners.contains(onStatusChangeListener)) {
+                return;
+            }
             onStatusChangeListeners.add(onStatusChangeListener);
         }
     }
 
-    public synchronized void removeStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
+    public void removeStatusChangeListener(OnStatusChangeListener onStatusChangeListener) {
         synchronized (onStatusChangeListeners) {
             onStatusChangeListeners.remove(onStatusChangeListener);
         }
@@ -165,31 +170,32 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         return status.get();
     }
 
-    protected synchronized void dispatchSuccess() {
-        synchronized (successInterceptors) {
-            List<Interceptor> interceptors = new ArrayList<>(successInterceptors);
-            interceptors.add(new RealDispatchSuccessInterceptor());
-            new RealCallChain(interceptors, 0).proceed();
+    protected void dispatchSuccess() {
+        if (status.compareAndSet(Status.DOWNLOADING, Status.SUCCESS)) {
+            synchronized (successInterceptors) {
+                List<Interceptor> interceptors = new ArrayList<>(successInterceptors);
+                interceptors.add(new RealDispatchSuccessInterceptor());
+                new RealCallChain(interceptors, 0).proceed();
+            }
         }
     }
 
     private class RealDispatchSuccessInterceptor implements Interceptor {
         @Override
         public void onIntercept(Chain chain) {
-            if (!status.compareAndSet(Status.DOWNLOADING, Status.SUCCESS)) {
-                throw new IllegalStateException("dispatch success from no downloading status");
-            }
             stopScheduleProgressChange();
             dispatchStatusChange(Status.SUCCESS, Status.DOWNLOADING);
         }
     }
 
-    protected synchronized void dispatchFail(Throwable e) {
-        synchronized (failInterceptors) {
-            List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
-            finalInterceptors.add(new DispatchFailInterceptor());
-            FailChain chain = new RealFailChain(e, finalInterceptors, 0);
-            chain.proceed(e);
+    protected void dispatchFail(Throwable e) {
+        if (status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
+            synchronized (failInterceptors) {
+                List<FailInterceptor> finalInterceptors = new ArrayList<>(failInterceptors);
+                finalInterceptors.add(new DispatchFailInterceptor());
+                FailChain chain = new RealFailChain(e, finalInterceptors, 0);
+                chain.proceed(e);
+            }
         }
     }
 
@@ -197,13 +203,6 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
         @Override
         public void onIntercept(FailChain chain) {
-            if (getStatus() == Status.CANCELED) {
-                return;
-            }
-            if (!status.compareAndSet(Status.DOWNLOADING, Status.FAIL)) {
-                chain.getThrowable().printStackTrace();
-                throw new IllegalStateException("cannot dispatch fail from  status:" + status);
-            }
             stopScheduleProgressChange();
             Throwable e = chain.getThrowable();
             errorMessage = e.getMessage();
@@ -229,6 +228,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void addTaskFailListener(OnTaskFailListener listener) {
         synchronized (onTaskFailListeners) {
+            if (onTaskFailListeners.contains(listener)) {
+                return;
+            }
             onTaskFailListeners.add(listener);
         }
     }
@@ -261,6 +263,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void addOnProgressChangeListener(OnProgressChangeListener listener) {
         synchronized (onProgressChangeListeners) {
+            if (onProgressChangeListeners.contains(listener)) {
+                return;
+            }
             onProgressChangeListeners.add(listener);
         }
     }
@@ -322,6 +327,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         FileUtils.writeToFileFrom(inputStream, saveFile, getCurrentLength(), new FileUtils.WriteFileListener() {
             @Override
             public void onWriteFile(byte[] buffer, int offset, int len) {
+                if (getStatus() == Status.CANCELED) {
+                    LogUtils.i("Test", "=onWriteFile==" + getCurrentLength() + "===" + ((AbstractHttpDownloadTask) DownloadTask.this).getResourceInfo().getContentLength());
+                }
                 dispatchFileSaveLength(len);
             }
         });
@@ -329,6 +337,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void addFailInterceptor(FailInterceptor interceptor) {
         synchronized (failInterceptors) {
+            if (failInterceptors.contains(interceptor)) {
+                return;
+            }
             failInterceptors.add(interceptor);
         }
     }
@@ -356,11 +367,13 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         synchronized (startInterceptors) {
             startInterceptors.remove(interceptor);
         }
-
     }
 
     public void addSuccessInterceptor(Interceptor interceptor) {
         synchronized (successInterceptors) {
+            if (successInterceptors.contains(interceptor)) {
+                return;
+            }
             successInterceptors.add(interceptor);
         }
     }
@@ -373,7 +386,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
 
     public void addCancelInterceptor(Interceptor interceptor) {
         synchronized (cancelInterceptors) {
-            cancelInterceptors.add(interceptor);
+            if (cancelInterceptors.contains(interceptor)) {
+                cancelInterceptors.add(interceptor);
+            }
         }
     }
 
@@ -381,5 +396,9 @@ public abstract class DownloadTask implements SpeedSupport, CurrentLengthOwner {
         synchronized (cancelInterceptors) {
             cancelInterceptors.remove(interceptor);
         }
+    }
+
+    public boolean isCanceled(){
+        return  getStatus() == Status.CANCELED;
     }
 }

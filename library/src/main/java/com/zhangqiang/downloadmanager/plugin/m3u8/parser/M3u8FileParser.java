@@ -1,5 +1,6 @@
 package com.zhangqiang.downloadmanager.plugin.m3u8.parser;
 
+import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.KeyInfo;
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.TSInfo;
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.M3u8File;
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.Resolution;
@@ -30,9 +31,11 @@ public class M3u8FileParser {
             int targetDuration = 0;
             String playListType = null;
             List<TSInfo> infoItems = new ArrayList<>();
-            TSInfo currentItem = null;
             List<StreamInfo> streamInfoList = new ArrayList<>();
             StreamInfo currentStreamInfo = null;
+            KeyInfo keyInfo = null;
+            float tsDuration = 0;
+            String tsUri = null;
             while (line != null) {
                 if (line.startsWith("#EXT-X-VERSION")) {
                     version = Integer.parseInt(line.split(":")[1]);
@@ -43,18 +46,17 @@ public class M3u8FileParser {
                 } else if (line.startsWith("#EXT-X-PLAYLIST-TYPE")) {
                     playListType = line.split(":")[1];
                 } else if (line.startsWith("#EXTINF")) {
-                    if (currentItem != null) {
-                        infoItems.add(currentItem);
+                    if (tsDuration != 0) {
+                        infoItems.add(new TSInfo(tsDuration,tsUri));
                     }
-                    currentItem = new TSInfo();
-                    currentItem.setDuration(Float.parseFloat(line.split(":")[1].split(",")[0]));
+                    tsDuration = Float.parseFloat(line.split(":")[1].split(",")[0]);
                 } else if (line.equals("#EXT-X-ENDLIST")) {
-                    if (currentItem != null) {
-                        infoItems.add(currentItem);
-                        currentItem = null;
+                    if (tsDuration != 0) {
+                        infoItems.add(new TSInfo(tsDuration,tsUri));
+                        tsDuration = 0;
                     }
-                } else if (currentItem != null) {
-                    currentItem.setUri(line);
+                } else if (tsDuration != 0) {
+                    tsUri = line;
                 } else if (line.startsWith("#EXT-X-STREAM-INF")) {
                     if (currentStreamInfo != null) {
                         streamInfoList.add(currentStreamInfo);
@@ -82,17 +84,33 @@ public class M3u8FileParser {
                     currentStreamInfo = new StreamInfo(programId, bandWidth, resolution);
                 } else if (currentStreamInfo != null) {
                     currentStreamInfo.setUri(line);
+                }else if(line.startsWith("#EXT-X-KEY")){
+                    String body = line.split(":")[1];
+                    String[] bodyItems = body.split(",");
+                    String methodName = null;
+                    String uri = null;
+                    for (String bodyItem : bodyItems) {
+                        String[] split = bodyItem.split("=");
+                        String key = split[0];
+                        String value = split[1];
+                        if("METHOD".equals(key)){
+                            methodName = value;
+                        }else if("URI".equals(key)){
+                            uri = value;
+                        }
+                        keyInfo = new KeyInfo(methodName,uri);
+                    }
                 }
                 LogUtils.i(TAG, "============" + line);
                 line = bufferedReader.readLine();
             }
-            if (currentItem != null) {
-                infoItems.add(currentItem);
+            if (tsDuration != 0) {
+                infoItems.add(new TSInfo(tsDuration,tsUri));
             }
             if (currentStreamInfo != null) {
                 streamInfoList.add(currentStreamInfo);
             }
-            return new M3u8File(version, mediaSequence, targetDuration, playListType, infoItems, streamInfoList);
+            return new M3u8File(version, mediaSequence, targetDuration, playListType, infoItems, streamInfoList, keyInfo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

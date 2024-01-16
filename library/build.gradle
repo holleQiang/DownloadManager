@@ -23,7 +23,7 @@ android {
 }
 
 greendao {
-    schemaVersion 10 //数据库版本号
+    schemaVersion 12 //数据库版本号
     daoPackage 'com.zhangqiang.downloadmanager.db.dao'// 设置DaoMaster、DaoSession、Dao 包名
     targetGenDir 'src/main/java'//设置DaoMaster、DaoSession、Dao目录,请注意，这里路径用/不要用.
     generateTests false //设置为true以自动生成单元测试。
@@ -39,6 +39,7 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp:${rootProject.ext.versions.okhttp}"
     implementation "org.greenrobot:greendao:${rootProject.ext.versions.greendao}"
     implementation "io.github.yuweiguocn:GreenDaoUpgradeHelper:${rootProject.ext.versions.GreenDaoUpgradeHelper}"
+    implementation "com.google.code.gson:gson:${rootProject.ext.versions.gson}"
 
     /* FTP  */
     implementation "commons-net:commons-net:${rootProject.ext.versions['commons-net']}"

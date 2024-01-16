@@ -31,7 +31,7 @@ public class TSTaskService {
             for (TSTaskEntity entity : list) {
                 TSTaskBean tsTaskBean = new TSTaskBean();
                 tsTaskBean.setId(entity.getId());
-                tsTaskBean.setUrl(entity.getUrl());
+                tsTaskBean.setUri(entity.getUri());
                 tsTaskBean.setDuration(entity.getDuration());
                 tsTaskBean.setHttpPartTaskItemBean(partTaskItemService.get(entity.getChildId()));
                 beans.add(tsTaskBean);
@@ -55,7 +55,7 @@ public class TSTaskService {
     private TSTaskEntity beanToEntity(TSTaskBean bean) {
         TSTaskEntity entity = new TSTaskEntity();
         entity.setId(bean.getId());
-        entity.setUrl(bean.getUrl());
+        entity.setUri(bean.getUri());
         entity.setDuration(bean.getDuration());
         HttpPartTaskItemBean httpPartTaskItemBean = bean.getHttpPartTaskItemBean();
         if (httpPartTaskItemBean != null) {

@@ -25,8 +25,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
      */
     public static class Properties {
         public final static Property Id = new Property(0, String.class, "id", true, "ID");
-        public final static Property Url = new Property(1, String.class, "url", false, "URL");
-        public final static Property Duration = new Property(2, long.class, "duration", false, "DURATION");
+        public final static Property Uri = new Property(1, String.class, "uri", false, "URI");
+        public final static Property Duration = new Property(2, float.class, "duration", false, "DURATION");
         public final static Property ChildId = new Property(3, String.class, "childId", false, "CHILD_ID");
     }
 
@@ -44,8 +44,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"TSTASK_ENTITY\" (" + //
                 "\"ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: id
-                "\"URL\" TEXT NOT NULL ," + // 1: url
-                "\"DURATION\" INTEGER NOT NULL ," + // 2: duration
+                "\"URI\" TEXT NOT NULL ," + // 1: uri
+                "\"DURATION\" REAL NOT NULL ," + // 2: duration
                 "\"CHILD_ID\" TEXT);"); // 3: childId
     }
 
@@ -63,8 +63,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
         if (id != null) {
             stmt.bindString(1, id);
         }
-        stmt.bindString(2, entity.getUrl());
-        stmt.bindLong(3, entity.getDuration());
+        stmt.bindString(2, entity.getUri());
+        stmt.bindDouble(3, entity.getDuration());
  
         String childId = entity.getChildId();
         if (childId != null) {
@@ -80,8 +80,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
         if (id != null) {
             stmt.bindString(1, id);
         }
-        stmt.bindString(2, entity.getUrl());
-        stmt.bindLong(3, entity.getDuration());
+        stmt.bindString(2, entity.getUri());
+        stmt.bindDouble(3, entity.getDuration());
  
         String childId = entity.getChildId();
         if (childId != null) {
@@ -98,8 +98,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
     public TSTaskEntity readEntity(Cursor cursor, int offset) {
         TSTaskEntity entity = new TSTaskEntity( //
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
-            cursor.getString(offset + 1), // url
-            cursor.getLong(offset + 2), // duration
+            cursor.getString(offset + 1), // uri
+            cursor.getFloat(offset + 2), // duration
             cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3) // childId
         );
         return entity;
@@ -108,8 +108,8 @@ public class TSTaskEntityDao extends AbstractDao<TSTaskEntity, String> {
     @Override
     public void readEntity(Cursor cursor, TSTaskEntity entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setUrl(cursor.getString(offset + 1));
-        entity.setDuration(cursor.getLong(offset + 2));
+        entity.setUri(cursor.getString(offset + 1));
+        entity.setDuration(cursor.getFloat(offset + 2));
         entity.setChildId(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
      }
     

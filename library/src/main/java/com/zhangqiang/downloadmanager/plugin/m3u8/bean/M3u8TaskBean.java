@@ -1,5 +1,7 @@
 package com.zhangqiang.downloadmanager.plugin.m3u8.bean;
 
+import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.M3u8File;
+
 import org.greenrobot.greendao.annotation.NotNull;
 
 import java.util.List;
@@ -35,7 +37,8 @@ public class M3u8TaskBean {
 
     private long createTime;
 
-    private long duration;
+    private float duration;
+    private M3u8File m3u8FileInfo;
     /**
      * 状态
      */
@@ -101,11 +104,11 @@ public class M3u8TaskBean {
         return this;
     }
 
-    public long getDuration() {
+    public float getDuration() {
         return duration;
     }
 
-    public M3u8TaskBean setDuration(long duration) {
+    public M3u8TaskBean setDuration(float duration) {
         this.duration = duration;
         return this;
     }
@@ -134,6 +137,15 @@ public class M3u8TaskBean {
 
     public M3u8TaskBean setTsTaskBeans(List<TSTaskBean> tsTaskBeans) {
         this.tsTaskBeans = tsTaskBeans;
+        return this;
+    }
+
+    public M3u8File getM3u8FileInfo() {
+        return m3u8FileInfo;
+    }
+
+    public M3u8TaskBean setM3u8FileInfo(M3u8File m3u8FileInfo) {
+        this.m3u8FileInfo = m3u8FileInfo;
         return this;
     }
 }

@@ -9,6 +9,7 @@ import com.zhangqiang.downloadmanager.plugin.http.response.OkHttpResponse;
 import com.zhangqiang.downloadmanager.plugin.http.utils.FiledSetter;
 import com.zhangqiang.downloadmanager.plugin.http.utils.HttpUtils;
 import com.zhangqiang.downloadmanager.task.Status;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 
 import java.io.IOException;
 
@@ -24,13 +25,21 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
     private final Context context;
     private final long startPosition;
     private final long endPosition;
-    private Call downloadCall;
+    private volatile Call downloadCall;
 
     public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, String url, Context context, long startPosition, long endPosition) {
         super(id, saveDir, targetFileName, createTime, url);
         this.context = context;
         this.startPosition = startPosition;
         this.endPosition = endPosition;
+        addOnProgressChangeListener(new OnProgressChangeListener() {
+            @Override
+            public void onProgressChange() {
+                if (getStatus() == Status.CANCELED) {
+                    LogUtils.i("Test", "===onWriteFile======onProgressChange===" + getCurrentLength() + "===" + getResourceInfo().getContentLength());
+                }
+            }
+        });
     }
 
     public HttpPartDownloadTask(String id, String saveDir, String targetFileName, long createTime, Status status, String errorMessage, String url, ResourceInfo resourceInfo, long currentLength, Context context, long startPosition, long endPosition) {
@@ -53,14 +62,14 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
         downloadCall.enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if(!call.isCanceled()){
+                if (!call.isCanceled()) {
                     dispatchFail(e);
                 }
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (call.isCanceled()) {
+                if (isCanceled()) {
                     return;
                 }
                 try {
@@ -83,8 +92,13 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
 
                         performSaveFile(responseBody.byteStream());
 
+                        if (isCanceled()) {
+                            return;
+                        }
                         //保证100%进度回调
                         dispatchProgressChange();
+                        dispatchSuccess();
+                    } else if (code == 416) {
                         dispatchSuccess();
                     } else {
                         dispatchFail(new IllegalStateException("http response error with code" + code + ";body null:" + (responseBody == null)));
@@ -104,6 +118,7 @@ public class HttpPartDownloadTask extends AbstractHttpDownloadTask {
             downloadCall.cancel();
             downloadCall = null;
         }
+        LogUtils.i("Test", "===onWriteFile======onCancel===");
     }
 
     @Override

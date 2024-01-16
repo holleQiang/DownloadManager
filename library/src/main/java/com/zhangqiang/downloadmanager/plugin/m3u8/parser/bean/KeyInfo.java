@@ -1,17 +1,16 @@
 package com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean;
 
-public class TSInfo {
-
-    private final float duration;
+public class KeyInfo {
+    private final String method;
     private final String uri;
 
-    public TSInfo(float duration, String uri) {
-        this.duration = duration;
+    public KeyInfo(String method, String uri) {
+        this.method = method;
         this.uri = uri;
     }
 
-    public float getDuration() {
-        return duration;
+    public String getMethod() {
+        return method;
     }
 
     public String getUri() {
@@ -20,8 +19,8 @@ public class TSInfo {
 
     @Override
     public String toString() {
-        return "InfoItem{" +
-                "duration=" + duration +
+        return "KeyInfo{" +
+                "method='" + method + '\'' +
                 ", uri='" + uri + '\'' +
                 '}';
     }

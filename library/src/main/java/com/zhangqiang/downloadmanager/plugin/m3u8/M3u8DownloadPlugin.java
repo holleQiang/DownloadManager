@@ -25,6 +25,7 @@ import com.zhangqiang.downloadmanager.plugin.m3u8.task.OnResourceInfoReadyListen
 import com.zhangqiang.downloadmanager.plugin.m3u8.task.OnTSDownloadBundlesReadyListener;
 import com.zhangqiang.downloadmanager.plugin.m3u8.task.TSDownloadBundle;
 import com.zhangqiang.downloadmanager.plugin.m3u8.task.TSDownloadBundleFactory;
+import com.zhangqiang.downloadmanager.plugin.m3u8.utils.Utils;
 import com.zhangqiang.downloadmanager.request.DownloadRequest;
 import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.DownloadTaskFactory;
@@ -35,7 +36,6 @@ import com.zhangqiang.downloadmanager.utils.FileUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -71,10 +71,10 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                     M3u8DownloadTask m3u8DownloadTask = new M3u8DownloadTask(generateId(),
                             request.getSaveDir(),
                             request.getTargetFileName(),
-                            new Date().getTime(),
+                            System.currentTimeMillis(),
                             context,
                             m3u8DownloadRequest.getUrl(),
-                            new TSDownloadBundleFactoryImpl(context));
+                            new TSDownloadBundleFactoryImpl());
                     handleDownloadTaskCreate(m3u8DownloadTask);
                     return m3u8DownloadTask;
                 }
@@ -139,7 +139,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                         taskBean.getCreateTime(),
                         context,
                         taskBean.getUrl(),
-                        new TSDownloadBundleFactoryImpl(context));
+                        new TSDownloadBundleFactoryImpl());
             } else if (state == M3u8TaskBean.STATE_START
                     || state == M3u8TaskBean.STATE_GENERATING_INFO
                     || state == M3u8TaskBean.STATE_WAITING_CHILDREN_TASK) {
@@ -153,7 +153,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                         getCurrentLength(taskBean),
                         context,
                         taskBean.getUrl(),
-                        new TSDownloadBundleFactoryImpl(context),
+                        new TSDownloadBundleFactoryImpl(),
                         makeTSDownloadBundles(taskBean),
                         makeResourceInfo(taskBean),
                         getCurrentDuration(taskBean)
@@ -168,7 +168,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                         getCurrentLength(taskBean),
                         context,
                         taskBean.getUrl(),
-                        new TSDownloadBundleFactoryImpl(context),
+                        new TSDownloadBundleFactoryImpl(),
                         makeTSDownloadBundles(taskBean),
                         makeResourceInfo(taskBean),
                         getCurrentDuration(taskBean));
@@ -182,7 +182,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                         getCurrentLength(taskBean),
                         context,
                         taskBean.getUrl(),
-                        new TSDownloadBundleFactoryImpl(context),
+                        new TSDownloadBundleFactoryImpl(),
                         makeTSDownloadBundles(taskBean),
                         makeResourceInfo(taskBean),
                         getCurrentDuration(taskBean));
@@ -196,7 +196,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                         getCurrentLength(taskBean),
                         context,
                         taskBean.getUrl(),
-                        new TSDownloadBundleFactoryImpl(context),
+                        new TSDownloadBundleFactoryImpl(),
                         makeTSDownloadBundles(taskBean),
                         makeResourceInfo(taskBean),
                         getCurrentDuration(taskBean));
@@ -209,8 +209,8 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
         return downloadTasks;
     }
 
-    private long getCurrentDuration(M3u8TaskBean taskBean) {
-        long duration = 0;
+    private float getCurrentDuration(M3u8TaskBean taskBean) {
+        float duration = 0;
         List<TSTaskBean> tsTaskBeans = taskBean.getTsTaskBeans();
         if (tsTaskBeans != null) {
             for (TSTaskBean tsTaskBean : tsTaskBeans) {
@@ -228,8 +228,6 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
         if (tsTaskBeans != null) {
             List<TSDownloadBundle> bundles = new ArrayList<>();
             for (TSTaskBean tsTaskBean : tsTaskBeans) {
-                TSInfo tsInfo = new TSInfo();
-                tsInfo.setDuration(tsTaskBean.getDuration());
                 HttpPartTaskItemBean partTaskItemBean = tsTaskBean.getHttpPartTaskItemBean();
                 int state = partTaskItemBean.getState();
                 HttpPartDownloadTask partDownloadTask;
@@ -240,7 +238,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.IDLE,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -254,7 +252,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.DOWNLOADING,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -268,7 +266,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.DOWNLOADING,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -282,7 +280,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.DOWNLOADING,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -296,7 +294,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.SUCCESS,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -310,7 +308,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.FAIL,
                             partTaskItemBean.getErrorMsg(),
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -324,7 +322,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             partTaskItemBean.getCreateTime(),
                             Status.CANCELED,
                             null,
-                            taskBean.getUrl(),
+                            Utils.buildResourceUrl(taskBean.getUrl(), tsTaskBean.getUri()),
                             makePartResourceInfo(partTaskItemBean),
                             partTaskItemBean.getCurrentLength(),
                             context,
@@ -335,7 +333,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                     throw new IllegalArgumentException("illegal state:" + state);
                 }
                 handlePartDownloadTaskSave(partDownloadTask, partTaskItemBean);
-                bundles.add(new TSDownloadBundle(tsInfo, partDownloadTask));
+                bundles.add(new TSDownloadBundle(new TSInfo(tsTaskBean.getDuration(), tsTaskBean.getUri()), partDownloadTask));
             }
             return bundles;
         }
@@ -361,16 +359,10 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
     }
 
     private M3u8ResourceInfo makeResourceInfo(M3u8TaskBean taskBean) {
-        return new M3u8ResourceInfo(taskBean.getDuration());
+        return new M3u8ResourceInfo(taskBean.getDuration(), taskBean.getM3u8FileInfo());
     }
 
-    private static class TSDownloadBundleFactoryImpl implements TSDownloadBundleFactory {
-
-        private final Context context;
-
-        public TSDownloadBundleFactoryImpl(Context context) {
-            this.context = context;
-        }
+    private class TSDownloadBundleFactoryImpl implements TSDownloadBundleFactory {
 
         @Override
         public TSDownloadBundle createTSDownloadBundle(String saveDir, String targetFileName, String url, long startPosition, long endPosition, TSInfo info) {
@@ -469,6 +461,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
             @Override
             public void onResourceInfoReady(M3u8ResourceInfo resourceInfo) {
                 taskBean.setDuration(resourceInfo.getDuration());
+                taskBean.setM3u8FileInfo(resourceInfo.getM3u8File());
                 m3u8TaskService.update(taskBean);
             }
         });
@@ -484,7 +477,7 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
 
                     TSTaskBean tsTaskBean = new TSTaskBean();
                     tsTaskBean.setId(generateId());
-                    tsTaskBean.setDuration((long) (info.getDuration() * 1000));
+                    tsTaskBean.setDuration(info.getDuration());
                     tsTaskBean.setUri(info.getUri());
 
                     HttpPartTaskItemBean partTaskItemBean = new HttpPartTaskItemBean();
