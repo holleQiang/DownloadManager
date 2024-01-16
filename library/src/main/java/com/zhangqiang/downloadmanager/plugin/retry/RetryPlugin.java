@@ -11,7 +11,7 @@ public class RetryPlugin extends SimpleDownloadPlugin {
     @Override
     public void onApply(DownloadManager downloadManager) {
         super.onApply(downloadManager);
-//        downloadManager.addOnTaskAddedListener(onTaskAddedListener);
+        downloadManager.addOnTaskAddedListener(onTaskAddedListener);
     }
 
     @Override
