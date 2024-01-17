@@ -103,7 +103,10 @@ public class M3u8DownloadPlugin extends SimpleDownloadPlugin {
                             if (taskItemBean != null) {
                                 childIds.add(taskItemBean.getId());
                                 dir = taskItemBean.getSaveDir();
-                                FileUtils.deleteFile(new File(taskItemBean.getSaveDir(), taskItemBean.getSaveFileName()));
+                                String saveFileName = taskItemBean.getSaveFileName();
+                                if (!TextUtils.isEmpty(dir) && !TextUtils.isEmpty(saveFileName)) {
+                                    FileUtils.deleteFile(new File(dir, saveFileName));
+                                }
                             }
                         }
                         if (!TextUtils.isEmpty(dir) && dir != null) {

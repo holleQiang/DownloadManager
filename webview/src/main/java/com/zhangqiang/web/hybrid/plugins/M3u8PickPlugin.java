@@ -16,8 +16,6 @@ public class M3u8PickPlugin implements WebPlugin {
         void onReceiveM3u8Resource(String url);
     }
 
-
-
     private final Callback callback;
 
     public M3u8PickPlugin(Callback callback) {
@@ -33,8 +31,10 @@ public class M3u8PickPlugin implements WebPlugin {
                     @Override
                     public void onLoadResource(WebView view, String url) {
                         Uri uri = Uri.parse(url);
+                        String scheme = uri.getScheme();
+                        boolean isHttp = "http".equals(scheme) || "https".equalsIgnoreCase(scheme);
                         String lastPathSegment = uri.getLastPathSegment();
-                        if (lastPathSegment != null && lastPathSegment.endsWith(".m3u8")) {
+                        if (isHttp && lastPathSegment != null && lastPathSegment.endsWith(".m3u8")) {
                             callback.onReceiveM3u8Resource(url);
                         }
                     }

@@ -71,9 +71,8 @@
         android:layout_marginEnd="10dp"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@id/tv_progress"
+        app:layout_constraintBaseline_toBaselineOf="@id/tv_progress"
         app:layout_constraintEnd_toStartOf="@+id/tv_rest_time"
-        app:layout_constraintTop_toTopOf="@id/tv_progress"
         tools:text="30kb/s" />
 
     <TextView
@@ -82,9 +81,8 @@
         android:layout_height="wrap_content"
         android:textColor="#666666"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@id/tv_speed"
         app:layout_constraintEnd_toEndOf="@id/tv_file_name"
-        app:layout_constraintTop_toTopOf="@id/tv_speed"
+        app:layout_constraintBaseline_toBaselineOf="@id/tv_progress"
         tools:text="剩余时间1分钟" />
 
     <TextView

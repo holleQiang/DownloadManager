@@ -34,8 +34,7 @@ public class DMApplication extends MultiDexApplication {
         super.onCreate();
 
 
-
-        if(ProcessUtils.isMainProcess(this)){
+        if (ProcessUtils.isMainProcess(this)) {
 
             ActiveTaskCountLimitPlugin activeTaskCountLimitPlugin = new ActiveTaskCountLimitPlugin();
             SettingsManager.getInstance().init(this);
@@ -55,15 +54,20 @@ public class DMApplication extends MultiDexApplication {
             DownloadManager.getInstance().registerPlugin(new MediaRefreshPlugin(this));
             DownloadManager.getInstance().registerPlugin(new M3u8DownloadPlugin(this));
 
-            Intent intent = new Intent(this, DownloadService.class);
-            startService(intent);
+            try {
+                Intent intent = new Intent(this, DownloadService.class);
+                startService(intent);
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+
 
             WebManager.getInstance().registerPlugin(new DownloadPlugin());
             WebManager.getInstance().registerPlugin(new M3u8PickPlugin(new M3u8PickPlugin.Callback() {
                 @Override
                 public void onReceiveM3u8Resource(String url) {
-                    File saveDir = new File(Environment.getExternalStorageDirectory(),SettingsManager.getInstance().getSaveDir());
-                    DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(saveDir.getAbsolutePath(),null,url));
+                    File saveDir = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
+                    DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(saveDir.getAbsolutePath(), null, url));
                 }
             }));
             WebManager.getInstance().applyPlugins();

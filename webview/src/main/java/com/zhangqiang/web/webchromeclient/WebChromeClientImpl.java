@@ -4,6 +4,7 @@ import android.view.View;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 /**
  * description :
@@ -13,9 +14,11 @@ import android.widget.ProgressBar;
 public class WebChromeClientImpl extends WebChromeClient {
 
     private final ProgressBar progressBar;
+    private final TextView tvTitle;
 
-    public WebChromeClientImpl(ProgressBar progressBar) {
+    public WebChromeClientImpl(ProgressBar progressBar, TextView tvTitle) {
         this.progressBar = progressBar;
+        this.tvTitle = tvTitle;
     }
 
     @Override
@@ -25,5 +28,9 @@ public class WebChromeClientImpl extends WebChromeClient {
         progressBar.setVisibility(newProgress != 100 ? View.VISIBLE : View.GONE);
     }
 
-
+    @Override
+    public void onReceivedTitle(WebView view, String title) {
+        super.onReceivedTitle(view, title);
+        tvTitle.setText(title);
+    }
 }
