@@ -17,6 +17,7 @@ import com.zhangqiang.web.hybrid.plugins.HybridPlugin;
 import com.zhangqiang.web.hybrid.plugins.JSCallPlugin;
 import com.zhangqiang.web.plugin.PluginContext;
 import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.plugins.refresh.RefreshPlugin;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class WebManager {
         registerPlugin(new JSCallPlugin());
         registerPlugin(new VisitRecordPlugin());
         registerPlugin(new ResourceCollectPlugin());
+        registerPlugin(new RefreshPlugin());
     }
 
     public void applyPlugins() {

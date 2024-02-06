@@ -93,12 +93,18 @@ public class WebActivityContext extends WebContext {
     public List<MenuItemBean> getMenus() {
         List<MenuItemBean> menuItems = new ArrayList<>();
         for (MenuProvider menuProvider : menuProviders) {
-            List<MenuItemBean> tempMenuItems = menuProvider.provideMenus();
+            List<MenuItemBean> tempMenuItems = menuProvider.provideMenuItems();
             if (tempMenuItems != null) {
                 menuItems.addAll(tempMenuItems);
             }
         }
         return menuItems;
+    }
+
+    public void dispatchMenuClick(MenuItemBean menuItemBean){
+        for (MenuProvider menuProvider : menuProviders) {
+            menuProvider.onMenuItemClick(menuItemBean);
+        }
     }
 
 }

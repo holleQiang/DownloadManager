@@ -4,5 +4,7 @@ import java.util.List;
 
 public interface MenuProvider {
 
-    List<MenuItemBean> provideMenus();
+    List<MenuItemBean> provideMenuItems();
+
+    void onMenuItemClick(MenuItemBean menuItemBean);
 }

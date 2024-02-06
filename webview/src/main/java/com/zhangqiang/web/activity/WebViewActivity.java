@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -55,6 +57,7 @@ public class WebViewActivity extends BaseActivity {
     private static final String INTENT_KEY_SESSION_ID = "session_id";
     private ActivityWebViewBinding mActivityWebViewBinding;
     private HistoryFragment historyFragment;
+    private List<MenuItemBean> currentMenuItems;
 
     public static Intent newIntent(Context context, String sessionId) {
         Intent intent = new Intent(context, WebViewActivity.class);
@@ -86,12 +89,6 @@ public class WebViewActivity extends BaseActivity {
                 onBackPressed();
             }
         });
-//        mActivityWebViewBinding.mToolBar.setna(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                finish();
-//            }
-//        });
         mActivityWebViewBinding.mWebView.setWebChromeClient(new WebChromeClientImpl(mWebContext,
                 mActivityWebViewBinding.pbProgress,
                 mActivityWebViewBinding.etTitle));
@@ -133,39 +130,65 @@ public class WebViewActivity extends BaseActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
 
-        if(mActivityWebViewBinding.etTitle.hasFocus()){
-            MenuItem searchMenuItem = menu.add(0,R.id.search_button,0,R.string.search);
+        int order = 0;
+        if (mActivityWebViewBinding.etTitle.hasFocus()) {
+            MenuItem searchMenuItem = menu.add(0, R.id.search_button, order++, R.string.search);
             searchMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
             searchMenuItem.setIcon(R.drawable.ic_search_24);
         }
 
-        List<MenuItemBean> menus = mWebContext.getMenus();
-        for (MenuItemBean menuItemBean : menus) {
-            MenuItem menuItem = menu.add(menuItemBean.getTitle());
-            int itemId = menuItem.getItemId();
-            menuItemBean.setId(itemId);
+        List<MenuItemBean> menuItemBeans = mWebContext.getMenus();
+        checkMenuItemId(menuItemBeans);
+        for (MenuItemBean menuItemBean : menuItemBeans) {
+            MenuItem menuItem = menu.add(0, menuItemBean.getId(), order++, menuItemBean.getTitle());
             menuItem.setShowAsAction(menuItemBean.getShowAsAction());
             List<MenuItemBean> subMenuItems = menuItemBean.getSubMenuItems();
+            checkMenuItemId(subMenuItems);
             if (subMenuItems != null) {
-                for (MenuItemBean subMenuItem : subMenuItems) {
-                    SubMenu subMenu = menu.addSubMenu(itemId, itemId, Menu.NONE, subMenuItem.getTitle());
-                    int itemId1 = subMenu.getItem().getItemId();
+                for (int i = 0; i < subMenuItems.size(); i++) {
+                    MenuItemBean subMenuItem = subMenuItems.get(i);
+                    SubMenu subMenu = menu.addSubMenu(menuItemBean.getId(), subMenuItem.getId(), Menu.NONE, subMenuItem.getTitle());
+                    subMenuItem.setId(subMenu.getItem().getItemId());
                 }
             }
         }
-        int size = menu.size();
-        for (int i = 0; i < size; i++) {
-            android.view.MenuItem menuItem = menu.getItem(i);
-            int itemId = menuItem.getItemId();
-        }
+        currentMenuItems = menuItemBeans;
         return super.onPrepareOptionsMenu(menu);
+    }
+
+    private static void checkMenuItemId(List<MenuItemBean> menuItemBeans) {
+        if (menuItemBeans == null) {
+            return;
+        }
+        SparseArray<MenuItemBean> sparseArray = new SparseArray<>();
+        for (MenuItemBean menuItemBean : menuItemBeans) {
+            if (sparseArray.get(menuItemBean.getId()) != null) {
+                throw new IllegalStateException("duplicate menu item id");
+            }
+            sparseArray.put(menuItemBean.getId(), menuItemBean);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
-        if(item.getItemId() == R.id.search_button){
+        if (item.getItemId() == R.id.search_button) {
             performSearch();
             return true;
+        }
+        for (MenuItemBean menuItem : currentMenuItems) {
+            if (menuItem.getId() == item.getItemId()) {
+                mWebContext.dispatchMenuClick(menuItem);
+                return true;
+            }
+            List<MenuItemBean> subMenuItems = menuItem.getSubMenuItems();
+            if (subMenuItems != null) {
+                for (MenuItemBean subMenuItem : subMenuItems) {
+                    if (subMenuItem.getId() == item.getItemId()) {
+                        mWebContext.dispatchMenuClick(subMenuItem);
+                        return true;
+                    }
+                }
+            }
         }
         return super.onOptionsItemSelected(item);
     }
