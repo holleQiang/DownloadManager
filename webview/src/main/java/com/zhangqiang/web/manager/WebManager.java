@@ -2,6 +2,7 @@ package com.zhangqiang.web.manager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 
 import androidx.fragment.app.FragmentActivity;
 
@@ -11,10 +12,12 @@ import com.zhangqiang.web.activity.WebViewActivity;
 import com.zhangqiang.web.context.OnStateChangeListener;
 import com.zhangqiang.web.context.State;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.history.VisitRecordPlugin;
 import com.zhangqiang.web.hybrid.plugins.HybridPlugin;
 import com.zhangqiang.web.hybrid.plugins.JSCallPlugin;
 import com.zhangqiang.web.plugin.PluginContext;
 import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +28,7 @@ import java.util.UUID;
 public class WebManager {
 
     private static final WebManager instance = new WebManager();
-    private final Map<String, WebContext> webContextMap = new HashMap<>();
+    private final List<WebContext> webContexts = new ArrayList<>();
     private final List<WebPlugin> webPlugins = new ArrayList<>();
     private final List<OnOpenWebViewActivityListener> onOpenWebViewActivityListeners = new ArrayList<>();
 
@@ -36,31 +39,33 @@ public class WebManager {
     private WebManager() {
         registerPlugin(new HybridPlugin());
         registerPlugin(new JSCallPlugin());
+        registerPlugin(new VisitRecordPlugin());
+        registerPlugin(new ResourceCollectPlugin());
     }
 
-    public void applyPlugins(){
+    public void applyPlugins() {
         PluginContext pluginContext = new PluginContext(this);
         for (WebPlugin webPlugin : webPlugins) {
             webPlugin.apply(pluginContext);
         }
     }
 
-    public interface Filter{
+    public interface Filter {
         boolean onFilter(WebPlugin plugin);
     }
 
-    public List<WebPlugin> findPlugins(Filter filter){
+    public List<WebPlugin> findPlugins(Filter filter) {
         List<WebPlugin> targets = new ArrayList<>();
         for (WebPlugin webPlugin : webPlugins) {
-            if(filter.onFilter(webPlugin)){
+            if (filter.onFilter(webPlugin)) {
                 targets.add(webPlugin);
             }
         }
         return targets;
     }
 
-    public void openWebViewActivity(Context context, String url){
-        openWebViewActivity(context,url,new OpenOptions.Builder().setNewTask(true).build());
+    public void openWebViewActivity(Context context, String url) {
+        openWebViewActivity(context, url, new OpenOptions.Builder().setNewTask(true).build());
     }
 
     public void openWebViewActivity(Context context, String url, OpenOptions options) {
@@ -68,8 +73,8 @@ public class WebManager {
         dispatchOpenWebViewActivity(webContext);
         webContext.dispatchOpenStart();
         try {
-            String id = webContext.getId();
-            Intent intent = WebViewActivity.newIntent(context, url, id);
+            String id = webContext.getSessionId();
+            Intent intent = WebViewActivity.newIntent(context, id);
             if (options != null && options.isNewTask()) {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             }
@@ -80,12 +85,20 @@ public class WebManager {
         }
     }
 
-    public WebContext getWebContext(String id) {
-        return webContextMap.get(id);
+    public WebContext getWebContext(String sessionId) {
+        if (TextUtils.isEmpty(sessionId)) {
+            return null;
+        }
+        for (WebContext webContext : webContexts) {
+            if (webContext.getSessionId().equals(sessionId)) {
+                return webContext;
+            }
+        }
+        return null;
     }
 
-    public WebActivityContext fromActivityRestore(String id, String url) {
-        return createWebActivityContext(id, url);
+    public WebActivityContext fromActivityRestore(String sessionId, String url) {
+        return createWebActivityContext(sessionId, url);
     }
 
     public void registerPlugin(WebPlugin webPlugin) {
@@ -114,13 +127,19 @@ public class WebManager {
         return createWebActivityContext(generateWebId(), url);
     }
 
-    private WebActivityContext createWebActivityContext(String id, String url) {
-        WebActivityContext webContext = new WebActivityContext(id, url);
+    private WebActivityContext createWebActivityContext(String sessionId, String url) {
+        WebActivityContext webContext = new WebActivityContext(sessionId, url);
         webContext.addOnStateChangeListener(new OnStateChangeListener() {
             @Override
             public void onStateChange(State state, State oldState) {
                 if (state == State.WEB_VIEW_DESTROY) {
-                    webContextMap.remove(webContext.getId());
+                    for (int i = 0; i < webContexts.size(); i++) {
+                        WebContext context = webContexts.get(i);
+                        if (context.getSessionId().equals(sessionId)) {
+                            webContexts.remove(i);
+                            break;
+                        }
+                    }
                 }
             }
         });
@@ -130,7 +149,7 @@ public class WebManager {
 
             }
         });
-        webContextMap.put(webContext.getId(), webContext);
+        webContexts.add(webContext);
         return webContext;
     }
 }

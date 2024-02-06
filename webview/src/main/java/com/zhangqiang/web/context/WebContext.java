@@ -11,14 +11,16 @@ public class WebContext {
     private final List<OnStateChangeListener> onStateChangeListeners = new ArrayList<>();
     private final List<PageLoadListener> pageLoadListeners = new ArrayList<>();
     private final List<OnLoadResourceListener> onLoadResourceListeners = new ArrayList<>();
+    private final List<OnReceiveTitleListener> onReceiveTitleListeners = new ArrayList<>();
+    private final List<OnReceiveIconListener> onReceiveIconListeners = new ArrayList<>();
 
     private State mState = State.INITIAL;
     private WebView webView;
-    private final String id;
+    private final String sessionId;
     private final String url;
 
-    public WebContext(String id, String url) {
-        this.id = id;
+    public WebContext(String sessionId, String url) {
+        this.sessionId = sessionId;
         this.url = url;
     }
 
@@ -93,19 +95,19 @@ public class WebContext {
         }
     }
 
-    public void addPageLoadListener(PageLoadListener listener){
-        if(pageLoadListeners.contains(listener)){
+    public void addPageLoadListener(PageLoadListener listener) {
+        if (pageLoadListeners.contains(listener)) {
             return;
         }
         pageLoadListeners.add(listener);
     }
 
-    public void removePageLoadListener(PageLoadListener listener){
+    public void removePageLoadListener(PageLoadListener listener) {
         pageLoadListeners.remove(listener);
     }
 
-    public String getId() {
-        return id;
+    public String getSessionId() {
+        return sessionId;
     }
 
     public void dispatchLoadResource(WebView view, String url) {
@@ -114,15 +116,50 @@ public class WebContext {
         }
     }
 
-    public void addOnLoadResourceListener(OnLoadResourceListener listener){
-        if(onLoadResourceListeners.contains(listener)){
+    public void addOnLoadResourceListener(OnLoadResourceListener listener) {
+        if (onLoadResourceListeners.contains(listener)) {
             return;
         }
         onLoadResourceListeners.add(listener);
     }
 
-    public void removeOnLoadResourceListener(OnLoadResourceListener listener){
+    public void removeOnLoadResourceListener(OnLoadResourceListener listener) {
         onLoadResourceListeners.remove(listener);
+    }
+
+
+    public void dispatchReceiveTitle(String title) {
+        for (int i = onReceiveTitleListeners.size() - 1; i >= 0; i--) {
+            onReceiveTitleListeners.get(i).onReceiveTitle(title);
+        }
+    }
+
+    public void addOnReceiveTitleListener(OnReceiveTitleListener listener) {
+        if (onReceiveTitleListeners.contains(listener)) {
+            return;
+        }
+        onReceiveTitleListeners.add(listener);
+    }
+
+    public void removeOnReceiveTitleListener(OnReceiveTitleListener listener) {
+        onReceiveTitleListeners.remove(listener);
+    }
+
+    public void dispatchReceiveIcon(Bitmap icon) {
+        for (int i = onReceiveIconListeners.size() - 1; i >= 0; i--) {
+            onReceiveIconListeners.get(i).onReceiveIcon(icon);
+        }
+    }
+
+    public void addOnReceiveIconListener(OnReceiveIconListener listener) {
+        if (onReceiveIconListeners.contains(listener)) {
+            return;
+        }
+        onReceiveIconListeners.add(listener);
+    }
+
+    public void removeOnReceiveIconListener(OnReceiveIconListener listener) {
+        onReceiveIconListeners.remove(listener);
     }
 
 }

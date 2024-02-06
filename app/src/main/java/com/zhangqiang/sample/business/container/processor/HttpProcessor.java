@@ -4,12 +4,12 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.business.container.ContainerActivity;
 import com.zhangqiang.sample.business.container.ContainerProcessor;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.utils.IntentUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.web.manager.WebManager;
 
 import java.util.Arrays;
@@ -47,9 +47,9 @@ public class HttpProcessor implements ContainerProcessor {
                                 }
                             }
                         })
-                        .compose(RxJavaUtils.applyIOMainSchedules())
-                        .compose(RxJavaUtils.withLoadingDialog(activity))
-                        .compose(RxJavaUtils.bindLifecycle(activity))
+                        .compose(RXJavaUtils.applyIOMainSchedules())
+                        .compose(RXJavaUtils.withLoadingDialog(activity))
+                        .compose(RXJavaUtils.bindLifecycle(activity))
                         .subscribe(new BaseObserver<CheckResult>() {
                             @Override
                             public void onNext(CheckResult result) {

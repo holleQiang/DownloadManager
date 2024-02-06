@@ -6,12 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.zhangqiang.common.dialog.loading.LoadingDialogHolder;
+import com.zhangqiang.common.dialog.loading.LoadingDialogHolderImpl;
+import com.zhangqiang.common.dialog.loading.LoadingDialogHolderOwner;
 import com.zhangqiang.sample.base.result.ActivityStarter;
 import com.zhangqiang.sample.base.result.ActivityStarterImpl;
 import com.zhangqiang.sample.base.result.ActivityStarterOwner;
-import com.zhangqiang.sample.ui.dialog.loading.LoadingDialogHolder;
-import com.zhangqiang.sample.ui.dialog.loading.LoadingDialogHolderImpl;
-import com.zhangqiang.sample.ui.dialog.loading.LoadingDialogHolderOwner;
 import com.zhangqiang.visiblehelper.ActivityVisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelperOwner;

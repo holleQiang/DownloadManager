@@ -8,6 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.WebSettings;
@@ -18,15 +21,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zhangqiang.common.activity.BaseActivity;
-import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.activity.menu.MenuItemBean;
+import com.zhangqiang.web.history.bean.VisitRecordBean;
+import com.zhangqiang.web.history.fragment.HistoryFragment;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
 import com.zhangqiang.web.webviewclient.WebViewClientImpl;
 import com.zhangqiang.webview.BuildConfig;
+import com.zhangqiang.webview.R;
 import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 
 /**
@@ -45,13 +52,13 @@ public class WebViewActivity extends BaseActivity {
     }
 
     private static final String INTENT_KEY_URL = "url";
-    private static final String INTENT_KEY_WEB_ID = "web_id";
+    private static final String INTENT_KEY_SESSION_ID = "session_id";
     private ActivityWebViewBinding mActivityWebViewBinding;
+    private HistoryFragment historyFragment;
 
-    public static Intent newIntent(Context context, String url, String id) {
+    public static Intent newIntent(Context context, String sessionId) {
         Intent intent = new Intent(context, WebViewActivity.class);
-        intent.putExtra(INTENT_KEY_URL, url);
-        intent.putExtra(INTENT_KEY_WEB_ID, id);
+        intent.putExtra(INTENT_KEY_SESSION_ID, sessionId);
         return intent;
     }
 
@@ -59,31 +66,34 @@ public class WebViewActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WebContext webContext = WebManager.getInstance().getWebContext(getIntent().getStringExtra(INTENT_KEY_WEB_ID));
-        if (webContext instanceof WebActivityContext) {
-            mWebContext = (WebActivityContext) webContext;
-        } else if (savedInstanceState != null) {
-            mWebContext = WebManager.getInstance().fromActivityRestore(savedInstanceState.getString(INTENT_KEY_WEB_ID),
-                    savedInstanceState.getString(INTENT_KEY_URL));
+        if (savedInstanceState == null) {
+            mWebContext = (WebActivityContext) WebManager.getInstance().getWebContext(getIntent().getStringExtra(INTENT_KEY_SESSION_ID));
         } else {
+            mWebContext = WebManager.getInstance().fromActivityRestore(savedInstanceState.getString(INTENT_KEY_SESSION_ID),
+                    savedInstanceState.getString(INTENT_KEY_URL));
+        }
+        if (mWebContext == null) {
             throw new IllegalArgumentException("webContext error");
         }
+
         mActivityWebViewBinding = ActivityWebViewBinding.inflate(getLayoutInflater());
         mWebContext.dispatchActivityCreate(this);
         setContentView(mActivityWebViewBinding.getRoot());
-        mActivityWebViewBinding.ivBack.setOnClickListener(new View.OnClickListener() {
+        setSupportActionBar(mActivityWebViewBinding.mToolBar);
+        mActivityWebViewBinding.mToolBar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onBackPressed();
             }
         });
-        mActivityWebViewBinding.ivClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
-        mActivityWebViewBinding.mWebView.setWebChromeClient(new WebChromeClientImpl(mActivityWebViewBinding.pbProgress,
+//        mActivityWebViewBinding.mToolBar.setna(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
+        mActivityWebViewBinding.mWebView.setWebChromeClient(new WebChromeClientImpl(mWebContext,
+                mActivityWebViewBinding.pbProgress,
                 mActivityWebViewBinding.etTitle));
         mActivityWebViewBinding.mWebView.setWebViewClient(new WebViewClientImpl(this.mWebContext));
         WebSettings settings = mActivityWebViewBinding.mWebView.getSettings();
@@ -99,12 +109,10 @@ public class WebViewActivity extends BaseActivity {
         settings.setAllowFileAccessFromFileURLs(true);
         mWebContext.dispatchWebViewCreate(mActivityWebViewBinding.mWebView);
 
-        loadResource(savedInstanceState, "https://www.baidu.com");
-
         mActivityWebViewBinding.etTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                mActivityWebViewBinding.ivGo.setVisibility(hasFocus?View.VISIBLE:View.INVISIBLE);
+                invalidateOptionsMenu();
             }
         });
         mActivityWebViewBinding.etTitle.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -112,57 +120,60 @@ public class WebViewActivity extends BaseActivity {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     performSearch();
-                    mActivityWebViewBinding.etTitle.clearFocus();
                     return true;
                 }
                 return false;
             }
         });
         mActivityWebViewBinding.etTitle.clearFocus();
-        mActivityWebViewBinding.ivGo.setVisibility(mActivityWebViewBinding.etTitle.hasFocus()?View.VISIBLE:View.INVISIBLE);
-        mActivityWebViewBinding.ivGo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                performSearch();
-            }
-        });
+        initHistoryFragment();
     }
 
-    private void performSearch() {
-        String input = mActivityWebViewBinding.etTitle.getText().toString().trim();
-        if(TextUtils.isEmpty(input)){
-            return;
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+
+        if(mActivityWebViewBinding.etTitle.hasFocus()){
+            MenuItem searchMenuItem = menu.add(0,R.id.search_button,0,R.string.search);
+            searchMenuItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            searchMenuItem.setIcon(R.drawable.ic_search_24);
         }
-        Uri inputUri = Uri.parse(input);
-        String scheme = inputUri.getScheme();
-        if("http".equalsIgnoreCase(scheme)||"https".equalsIgnoreCase(scheme)){
-            mActivityWebViewBinding.mWebView.loadUrl(input);
-        }else {
-            try {
-                mActivityWebViewBinding.mWebView.loadUrl("https://www.baidu.com/s?wd="+ URLEncoder.encode(input,"utf-8"));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+
+        List<MenuItemBean> menus = mWebContext.getMenus();
+        for (MenuItemBean menuItemBean : menus) {
+            MenuItem menuItem = menu.add(menuItemBean.getTitle());
+            int itemId = menuItem.getItemId();
+            menuItemBean.setId(itemId);
+            menuItem.setShowAsAction(menuItemBean.getShowAsAction());
+            List<MenuItemBean> subMenuItems = menuItemBean.getSubMenuItems();
+            if (subMenuItems != null) {
+                for (MenuItemBean subMenuItem : subMenuItems) {
+                    SubMenu subMenu = menu.addSubMenu(itemId, itemId, Menu.NONE, subMenuItem.getTitle());
+                    int itemId1 = subMenu.getItem().getItemId();
+                }
             }
         }
+        int size = menu.size();
+        for (int i = 0; i < size; i++) {
+            android.view.MenuItem menuItem = menu.getItem(i);
+            int itemId = menuItem.getItemId();
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
-    private void loadResource(Bundle savedInstanceState, String defaultUrl) {
-        String targetUrl;
-        if (savedInstanceState != null) {
-            targetUrl = savedInstanceState.getString(INTENT_KEY_URL);
-        } else {
-            targetUrl = getIntent().getStringExtra(INTENT_KEY_URL);
+    @Override
+    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+        if(item.getItemId() == R.id.search_button){
+            performSearch();
+            return true;
         }
-        if (TextUtils.isEmpty(targetUrl)) {
-            targetUrl = defaultUrl;
-        }
-        mActivityWebViewBinding.mWebView.loadUrl(targetUrl);
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(INTENT_KEY_WEB_ID, mWebContext.getId());
+        outState.putString(INTENT_KEY_SESSION_ID, mWebContext.getSessionId());
         outState.putString(INTENT_KEY_URL, mWebContext.getUrl());
     }
 
@@ -193,5 +204,47 @@ public class WebViewActivity extends BaseActivity {
             return;
         }
         super.onBackPressed();
+    }
+
+    private void performSearch() {
+        String input = mActivityWebViewBinding.etTitle.getText().toString().trim();
+        if (TextUtils.isEmpty(input)) {
+            return;
+        }
+        Uri inputUri = Uri.parse(input);
+        String scheme = inputUri.getScheme();
+        if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+            mActivityWebViewBinding.mWebView.loadUrl(input);
+            mWebContext.dispatchLoadUrl(input);
+        } else {
+            try {
+                String url = "https://www.baidu.com/s?wd=" + URLEncoder.encode(input, "utf-8");
+                mActivityWebViewBinding.mWebView.loadUrl(url);
+                mWebContext.dispatchLoadUrl(url);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        if (historyFragment != null) {
+            getSupportFragmentManager().beginTransaction()
+                    .remove(historyFragment)
+                    .commit();
+            historyFragment = null;
+        }
+        mActivityWebViewBinding.etTitle.clearFocus();
+    }
+
+    private void initHistoryFragment() {
+        historyFragment = new HistoryFragment();
+        historyFragment.setOnVisitRecordClickListener(new HistoryFragment.OnVisitRecordClickListener() {
+            @Override
+            public void onVisitRecordClick(VisitRecordBean visitRecordBean) {
+                mActivityWebViewBinding.etTitle.setText(visitRecordBean.getUrl());
+                performSearch();
+            }
+        });
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fl_fragment_container, historyFragment)
+                .commit();
     }
 }

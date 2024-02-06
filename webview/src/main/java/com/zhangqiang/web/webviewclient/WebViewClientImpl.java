@@ -13,6 +13,7 @@ import androidx.annotation.RequiresApi;
 
 import com.zhangqiang.common.utils.IntentUtils;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.history.service.VisitRecordService;
 import com.zhangqiang.web.log.WebLogger;
 import com.zhangqiang.web.manager.OpenOptions;
 import com.zhangqiang.web.manager.WebManager;
@@ -48,6 +49,7 @@ public class WebViewClientImpl extends WebViewClient {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         if ("http".equals(scheme) || "https".equals(scheme)) {
+            new VisitRecordService(view.getContext()).add(url);
             return false;
         } else {
             try {

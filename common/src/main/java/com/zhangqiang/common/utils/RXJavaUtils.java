@@ -1,4 +1,4 @@
-package com.zhangqiang.sample.utils;
+package com.zhangqiang.common.utils;
 
 import android.util.Log;
 
@@ -8,8 +8,7 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.annotation.NonNull;
 
-import com.zhangqiang.downloadmanager.utils.ThreadUtils;
-import com.zhangqiang.sample.ui.dialog.loading.LoadingDialogHolderOwner;
+import com.zhangqiang.common.dialog.loading.LoadingDialogHolderOwner;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -22,7 +21,7 @@ import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 
-public class RxJavaUtils {
+public class RXJavaUtils {
 
     public static <T> ObservableTransformer<T, T> bindLifecycle(final LifecycleOwner lifecycleOwner) {
 

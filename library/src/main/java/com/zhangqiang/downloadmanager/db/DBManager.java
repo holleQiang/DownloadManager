@@ -12,6 +12,8 @@ import com.zhangqiang.downloadmanager.db.dao.HttpDefaultTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpPartTaskItemEntityDao;
 import com.zhangqiang.downloadmanager.db.dao.HttpTaskEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.M3u8TaskEntityDao;
+import com.zhangqiang.downloadmanager.db.dao.TSTaskEntityDao;
 
 import org.greenrobot.greendao.database.Database;
 
@@ -59,6 +61,8 @@ public class DBManager {
                     HttpTaskEntityDao.class,
                     HttpDefaultTaskEntityDao.class,
                     HttpPartTaskEntityDao.class,
+                    M3u8TaskEntityDao.class,
+                    TSTaskEntityDao.class,
                     HttpPartTaskItemEntityDao.class);
         }
     }

@@ -5,8 +5,9 @@ import android.widget.ImageView;
 
 import androidx.lifecycle.LifecycleOwner;
 
-import com.zhangqiang.sample.impl.BaseObserver;
-import com.zhangqiang.sample.utils.RxJavaUtils;
+
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 
 import java.io.File;
 
@@ -29,8 +30,8 @@ public abstract class BaseFileIconProvider implements FileIconProvider{
                         return getFileIcon(file);
                     }
                 })
-                .compose(RxJavaUtils.bindLifecycle(lifecycleOwner))
-                .compose(RxJavaUtils.applyIOMainSchedules()).subscribe(new BaseObserver<Drawable>() {
+                .compose(RXJavaUtils.bindLifecycle(lifecycleOwner))
+                .compose(RXJavaUtils.applyIOMainSchedules()).subscribe(new BaseObserver<Drawable>() {
                     @Override
                     public void onNext(Drawable drawable) {
                         imageView.setImageDrawable(drawable);

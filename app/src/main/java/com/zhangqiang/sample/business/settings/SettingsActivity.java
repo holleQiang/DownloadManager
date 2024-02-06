@@ -9,14 +9,14 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhangqiang.celladapter.CellRVAdapter;
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseActivity;
 import com.zhangqiang.sample.business.settings.plugins.PluginInfoCell;
 import com.zhangqiang.sample.databinding.ActivitySettingsBinding;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class SettingsActivity extends BaseActivity {
         setSupportActionBar(mBinding.mToolBar);
 
         SettingsManager.getInstance().getMaxRunningTaskCountOption().toObservable()
-                .compose(RxJavaUtils.<Integer>bindLifecycle(this))
+                .compose(RXJavaUtils.<Integer>bindLifecycle(this))
                 .subscribe(new BaseObserver<Integer>() {
                     @Override
                     public void onNext(Integer integer) {
@@ -42,7 +42,7 @@ public class SettingsActivity extends BaseActivity {
                     }
                 });
         SettingsManager.getInstance().getSaveDirOption().toObservable()
-                .compose(RxJavaUtils.<String>bindLifecycle(this))
+                .compose(RXJavaUtils.<String>bindLifecycle(this))
                 .subscribe(new BaseObserver<String>() {
                     @Override
                     public void onNext(String s) {
@@ -51,13 +51,13 @@ public class SettingsActivity extends BaseActivity {
                 });
 
         SettingsManager.getInstance().getHttpDownloadThreadSize().toObservable()
-                .compose(RxJavaUtils.bindLifecycle(this)).subscribe(new BaseObserver<Integer>() {
+                .compose(RXJavaUtils.bindLifecycle(this)).subscribe(new BaseObserver<Integer>() {
                     @Override
                     public void onNext(Integer integer) {
                         mBinding.etThreadSize.setText(String.valueOf(integer));
                     }
                 });
-        SettingsManager.getInstance().getDebugMode().toObservable().compose(RxJavaUtils.bindLifecycle(this))
+        SettingsManager.getInstance().getDebugMode().toObservable().compose(RXJavaUtils.bindLifecycle(this))
                         .subscribe(new BaseObserver<Boolean>() {
                             @Override
                             public void onNext(Boolean aBoolean) {

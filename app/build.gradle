@@ -29,6 +29,7 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.versions.constraintlayout}"
     implementation project(path: ':qrcode-core')
     implementation project(path: ':webview')
+    implementation project(path: ':common')
     testImplementation 'junit:junit:4.13.2'
     implementation "com.github.holleQiang:VisibleHelper:${rootProject.ext.versions.VisibleHelper}"
     implementation "com.github.holleQiang:CellAdapter:${rootProject.ext.versions.CellAdapter}"

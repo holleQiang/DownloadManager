@@ -1,4 +1,4 @@
-package com.zhangqiang.sample.impl;
+package com.zhangqiang.common.utils;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;

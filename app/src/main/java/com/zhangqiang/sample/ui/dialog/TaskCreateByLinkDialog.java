@@ -1,31 +1,20 @@
 package com.zhangqiang.sample.ui.dialog;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.zhangqiang.downloadmanager.manager.DownloadManager;
-import com.zhangqiang.downloadmanager.plugin.ftp.request.FtpDownloadRequest;
-import com.zhangqiang.downloadmanager.plugin.http.request.HttpDownloadRequest;
-import com.zhangqiang.downloadmanager.request.DownloadRequest;
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.base.permission.PermissionHelper;
 import com.zhangqiang.sample.databinding.DialogTaskCreateByLinkBinding;
-import com.zhangqiang.sample.impl.BaseObserver;
-import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.utils.DownloadUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
-
-import java.io.File;
 
 public class TaskCreateByLinkDialog extends BaseDialogFragment {
 
@@ -63,7 +52,7 @@ public class TaskCreateByLinkDialog extends BaseDialogFragment {
             public void onClick(View v) {
 
                 getPermissionHelper().requestPermissionsObservable(getActivity(),Manifest.permission.WRITE_EXTERNAL_STORAGE, 1000)
-                        .compose(RxJavaUtils.bindLifecycle(TaskCreateByLinkDialog.this))
+                        .compose(RXJavaUtils.bindLifecycle(TaskCreateByLinkDialog.this))
                         .map(PermissionHelper.applyPermissionGrant())
                         .subscribe(new BaseObserver<Boolean>() {
                             @Override

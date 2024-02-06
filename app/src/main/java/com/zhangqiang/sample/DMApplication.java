@@ -5,6 +5,7 @@ import android.os.Environment;
 
 import androidx.multidex.MultiDexApplication;
 
+import com.zhangqiang.common.utils.BaseObserver;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.ftp.FtpDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.http.HttpDownloadPlugin;
@@ -14,7 +15,6 @@ import com.zhangqiang.sample.business.container.ContainerProcessorManager;
 import com.zhangqiang.sample.business.container.processor.FtpProtocolProcessor;
 import com.zhangqiang.sample.business.container.processor.HttpProcessor;
 import com.zhangqiang.sample.business.container.processor.QRCodeProcessor;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.plugins.media.refresh.MediaRefreshPlugin;
 import com.zhangqiang.sample.service.DownloadService;

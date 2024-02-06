@@ -6,14 +6,14 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.google.zxing.NotFoundException;
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.business.container.ContainerActivity;
 import com.zhangqiang.sample.business.container.ContainerProcessor;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.QRCodeDecodeUtils;
 import com.zhangqiang.sample.utils.QRCodeResultProcessUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -47,9 +47,9 @@ public class QRCodeProcessor implements ContainerProcessor {
                         return QRCodeDecodeUtils.decodeQRCode(path);
                     }
                 })
-                .compose(RxJavaUtils.bindLifecycle(activity))
-                .compose(RxJavaUtils.applyIOMainSchedules())
-                .compose(RxJavaUtils.withLoadingDialog(activity))
+                .compose(RXJavaUtils.bindLifecycle(activity))
+                .compose(RXJavaUtils.applyIOMainSchedules())
+                .compose(RXJavaUtils.withLoadingDialog(activity))
                 .subscribe(new BaseObserver<String>() {
                     @Override
                     public void onNext(String s) {

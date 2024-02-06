@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar"></style>
+    <style name="BaseAppTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="BaseAppTheme">
@@ -36,7 +36,7 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="BaseDialogTheme" parent="Theme.AppCompat.Light.Dialog"></style>
+    <style name="BaseDialogTheme" parent="Theme.AppCompat.Light.Dialog"/>
 
     <style name="DialogTheme" parent="BaseDialogTheme">
         <item name="android:windowBackground">@android:color/transparent</item>

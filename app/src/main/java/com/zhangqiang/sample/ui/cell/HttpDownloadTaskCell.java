@@ -16,6 +16,8 @@ import com.zhangqiang.celladapter.cell.MultiCell;
 import com.zhangqiang.celladapter.cell.ViewHolderBinder;
 import com.zhangqiang.celladapter.cell.action.Action;
 import com.zhangqiang.celladapter.vh.ViewHolder;
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.downloadmanager.speed.OnSpeedChangeListener;
 import com.zhangqiang.downloadmanager.utils.FileUtils;
 import com.zhangqiang.downloadmanager.utils.LogUtils;
@@ -29,7 +31,6 @@ import com.zhangqiang.downloadmanager.task.OnSaveFileNameChangeListener;
 import com.zhangqiang.downloadmanager.task.OnStatusChangeListener;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.ui.cell.icon.ApkIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.DefaultIconProvider;
 import com.zhangqiang.sample.ui.cell.icon.FileIconProvider;
@@ -39,7 +40,6 @@ import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.PackageUtils;
 import com.zhangqiang.sample.utils.ResourceUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.io.File;
@@ -217,8 +217,9 @@ public class HttpDownloadTaskCell extends MultiCell<HttpDownloadTask> {
                                     return PackageUtils.getPackageInfo(viewHolder.getView().getContext(), file.getAbsolutePath());
                                 }
                             })
-                            .compose(RxJavaUtils.applyIOMainSchedules())
-                            .compose(RxJavaUtils.bindLifecycle(lifecycleOwner)).subscribe(new BaseObserver<PackageUtils.PackageInfoBean>() {
+                            .compose(RXJavaUtils.applyIOMainSchedules())
+                            .compose(RXJavaUtils.bindLifecycle(lifecycleOwner))
+                            .subscribe(new BaseObserver<PackageUtils.PackageInfoBean>() {
                                 @Override
                                 public void onNext(PackageUtils.PackageInfoBean packageInfoBean) {
                                     viewHolder.setText(R.id.tv_apk_version_name,

@@ -1,4 +1,4 @@
-package com.zhangqiang.downloadmanager.utils;
+package com.zhangqiang.common.utils;
 
 import android.os.Handler;
 import android.os.Looper;

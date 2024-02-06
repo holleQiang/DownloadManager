@@ -3,9 +3,7 @@ package com.zhangqiang.sample.ui.dialog;
 import android.Manifest;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -16,22 +14,19 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.downloadmanager.utils.MD5Utils;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseDialogFragment;
 import com.zhangqiang.sample.base.permission.PermissionHelper;
-import com.zhangqiang.sample.impl.BaseObserver;
-import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.utils.BitmapUtils;
 import com.zhangqiang.sample.utils.FileUtils;
-import com.zhangqiang.sample.utils.PermissionUtils;
 import com.zhangqiang.sample.utils.QRCodeEncodeUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 
 import java.io.File;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public class ShowQRCodeDialog extends BaseDialogFragment {
@@ -100,7 +95,7 @@ public class ShowQRCodeDialog extends BaseDialogFragment {
                                 return success;
                             }
                         })
-                        .compose(RxJavaUtils.bindLifecycle(ShowQRCodeDialog.this))
+                        .compose(RXJavaUtils.bindLifecycle(ShowQRCodeDialog.this))
                         .subscribe(new BaseObserver<Boolean>() {
                             @Override
                             public void onNext(Boolean aBoolean) {
@@ -118,8 +113,8 @@ public class ShowQRCodeDialog extends BaseDialogFragment {
                         return QRCodeEncodeUtils.createQRCodeBitmap(s, size, size);
                     }
                 })
-                .compose(RxJavaUtils.applyIOMainSchedules())
-                .compose(RxJavaUtils.bindLifecycle(this))
+                .compose(RXJavaUtils.applyIOMainSchedules())
+                .compose(RXJavaUtils.bindLifecycle(this))
                 .subscribe(new BaseObserver<Bitmap>() {
                     @Override
                     public void onNext(Bitmap bitmap) {

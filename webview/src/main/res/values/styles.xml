@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="WebViewToolbarNavigationStyle" parent="@style/Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="minWidth">32dp</item>
+        <item name="android:minWidth">32dp</item>
+    </style>
+
+    <style name="WebViewToolbarStyle">
+        <item name="toolbarNavigationButtonStyle">@style/WebViewToolbarNavigationStyle</item>
+        <item name="contentInsetStart">0dp</item>
+        <item name="contentInsetLeft">0dp</item>
+        <item name="contentInsetStartWithNavigation">0dp</item>
+    </style>
+</resources>

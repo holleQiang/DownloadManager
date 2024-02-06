@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zhangqiang.celladapter.CellRVAdapter;
 import com.zhangqiang.celladapter.cell.Cell;
+import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.RXJavaUtils;
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.manager.OnTaskCountChangeListener;
 import com.zhangqiang.downloadmanager.manager.RemoveTaskOptions;
@@ -26,7 +28,6 @@ import com.zhangqiang.downloadmanager.task.DownloadTask;
 import com.zhangqiang.downloadmanager.task.Status;
 import com.zhangqiang.sample.R;
 import com.zhangqiang.sample.base.BaseFragment;
-import com.zhangqiang.sample.impl.BaseObserver;
 import com.zhangqiang.sample.manager.SettingsManager;
 import com.zhangqiang.sample.ui.cell.M3u8DownloadTaskCell;
 import com.zhangqiang.sample.ui.cell.FTPDownloadTaskCell;
@@ -37,7 +38,6 @@ import com.zhangqiang.sample.ui.widget.LinearRVDivider;
 import com.zhangqiang.sample.utils.ClipboardUtils;
 import com.zhangqiang.sample.utils.DownloadUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
-import com.zhangqiang.sample.utils.RxJavaUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;
 
 import java.util.ArrayList;
@@ -218,7 +218,7 @@ public class DownloadManagerFragment extends BaseFragment {
 
     private void handleDebugMode() {
         SettingsManager.getInstance().getDebugMode().toObservable()
-                .compose(RxJavaUtils.bindLifecycle(this))
+                .compose(RXJavaUtils.bindLifecycle(this))
                 .subscribe(new BaseObserver<Boolean>() {
                     @Override
                     public void onNext(Boolean aBoolean) {
