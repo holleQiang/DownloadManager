@@ -49,7 +49,6 @@ public class WebViewClientImpl extends WebViewClient {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         if ("http".equals(scheme) || "https".equals(scheme)) {
-            new VisitRecordService(view.getContext()).add(url);
             return false;
         } else {
             try {
@@ -82,7 +81,7 @@ public class WebViewClientImpl extends WebViewClient {
     public void onLoadResource(WebView view, String url) {
         super.onLoadResource(view, url);
         webContext.dispatchLoadResource(view, url);
-        WebLogger.info("=====onLoadResource======"+url);
+        WebLogger.info("=====onLoadResource======" + url);
     }
 
     @Override
