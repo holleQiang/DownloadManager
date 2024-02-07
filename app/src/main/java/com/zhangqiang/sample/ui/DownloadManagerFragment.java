@@ -35,7 +35,7 @@ import com.zhangqiang.sample.ui.cell.HttpDownloadTaskCell;
 import com.zhangqiang.sample.ui.dialog.ShowQRCodeDialog;
 import com.zhangqiang.sample.ui.dialog.TaskOperationDialog;
 import com.zhangqiang.sample.ui.widget.LinearRVDivider;
-import com.zhangqiang.sample.utils.ClipboardUtils;
+import com.zhangqiang.common.utils.ClipboardUtils;
 import com.zhangqiang.sample.utils.DownloadUtils;
 import com.zhangqiang.sample.utils.IntentUtils;
 import com.zhangqiang.sample.utils.ScreenUtils;

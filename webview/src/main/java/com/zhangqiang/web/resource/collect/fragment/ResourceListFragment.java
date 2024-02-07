@@ -1,11 +1,12 @@
 package com.zhangqiang.web.resource.collect.fragment;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,17 +14,19 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zhangqiang.celladapter.CellRVAdapter;
-import com.zhangqiang.celladapter.cell.Cell;
 import com.zhangqiang.common.fragment.BaseFragment;
 import com.zhangqiang.common.utils.BaseObserver;
+import com.zhangqiang.common.utils.ClipboardUtils;
 import com.zhangqiang.common.utils.RXJavaUtils;
-import com.zhangqiang.web.context.OnLoadResourceListener;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.plugin.WebPlugin;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 import com.zhangqiang.web.resource.collect.bean.WebResource;
 import com.zhangqiang.web.resource.collect.fragment.cell.ResourceBean;
 import com.zhangqiang.web.resource.collect.fragment.cell.ResourceCell;
+import com.zhangqiang.web.resource.collect.options.OnOptionClickListener;
+import com.zhangqiang.web.resource.collect.options.Option;
+import com.zhangqiang.web.resource.collect.options.OptionsDialog;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
@@ -31,13 +34,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Function;
-import io.reactivex.internal.util.AppendOnlyLinkedArrayList;
 
 public class ResourceListFragment extends BaseFragment {
 
+    public static final String IMAGE_PATTERN = ".*\\.((png)|(jpg)|(jpeg)|(webp)|(gif))$";
 
     public static final int CATEGORY_ALL = 0;
     public static final int CATEGORY_IMAGE = 1;
@@ -100,12 +101,12 @@ public class ResourceListFragment extends BaseFragment {
                     public List<ResourceCell> apply(List<WebResource> webResources) throws Exception {
                         String reg = null;
                         if (category == CATEGORY_IMAGE) {
-                            reg = ".*\\.((png)|(jpg)|(jpeg)|(webp))$";
+                            reg = IMAGE_PATTERN;
                         } else if (category == CATEGORY_VIDEO) {
                             reg = ".*\\.((m3u8)|(mp4)|(flv)|(mkv)|(avi))$";
-                        }else if(category == CATEGORY_AUDIO){
+                        } else if (category == CATEGORY_AUDIO) {
                             reg = ".*\\.(mp3)$";
-                        }else if(category == CATEGORY_CSS){
+                        } else if (category == CATEGORY_CSS) {
                             reg = ".*\\.(css)$";
                         }
                         if (reg != null) {
@@ -132,7 +133,7 @@ public class ResourceListFragment extends BaseFragment {
                 });
     }
 
-    private static List<ResourceBean> convertToBean(List<WebResource> webResources) {
+    private List<ResourceBean> convertToBean(List<WebResource> webResources) {
         if (webResources == null) {
             return null;
         }
@@ -146,7 +147,7 @@ public class ResourceListFragment extends BaseFragment {
             if (index != -1) {
                 title = url.substring(index);
             }
-            resourceBeans.add(new ResourceBean(title));
+            resourceBeans.add(new ResourceBean(url, title));
         }
         return resourceBeans;
     }
@@ -157,7 +158,23 @@ public class ResourceListFragment extends BaseFragment {
         }
         List<ResourceCell> cells = new ArrayList<>();
         for (ResourceBean resource : resources) {
-            cells.add(new ResourceCell(resource));
+            ResourceCell resourceCell = new ResourceCell(resource);
+            resourceCell.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick() {
+                    new OptionsDialog().setOnOptionClickListener(new OnOptionClickListener() {
+                        @Override
+                        public void onOptionClick(Option option) {
+                            Context context = getContext();
+                            if (context != null) {
+                                ClipboardUtils.copy(context,resource.getUrl());
+                                Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }).show(getChildFragmentManager(),"options");
+                }
+            });
+            cells.add(resourceCell);
         }
         return cells;
     }

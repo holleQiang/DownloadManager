@@ -27,9 +27,11 @@
         <entry key="app/src/main/res/layout/item_plugin_info.xml" value="0.21822916666666667" />
         <entry key="app/src/main/res/menu/menu_main.xml" value="0.21927083333333333" />
         <entry key="app/src/main/res/menu/menu_settings.xml" value="0.2635416666666667" />
+        <entry key="webview/src/main/res/drawable/ic_file.xml" value="0.1755" />
         <entry key="webview/src/main/res/drawable/ic_nav_back.xml" value="0.211" />
         <entry key="webview/src/main/res/drawable/ic_nav_close.xml" value="0.211" />
         <entry key="webview/src/main/res/layout/activity_web_view.xml" value="0.16598052978515626" />
+        <entry key="webview/src/main/res/layout/dialog_options.xml" value="0.21458333333333332" />
         <entry key="webview/src/main/res/layout/dialog_web_resource_collect.xml" value="0.1" />
         <entry key="webview/src/main/res/layout/fragment_history.xml" value="0.19270833333333334" />
         <entry key="webview/src/main/res/layout/fragment_resource_list.xml" value="0.21197916666666666" />

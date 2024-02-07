@@ -63,13 +63,6 @@ public class DMApplication extends MultiDexApplication {
 
 
             WebManager.getInstance().registerPlugin(new DownloadPlugin());
-            WebManager.getInstance().registerPlugin(new M3u8PickPlugin(new M3u8PickPlugin.Callback() {
-                @Override
-                public void onReceiveM3u8Resource(String url) {
-                    File saveDir = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-                    DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(saveDir.getAbsolutePath(), null, url));
-                }
-            }));
             WebManager.getInstance().applyPlugins();
         }
 

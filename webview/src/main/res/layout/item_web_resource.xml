@@ -8,18 +8,29 @@
     android:paddingEnd="16dp"
     android:paddingBottom="5dp">
 
+
+    <ImageView
+        android:id="@+id/iv_icon"
+        android:layout_width="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="20dp"
+        android:contentDescription="@string/resource_preview" />
+
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textColor="#333"
-        android:textIsSelectable="true"
         android:textSize="16sp"
         android:maxLines="1"
         android:singleLine="true"
         android:ellipsize="end"
+        app:layout_constraintStart_toEndOf="@id/iv_icon"
+        android:layout_marginLeft="5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="8dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

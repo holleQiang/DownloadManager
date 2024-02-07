@@ -16,4 +16,8 @@
     <string name="video">视频</string>
     <string name="css">CSS</string>
     <string name="music">音频</string>
+    <string name="resource_preview">资源预览</string>
+    <string name="options">选项</string>
+    <string name="copy_link">复制链接</string>
+    <string name="copy_success">复制成功</string>
 </resources>
