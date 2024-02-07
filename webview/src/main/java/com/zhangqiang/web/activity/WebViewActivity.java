@@ -227,7 +227,7 @@ public class WebViewActivity extends BaseActivity {
             mActivityWebViewBinding.mWebView.goBack();
             return;
         }
-        if(historyFragment == null){
+        if (historyFragment == null) {
             initHistoryFragment();
             return;
         }
