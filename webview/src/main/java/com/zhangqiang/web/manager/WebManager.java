@@ -66,6 +66,14 @@ public class WebManager {
         return targets;
     }
 
+    public WebPlugin findPluginOrThrow(Filter filter) {
+        List<WebPlugin> plugins = findPlugins(filter);
+        if (plugins != null && plugins.size() == 1) {
+            return plugins.get(0);
+        }
+        throw new IllegalArgumentException("cannot find plugin");
+    }
+
     public void openWebViewActivity(Context context, String url) {
         openWebViewActivity(context, url, new OpenOptions.Builder().setNewTask(true).build());
     }

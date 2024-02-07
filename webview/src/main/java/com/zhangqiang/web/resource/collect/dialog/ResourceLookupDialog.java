@@ -1,31 +1,32 @@
 package com.zhangqiang.web.resource.collect.dialog;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zhangqiang.common.dialog.BaseDialogFragment;
-import com.zhangqiang.web.context.WebContext;
-import com.zhangqiang.web.manager.WebManager;
-import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.resource.collect.fragment.ResourceListFragment;
 import com.zhangqiang.webview.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ResourceLookupDialog extends BaseDialogFragment {
 
     private static final String KEY_SESSION_ID = "session_id";
+    private String sessionId;
 
-    public static ResourceLookupDialog newInstance(String sessionId){
+    public static ResourceLookupDialog newInstance(String sessionId) {
         ResourceLookupDialog dialog = new ResourceLookupDialog();
         Bundle bundle = new Bundle();
-        bundle.putString(KEY_SESSION_ID,sessionId);
+        bundle.putString(KEY_SESSION_ID, sessionId);
         dialog.setArguments(bundle);
         return dialog;
     }
@@ -35,8 +36,16 @@ public class ResourceLookupDialog extends BaseDialogFragment {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments != null) {
-            String sessionId = arguments.getString(KEY_SESSION_ID);
+            sessionId = arguments.getString(KEY_SESSION_ID);
         }
+        if (TextUtils.isEmpty(sessionId)) {
+            throw new IllegalArgumentException("session id cannot be null");
+        }
+    }
+
+    @Override
+    protected boolean useBottomSheet() {
+        return true;
     }
 
     @Override
@@ -46,13 +55,22 @@ public class ResourceLookupDialog extends BaseDialogFragment {
 
     @Override
     protected void initView(View view) {
+        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                (int) (getResources().getDisplayMetrics().heightPixels * 0.75)));
         ViewPager2 viewPager = view.findViewById(R.id.vp_detail);
         TabLayout tabLayout = view.findViewById(R.id.tl_category);
-        viewPager.setAdapter(new ResourceLookupViewPagerAdapter(this));
+
+        List<TabFeedBean> tabFeeds  = new ArrayList<>();
+        tabFeeds.add(new TabFeedBean(getString(R.string.all), ResourceListFragment.CATEGORY_ALL));
+        tabFeeds.add(new TabFeedBean(getString(R.string.image), ResourceListFragment.CATEGORY_IMAGE));
+        tabFeeds.add(new TabFeedBean(getString(R.string.video), ResourceListFragment.CATEGORY_VIDEO));
+        tabFeeds.add(new TabFeedBean(getString(R.string.css), ResourceListFragment.CATEGORY_CSS));
+        tabFeeds.add(new TabFeedBean(getString(R.string.music), ResourceListFragment.CATEGORY_AUDIO));
+        viewPager.setAdapter(new ResourceLookupViewPagerAdapter(this, sessionId, tabFeeds));
         new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
             public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                tab.setText(""+position);
+                tab.setText(tabFeeds.get(position).getTabTitle());
             }
         }).attach();
     }

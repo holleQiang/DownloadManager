@@ -2,4 +2,6 @@
 <resources>
     <color name="toolbar_title_text_color">#ffffff</color>
     <color name="history_fragment_bg">#FFFFFF</color>
+    <color name="resource_item_single">#FFFFFF</color>
+    <color name="resource_item_double">#CCF4F1</color>
 </resources>

@@ -6,25 +6,24 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.zhangqiang.web.resource.collect.fragment.ResourceListFragment;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceLookupViewPagerAdapter extends FragmentStateAdapter {
 
-    private final List<TabFeedBean> tabFeeds = new ArrayList<>();
+    private final String sessionId;
+    private final List<TabFeedBean> tabFeeds;
 
-
-    public ResourceLookupViewPagerAdapter(@NonNull Fragment fragment) {
+    public ResourceLookupViewPagerAdapter(@NonNull Fragment fragment, String sessionId, List<TabFeedBean> tabFeeds) {
         super(fragment);
-        tabFeeds.add(new TabFeedBean());
-        tabFeeds.add(new TabFeedBean());
-        tabFeeds.add(new TabFeedBean());
+        this.sessionId = sessionId;
+        this.tabFeeds = tabFeeds;
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return ResourceListFragment.newInstance(1);
+        TabFeedBean tabFeedBean = tabFeeds.get(position);
+        return ResourceListFragment.newInstance(sessionId, tabFeedBean.getCategory());
     }
 
     @Override
