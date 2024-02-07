@@ -2,6 +2,7 @@ package com.zhangqiang.web.history.service;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import com.zhangqiang.common.utils.BitmapUtils;
 import com.zhangqiang.web.db.DBManager;
@@ -72,7 +73,7 @@ public class VisitRecordService {
 
     public void updateIcon(String url, Bitmap bitmap) {
         List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
-                .where(VisitRecordEntityDao.Properties.Url.eq(url))
+                .where(VisitRecordEntityDao.Properties.Url.like("%" + getHost(url) + "%"))
                 .list();
         if (recordEntities != null && recordEntities.size() > 0) {
             byte[] iconData = BitmapUtils.bitmapToByteArray(bitmap);
@@ -81,5 +82,9 @@ public class VisitRecordService {
             }
             getVisitRecordEntityDao().updateInTx(recordEntities);
         }
+    }
+
+    private String getHost(String url) {
+        return Uri.parse(url).getHost();
     }
 }

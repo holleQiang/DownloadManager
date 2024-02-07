@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ import com.zhangqiang.web.activity.menu.MenuItemBean;
 import com.zhangqiang.web.history.bean.VisitRecordBean;
 import com.zhangqiang.web.history.fragment.HistoryFragment;
 import com.zhangqiang.web.manager.WebManager;
+import com.zhangqiang.web.utils.URLEncodeUtils;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
 import com.zhangqiang.web.webviewclient.WebViewClientImpl;
 import com.zhangqiang.webview.BuildConfig;
@@ -71,12 +73,12 @@ public class WebViewActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             mWebContext = (WebActivityContext) WebManager.getInstance().getWebContext(getIntent().getStringExtra(INTENT_KEY_SESSION_ID));
+            if (mWebContext == null) {
+                mWebContext = WebManager.getInstance().fromSystemOpen();
+            }
         } else {
             mWebContext = WebManager.getInstance().fromActivityRestore(savedInstanceState.getString(INTENT_KEY_SESSION_ID),
                     savedInstanceState.getString(INTENT_KEY_URL));
-        }
-        if (mWebContext == null) {
-            throw new IllegalArgumentException("webContext error");
         }
 
         mActivityWebViewBinding = ActivityWebViewBinding.inflate(getLayoutInflater());
@@ -102,7 +104,6 @@ public class WebViewActivity extends BaseActivity {
         settings.setDomStorageEnabled(true);
         settings.setGeolocationEnabled(true);
         settings.setSupportZoom(true);
-        settings.setUseWideViewPort(true);
         settings.setAllowFileAccessFromFileURLs(true);
         mWebContext.dispatchWebViewCreate(mActivityWebViewBinding.mWebView);
 
@@ -226,28 +227,41 @@ public class WebViewActivity extends BaseActivity {
             mActivityWebViewBinding.mWebView.goBack();
             return;
         }
+        if(historyFragment == null){
+            initHistoryFragment();
+            return;
+        }
         super.onBackPressed();
     }
 
     private void performSearch() {
         String input = mActivityWebViewBinding.etTitle.getText().toString().trim();
-        if (TextUtils.isEmpty(input)) {
-            return;
-        }
-        Uri inputUri = Uri.parse(input);
-        String scheme = inputUri.getScheme();
-        if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
-            mActivityWebViewBinding.mWebView.loadUrl(input);
-            mWebContext.dispatchLoadUrl(input);
-        } else {
-            try {
-                String url = "https://www.baidu.com/s?wd=" + URLEncoder.encode(input, "utf-8");
-                mActivityWebViewBinding.mWebView.loadUrl(url);
-                mWebContext.dispatchLoadUrl(url);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+        boolean isLink = false;
+        if (!TextUtils.isEmpty(input)) {
+            Uri inputUri = Uri.parse(input);
+            String scheme = inputUri.getScheme();
+            if ("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+                isLink = true;
+            } else if ("chls.pro/ssl".equalsIgnoreCase(input)) {
+                isLink = true;
+            } else if (input.endsWith(".com") || input.endsWith(".net") || input.endsWith(".cc")) {
+                isLink = true;
             }
         }
+        String loadUrl;
+        if (isLink) {
+            loadUrl = input;
+        } else {
+            String params = URLEncodeUtils.encodeUrl(input);
+            if (!TextUtils.isEmpty(params)) {
+                loadUrl = "https://www.baidu.com/s?wd=" + params;
+            } else {
+                loadUrl = "https://www.baidu.com";
+            }
+        }
+        mActivityWebViewBinding.mWebView.loadUrl(loadUrl);
+        mWebContext.dispatchLoadUrl(loadUrl);
+
         if (historyFragment != null) {
             getSupportFragmentManager().beginTransaction()
                     .remove(historyFragment)
@@ -255,6 +269,11 @@ public class WebViewActivity extends BaseActivity {
             historyFragment = null;
         }
         mActivityWebViewBinding.etTitle.clearFocus();
+
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(mActivityWebViewBinding.etTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
     }
 
     private void initHistoryFragment() {

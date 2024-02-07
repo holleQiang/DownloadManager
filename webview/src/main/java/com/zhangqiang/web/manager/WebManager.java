@@ -111,6 +111,14 @@ public class WebManager {
         return createWebActivityContext(sessionId, url);
     }
 
+    public WebActivityContext fromSystemOpen() {
+        WebActivityContext webContext = createWebActivityContext(null);
+        dispatchOpenWebViewActivity(webContext);
+        webContext.dispatchOpenStart();
+        webContext.dispatchOpenSuccess();
+        return webContext;
+    }
+
     public void registerPlugin(WebPlugin webPlugin) {
         webPlugins.add(webPlugin);
     }
