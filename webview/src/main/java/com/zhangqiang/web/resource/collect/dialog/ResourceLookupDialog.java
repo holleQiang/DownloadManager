@@ -49,18 +49,21 @@ public class ResourceLookupDialog extends BaseDialogFragment {
     }
 
     @Override
+    protected float getHeightRatio() {
+        return 0.75f;
+    }
+
+    @Override
     protected int getLayoutResId() {
         return R.layout.dialog_web_resource_collect;
     }
 
     @Override
     protected void initView(View view) {
-        view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                (int) (getResources().getDisplayMetrics().heightPixels * 0.75)));
         ViewPager2 viewPager = view.findViewById(R.id.vp_detail);
         TabLayout tabLayout = view.findViewById(R.id.tl_category);
 
-        List<TabFeedBean> tabFeeds  = new ArrayList<>();
+        List<TabFeedBean> tabFeeds = new ArrayList<>();
         tabFeeds.add(new TabFeedBean(getString(R.string.all), ResourceListFragment.CATEGORY_ALL));
         tabFeeds.add(new TabFeedBean(getString(R.string.image), ResourceListFragment.CATEGORY_IMAGE));
         tabFeeds.add(new TabFeedBean(getString(R.string.video), ResourceListFragment.CATEGORY_VIDEO));

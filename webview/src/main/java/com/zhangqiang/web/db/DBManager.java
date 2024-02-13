@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.Nullable;
 
 import com.github.yuweiguocn.library.greendao.MigrationHelper;
+import com.zhangqiang.web.db.dao.BookMarkEntityDao;
 import com.zhangqiang.web.db.dao.DaoMaster;
 import com.zhangqiang.web.db.dao.DaoSession;
 import com.zhangqiang.web.db.dao.VisitRecordEntityDao;
@@ -53,7 +54,8 @@ public class DBManager {
                             DaoMaster.dropAllTables(db, ifExists);
                         }
                     },
-                    VisitRecordEntityDao.class
+                    VisitRecordEntityDao.class,
+                    BookMarkEntityDao.class
             );
         }
     }

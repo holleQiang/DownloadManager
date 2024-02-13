@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity;
 import com.zhangqiang.web.activity.OnActivityCreatedListener;
 import com.zhangqiang.web.activity.WebActivityContext;
 import com.zhangqiang.web.activity.WebViewActivity;
+import com.zhangqiang.web.boomark.plugin.BookMarkPlugin;
 import com.zhangqiang.web.context.OnStateChangeListener;
 import com.zhangqiang.web.context.State;
 import com.zhangqiang.web.context.WebContext;
@@ -43,6 +44,7 @@ public class WebManager {
         registerPlugin(new VisitRecordPlugin());
         registerPlugin(new ResourceCollectPlugin());
         registerPlugin(new RefreshPlugin());
+        registerPlugin(new BookMarkPlugin());
     }
 
     public void applyPlugins() {

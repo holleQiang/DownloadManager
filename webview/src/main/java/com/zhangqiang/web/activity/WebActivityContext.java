@@ -11,7 +11,7 @@ import java.util.List;
 
 public class WebActivityContext extends WebContext {
 
-    public FragmentActivity activity;
+    public WebViewActivity activity;
     private final List<OnActivityCreatedListener> onActivityCreatedListeners = new ArrayList<>();
     private final List<OnActivityDestroyListener> onActivityDestroyListeners = new ArrayList<>();
     private final List<OnLoadUrlListener> onLoadUrlListeners = new ArrayList<>();
@@ -21,7 +21,7 @@ public class WebActivityContext extends WebContext {
         super(sessionId, url);
     }
 
-    public void dispatchActivityCreate(FragmentActivity activity) {
+    public void dispatchActivityCreate(WebViewActivity activity) {
         this.activity = activity;
         for (int i = onActivityCreatedListeners.size() - 1; i >= 0; i--) {
             onActivityCreatedListeners.get(i).onActivityCreated(activity);
@@ -35,7 +35,7 @@ public class WebActivityContext extends WebContext {
         }
     }
 
-    public FragmentActivity getActivity() {
+    public WebViewActivity getActivity() {
         return activity;
     }
 

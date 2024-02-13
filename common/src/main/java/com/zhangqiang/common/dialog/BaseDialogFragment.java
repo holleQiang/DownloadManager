@@ -27,7 +27,7 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
         if (context == null) {
             return super.onCreateDialog(savedInstanceState);
         }
-        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : new Dialog(getActivity(),getTheme());
+        return useBottomSheet() ? new BottomSheetDialog(getActivity(), getTheme()) : new Dialog(getActivity(), getTheme());
 //        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : super.onCreateDialog(savedInstanceState);
     }
 
@@ -35,10 +35,19 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
         return false;
     }
 
+    protected float getHeightRatio() {
+        return -1;
+    }
+
     @Nullable
     @Override
     public final View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(getLayoutResId(), container, false);
+        float heightRatio = getHeightRatio();
+        if (heightRatio != -1) {
+            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    (int) (getResources().getDisplayMetrics().heightPixels * heightRatio)));
+        }
         initView(view);
         return view;
     }

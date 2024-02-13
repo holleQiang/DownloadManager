@@ -228,6 +228,8 @@ public class WebViewActivity extends BaseActivity {
             return;
         }
         if (historyFragment == null) {
+            mActivityWebViewBinding.etTitle.setText(null);
+            mActivityWebViewBinding.mWebView.loadUrl(null);
             initHistoryFragment();
             return;
         }
@@ -236,6 +238,24 @@ public class WebViewActivity extends BaseActivity {
 
     private void performSearch() {
         String input = mActivityWebViewBinding.etTitle.getText().toString().trim();
+        performSearch(input);
+    }
+
+    private void initHistoryFragment() {
+        historyFragment = new HistoryFragment();
+        historyFragment.setOnVisitRecordClickListener(new HistoryFragment.OnVisitRecordClickListener() {
+            @Override
+            public void onVisitRecordClick(VisitRecordBean visitRecordBean) {
+                mActivityWebViewBinding.etTitle.setText(visitRecordBean.getUrl());
+                performSearch();
+            }
+        });
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fl_fragment_container, historyFragment)
+                .commit();
+    }
+
+    public void performSearch(String input) {
         boolean isLink = false;
         if (!TextUtils.isEmpty(input)) {
             Uri inputUri = Uri.parse(input);
@@ -274,19 +294,5 @@ public class WebViewActivity extends BaseActivity {
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(mActivityWebViewBinding.etTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
         }
-    }
-
-    private void initHistoryFragment() {
-        historyFragment = new HistoryFragment();
-        historyFragment.setOnVisitRecordClickListener(new HistoryFragment.OnVisitRecordClickListener() {
-            @Override
-            public void onVisitRecordClick(VisitRecordBean visitRecordBean) {
-                mActivityWebViewBinding.etTitle.setText(visitRecordBean.getUrl());
-                performSearch();
-            }
-        });
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fl_fragment_container, historyFragment)
-                .commit();
     }
 }

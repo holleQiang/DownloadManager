@@ -20,4 +20,9 @@
     <string name="options">选项</string>
     <string name="copy_link">复制链接</string>
     <string name="copy_success">复制成功</string>
+    <string name="bookmark">书签</string>
+    <string name="add_book_mark">添加书签</string>
+    <string name="remove_bookmark">移除书签</string>
+    <string name="add">添加</string>
+    <string name="please_input_bookmark_title">请输入标签标题</string>
 </resources>
