@@ -25,4 +25,5 @@
     <string name="remove_bookmark">移除书签</string>
     <string name="add">添加</string>
     <string name="please_input_bookmark_title">请输入标签标题</string>
+    <string name="doc">文档</string>
 </resources>

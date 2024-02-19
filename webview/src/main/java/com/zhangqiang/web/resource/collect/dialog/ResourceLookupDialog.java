@@ -3,7 +3,6 @@ package com.zhangqiang.web.resource.collect.dialog;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +11,8 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.zhangqiang.common.dialog.BaseDialogFragment;
-import com.zhangqiang.web.resource.collect.fragment.ResourceListFragment;
+import com.zhangqiang.web.resource.collect.tabs.TabProvider;
+import com.zhangqiang.web.resource.collect.tabs.TabProviders;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
@@ -64,11 +64,10 @@ public class ResourceLookupDialog extends BaseDialogFragment {
         TabLayout tabLayout = view.findViewById(R.id.tl_category);
 
         List<TabFeedBean> tabFeeds = new ArrayList<>();
-        tabFeeds.add(new TabFeedBean(getString(R.string.all), ResourceListFragment.CATEGORY_ALL));
-        tabFeeds.add(new TabFeedBean(getString(R.string.image), ResourceListFragment.CATEGORY_IMAGE));
-        tabFeeds.add(new TabFeedBean(getString(R.string.video), ResourceListFragment.CATEGORY_VIDEO));
-        tabFeeds.add(new TabFeedBean(getString(R.string.css), ResourceListFragment.CATEGORY_CSS));
-        tabFeeds.add(new TabFeedBean(getString(R.string.music), ResourceListFragment.CATEGORY_AUDIO));
+        List<TabProvider> tabProviders = TabProviders.get(view.getContext()).getTabProviders();
+        for (TabProvider tabProvider : tabProviders) {
+            tabFeeds.add(new TabFeedBean(tabProvider.getTabTitle(), tabProvider.getId()));
+        }
         viewPager.setAdapter(new ResourceLookupViewPagerAdapter(this, sessionId, tabFeeds));
         new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override

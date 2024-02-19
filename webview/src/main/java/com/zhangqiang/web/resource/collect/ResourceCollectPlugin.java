@@ -15,7 +15,6 @@ import com.zhangqiang.web.resource.collect.dialog.ResourceLookupDialog;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ResourceCollectPlugin implements WebPlugin {
 
     private final Map<String, List<WebResource>> resourceMap = new ConcurrentHashMap<>();
+    private final List<OnResourceChangeListener> onResourceChangeListeners = new ArrayList<>();
 
     @Override
     public void apply(PluginContext pluginContext) {
@@ -55,7 +55,10 @@ public class ResourceCollectPlugin implements WebPlugin {
                             resourceList = new ArrayList<>();
                             resourceMap.put(webContext.getSessionId(), resourceList);
                         }
-                        resourceList.add(new WebResource().setUrl(url));
+                        WebResource webResource = new WebResource().setUrl(url);
+                        resourceList.add(webResource);
+
+                        dispatchWebResourceLoad(webResource, webContext);
                     }
                 });
                 webContext.addOnActivityDestroyListener(new OnActivityDestroyListener() {
@@ -68,7 +71,24 @@ public class ResourceCollectPlugin implements WebPlugin {
         });
     }
 
+    private synchronized void dispatchWebResourceLoad(WebResource webResource, WebActivityContext webContext) {
+        for (int i = onResourceChangeListeners.size() - 1; i >= 0; i--) {
+            onResourceChangeListeners.get(i).onLoadWebResource(webContext.getSessionId(), webResource);
+        }
+    }
+
     public List<WebResource> getResourceList(String sessionId) {
         return resourceMap.get(sessionId);
+    }
+
+    public synchronized void addOnResourceChangeListener(OnResourceChangeListener listener) {
+        if (onResourceChangeListeners.contains(listener)) {
+            return;
+        }
+        onResourceChangeListeners.add(listener);
+    }
+
+    public synchronized void removeOnResourceChangeListener(OnResourceChangeListener listener) {
+        onResourceChangeListeners.remove(listener);
     }
 }

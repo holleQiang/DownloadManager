@@ -3,9 +3,11 @@ package com.zhangqiang.web.resource.collect.fragment;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -18,8 +20,10 @@ import com.zhangqiang.common.fragment.BaseFragment;
 import com.zhangqiang.common.utils.BaseObserver;
 import com.zhangqiang.common.utils.ClipboardUtils;
 import com.zhangqiang.common.utils.RXJavaUtils;
+import com.zhangqiang.web.context.OnLoadResourceListener;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.resource.collect.OnResourceChangeListener;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 import com.zhangqiang.web.resource.collect.bean.WebResource;
 import com.zhangqiang.web.resource.collect.fragment.cell.ResourceBean;
@@ -27,6 +31,9 @@ import com.zhangqiang.web.resource.collect.fragment.cell.ResourceCell;
 import com.zhangqiang.web.resource.collect.options.OnOptionClickListener;
 import com.zhangqiang.web.resource.collect.options.Option;
 import com.zhangqiang.web.resource.collect.options.OptionsDialog;
+import com.zhangqiang.web.resource.collect.tabs.TabProvider;
+import com.zhangqiang.web.resource.collect.tabs.TabProviders;
+import com.zhangqiang.web.resource.collect.utils.Utils;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
@@ -38,26 +45,22 @@ import io.reactivex.functions.Function;
 
 public class ResourceListFragment extends BaseFragment {
 
-    public static final String IMAGE_PATTERN = ".*\\.((png)|(jpg)|(jpeg)|(webp)|(gif))$";
-
-    public static final int CATEGORY_ALL = 0;
-    public static final int CATEGORY_IMAGE = 1;
-    public static final int CATEGORY_VIDEO = 2;
-    public static final int CATEGORY_CSS = 3;
-    public static final int CATEGORY_AUDIO = 4;
-    private static final String KEY_CATEGORY = "category";
+    private static final String KET_PROVIDER_ID = "provider_id";
     private static final String KEY_SESSION_ID = "session_id";
+    private CellRVAdapter resourceListAdapter;
+    private ResourceCollectPlugin resourceCollectPlugin;
+    private RecyclerView rvResourceList;
 
-    public static ResourceListFragment newInstance(String sessionId, int category) {
+    public static ResourceListFragment newInstance(String sessionId, int providerId) {
         ResourceListFragment resourceListFragment = new ResourceListFragment();
         Bundle arguments = new Bundle();
-        arguments.putInt(KEY_CATEGORY, category);
+        arguments.putInt(KET_PROVIDER_ID, providerId);
         arguments.putString(KEY_SESSION_ID, sessionId);
         resourceListFragment.setArguments(arguments);
         return resourceListFragment;
     }
 
-    private int category;
+    private TabProvider tabProvider;
     private String sessionId;
 
     @Override
@@ -65,7 +68,11 @@ public class ResourceListFragment extends BaseFragment {
         super.onCreate(savedInstanceState);
         Bundle arguments = getArguments();
         if (arguments != null) {
-            category = arguments.getInt(KEY_CATEGORY);
+            int providerId = arguments.getInt(KET_PROVIDER_ID);
+            tabProvider = TabProviders.get(getContext()).findById(providerId);
+            if (tabProvider == null) {
+                throw new NullPointerException("tab provider is null");
+            }
             sessionId = arguments.getString(KEY_SESSION_ID);
         }
     }
@@ -79,12 +86,18 @@ public class ResourceListFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        RecyclerView rvResourceList = view.findViewById(R.id.rv_resource_list);
-        rvResourceList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        CellRVAdapter resourceListAdapter = new CellRVAdapter();
+        rvResourceList = view.findViewById(R.id.rv_resource_list);
+        rvResourceList.setLayoutManager(new LinearLayoutManager(view.getContext()) {
+            @Override
+            public int scrollVerticallyBy(int dy, RecyclerView.Recycler recycler, RecyclerView.State state) {
+                int vertically = super.scrollVerticallyBy(dy, recycler, state);
+                return vertically == 0 ? 1 : vertically;
+            }
+        });
+        resourceListAdapter = new CellRVAdapter();
         rvResourceList.setAdapter(resourceListAdapter);
 
-        ResourceCollectPlugin resourceCollectPlugin = (ResourceCollectPlugin) WebManager.getInstance().findPluginOrThrow(new WebManager.Filter() {
+        resourceCollectPlugin = (ResourceCollectPlugin) WebManager.getInstance().findPluginOrThrow(new WebManager.Filter() {
             @Override
             public boolean onFilter(WebPlugin plugin) {
                 return plugin instanceof ResourceCollectPlugin;
@@ -99,29 +112,13 @@ public class ResourceListFragment extends BaseFragment {
                 .map(new Function<List<WebResource>, List<ResourceCell>>() {
                     @Override
                     public List<ResourceCell> apply(List<WebResource> webResources) throws Exception {
-                        String reg = null;
-                        if (category == CATEGORY_IMAGE) {
-                            reg = IMAGE_PATTERN;
-                        } else if (category == CATEGORY_VIDEO) {
-                            reg = ".*\\.((m3u8)|(mp4)|(flv)|(mkv)|(avi))$";
-                        } else if (category == CATEGORY_AUDIO) {
-                            reg = ".*\\.(mp3)$";
-                        } else if (category == CATEGORY_CSS) {
-                            reg = ".*\\.(css)$";
-                        }
-                        if (reg != null) {
-                            List<WebResource> newList = new ArrayList<>();
-                            for (WebResource webResource : webResources) {
-                                String url = webResource.getUrl();
-                                Uri uri = Uri.parse(url);
-                                String path = uri.getPath();
-                                if (Pattern.compile(reg).matcher(path).matches()) {
-                                    newList.add(webResource);
-                                }
+                        List<WebResource> newList = new ArrayList<>();
+                        for (WebResource webResource : webResources) {
+                            if(tabProvider.isTargetResource(webResource)){
+                                newList.add(webResource);
                             }
-                            return convertToCell(convertToBean(newList));
                         }
-                        return convertToCell(convertToBean(webResources));
+                        return convertToCell(convertToBeans(newList));
                     }
                 })
                 .compose(RXJavaUtils.bindLifecycle(this))
@@ -131,23 +128,62 @@ public class ResourceListFragment extends BaseFragment {
                         resourceListAdapter.setDataList(resourceCells);
                     }
                 });
+
+        resourceCollectPlugin.addOnResourceChangeListener(onResourceChangeListener);
     }
 
-    private List<ResourceBean> convertToBean(List<WebResource> webResources) {
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        resourceCollectPlugin.removeOnResourceChangeListener(onResourceChangeListener);
+    }
+
+    private final OnResourceChangeListener onResourceChangeListener = new OnResourceChangeListener() {
+        @Override
+        public void onLoadWebResource(String sessionId, WebResource webResource) {
+            if (tabProvider.isTargetResource(webResource)) {
+                resourceListAdapter.addDataAtLast(new ResourceCell(convertToBean(webResource)));
+                if (isLastItemCompletelyVisible()) {
+                    rvResourceList.scrollToPosition(resourceListAdapter.getItemCount() - 1);
+                }
+            }
+        }
+    };
+
+    private boolean isLastItemCompletelyVisible() {
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) rvResourceList.getLayoutManager();
+        if (layoutManager == null || resourceListAdapter == null) {
+            return false;
+        }
+        int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+        return lastCompletelyVisibleItemPosition == resourceListAdapter.getItemCount() - 1;
+    }
+
+    private ResourceBean convertToBean(WebResource webResource) {
+        String url = webResource.getUrl();
+        Uri uri = Uri.parse(url);
+        String path = uri.getLastPathSegment();
+        String title = null;
+        if (!TextUtils.isEmpty(path)) {
+            int index = url.indexOf(path);
+            if (index != -1) {
+                title = url.substring(index);
+            }
+        }
+        if (TextUtils.isEmpty(title)) {
+            title = url;
+        }
+        return new ResourceBean(url, title);
+    }
+
+    private List<ResourceBean> convertToBeans(List<WebResource> webResources) {
         if (webResources == null) {
             return null;
         }
         List<ResourceBean> resourceBeans = new ArrayList<>();
         for (WebResource webResource : webResources) {
-            String url = webResource.getUrl();
-            Uri uri = Uri.parse(url);
-            String path = uri.getLastPathSegment();
-            int index = url.indexOf(path);
-            String title = path;
-            if (index != -1) {
-                title = url.substring(index);
-            }
-            resourceBeans.add(new ResourceBean(url, title));
+            resourceBeans.add(convertToBean(webResource));
         }
         return resourceBeans;
     }
@@ -167,11 +203,11 @@ public class ResourceListFragment extends BaseFragment {
                         public void onOptionClick(Option option) {
                             Context context = getContext();
                             if (context != null) {
-                                ClipboardUtils.copy(context,resource.getUrl());
+                                ClipboardUtils.copy(context, resource.getUrl());
                                 Toast.makeText(context, R.string.copy_success, Toast.LENGTH_SHORT).show();
                             }
                         }
-                    }).show(getChildFragmentManager(),"options");
+                    }).show(getChildFragmentManager(), "options");
                 }
             });
             cells.add(resourceCell);

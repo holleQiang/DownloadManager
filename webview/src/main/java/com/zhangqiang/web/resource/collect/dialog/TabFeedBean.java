@@ -3,18 +3,18 @@ package com.zhangqiang.web.resource.collect.dialog;
 public class TabFeedBean {
 
     private final String tabTitle;
-    private final int category;
+    private final int providerId;
 
-    public TabFeedBean(String tabTitle, int category) {
+    public TabFeedBean(String tabTitle, int providerId) {
         this.tabTitle = tabTitle;
-        this.category = category;
+        this.providerId = providerId;
     }
 
     public String getTabTitle() {
         return tabTitle;
     }
 
-    public int getCategory() {
-        return category;
+    public int getProviderId() {
+        return providerId;
     }
 }

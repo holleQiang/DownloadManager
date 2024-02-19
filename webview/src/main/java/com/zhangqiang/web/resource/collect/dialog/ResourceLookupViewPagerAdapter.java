@@ -23,7 +23,7 @@ public class ResourceLookupViewPagerAdapter extends FragmentStateAdapter {
     @Override
     public Fragment createFragment(int position) {
         TabFeedBean tabFeedBean = tabFeeds.get(position);
-        return ResourceListFragment.newInstance(sessionId, tabFeedBean.getCategory());
+        return ResourceListFragment.newInstance(sessionId, tabFeedBean.getProviderId());
     }
 
     @Override
