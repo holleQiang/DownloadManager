@@ -1,5 +1,7 @@
 package com.zhangqiang.downloadmanager.plugin.m3u8.parser;
 
+import android.text.TextUtils;
+
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.KeyInfo;
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.M3u8File;
 import com.zhangqiang.downloadmanager.plugin.m3u8.parser.bean.TSInfo;
@@ -23,7 +25,12 @@ public class M3u8FileEncoder {
         bufferedWriter.write(String.format(Locale.ENGLISH, "#EXT-X-MEDIA-SEQUENCE:%d\n", m3u8File.getMediaSequence()));
         KeyInfo keyInfo = m3u8File.getKeyInfo();
         if (keyInfo != null) {
-            bufferedWriter.write(String.format(Locale.ENGLISH, "#EXT-X-KEY:METHOD=%s,URI=%s\n", keyInfo.getMethod(), keyInfo.getUri()));
+            String iv = keyInfo.getIV();
+            if (TextUtils.isEmpty(iv)) {
+                bufferedWriter.write(String.format(Locale.ENGLISH, "#EXT-X-KEY:METHOD=%s,URI=%s\n", keyInfo.getMethod(), keyInfo.getUri()));
+            } else {
+                bufferedWriter.write(String.format(Locale.ENGLISH, "#EXT-X-KEY:METHOD=%s,URI=%s,IV=%s\n", keyInfo.getMethod(), keyInfo.getUri(), keyInfo.getIV()));
+            }
         }
         List<TSInfo> infoList = m3u8File.getInfoList();
         if (infoList != null) {

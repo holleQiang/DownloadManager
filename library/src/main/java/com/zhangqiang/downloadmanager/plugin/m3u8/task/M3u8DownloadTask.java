@@ -3,7 +3,6 @@ package com.zhangqiang.downloadmanager.plugin.m3u8.task;
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -391,7 +390,7 @@ public class M3u8DownloadTask extends DownloadTask {
             KeyInfo newKeyInfo = null;
             KeyInfo originKeyInfo = originM3u8File.getKeyInfo();
             if (originKeyInfo != null) {
-                newKeyInfo = new KeyInfo(originKeyInfo.getMethod(), getKeyFileName());
+                newKeyInfo = new KeyInfo(originKeyInfo.getMethod(), getKeyFileName(), originKeyInfo.getIV());
             }
             new M3u8FileEncoder().encode(new M3u8File(originM3u8File.getVersion(),
                     originM3u8File.getMediaSequence(),

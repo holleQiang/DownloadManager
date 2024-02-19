@@ -47,12 +47,12 @@ public class M3u8FileParser {
                     playListType = line.split(":")[1];
                 } else if (line.startsWith("#EXTINF")) {
                     if (tsDuration != 0) {
-                        infoItems.add(new TSInfo(tsDuration,tsUri));
+                        infoItems.add(new TSInfo(tsDuration, tsUri));
                     }
                     tsDuration = Float.parseFloat(line.split(":")[1].split(",")[0]);
                 } else if (line.equals("#EXT-X-ENDLIST")) {
                     if (tsDuration != 0) {
-                        infoItems.add(new TSInfo(tsDuration,tsUri));
+                        infoItems.add(new TSInfo(tsDuration, tsUri));
                         tsDuration = 0;
                     }
                 } else if (tsDuration != 0) {
@@ -84,28 +84,31 @@ public class M3u8FileParser {
                     currentStreamInfo = new StreamInfo(programId, bandWidth, resolution);
                 } else if (currentStreamInfo != null) {
                     currentStreamInfo.setUri(line);
-                }else if(line.startsWith("#EXT-X-KEY")){
-                    String body = line.split(":")[1];
+                } else if (line.startsWith("#EXT-X-KEY")) {
+                    String body = line.substring(11);
                     String[] bodyItems = body.split(",");
                     String methodName = null;
                     String uri = null;
+                    String iv = null;
                     for (String bodyItem : bodyItems) {
                         String[] split = bodyItem.split("=");
                         String key = split[0];
                         String value = split[1];
-                        if("METHOD".equals(key)){
+                        if ("METHOD".equals(key)) {
                             methodName = value;
-                        }else if("URI".equals(key)){
+                        } else if ("URI".equals(key)) {
                             uri = value;
+                        } else if ("IV".equals(key)) {
+                            iv = value;
                         }
-                        keyInfo = new KeyInfo(methodName,uri);
                     }
+                    keyInfo = new KeyInfo(methodName, uri, iv);
                 }
                 LogUtils.i(TAG, "============" + line);
                 line = bufferedReader.readLine();
             }
             if (tsDuration != 0) {
-                infoItems.add(new TSInfo(tsDuration,tsUri));
+                infoItems.add(new TSInfo(tsDuration, tsUri));
             }
             if (currentStreamInfo != null) {
                 streamInfoList.add(currentStreamInfo);
