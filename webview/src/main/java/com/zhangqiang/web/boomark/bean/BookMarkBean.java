@@ -7,6 +7,7 @@ public class BookMarkBean {
     private String id;
     private String url;
     private String title;
+    private String iconUrl;
     private List<BookMarkBean> children;
     private BookMarkBean parent;
 
@@ -52,6 +53,15 @@ public class BookMarkBean {
 
     public BookMarkBean setParent(BookMarkBean parent) {
         this.parent = parent;
+        return this;
+    }
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public BookMarkBean setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
         return this;
     }
 }

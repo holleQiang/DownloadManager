@@ -1,7 +1,13 @@
 package com.zhangqiang.web.context;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.webkit.WebView;
+
+import com.zhangqiang.common.utils.IntentUtils;
+import com.zhangqiang.web.context.interceptors.Chain;
+import com.zhangqiang.web.context.interceptors.RealCallChain;
+import com.zhangqiang.web.context.interceptors.UrlLoadingInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +19,7 @@ public class WebContext {
     private final List<OnLoadResourceListener> onLoadResourceListeners = new ArrayList<>();
     private final List<OnReceiveTitleListener> onReceiveTitleListeners = new ArrayList<>();
     private final List<OnReceiveIconListener> onReceiveIconListeners = new ArrayList<>();
+    private final List<UrlLoadingInterceptor> urlLoadingInterceptors = new ArrayList<>();
 
     private State mState = State.INITIAL;
     private WebView webView;
@@ -162,4 +169,37 @@ public class WebContext {
         onReceiveIconListeners.remove(listener);
     }
 
+
+    public boolean interceptUrlLoading(WebView view, String url) {
+        List<UrlLoadingInterceptor> interceptors = new ArrayList<>(urlLoadingInterceptors);
+        interceptors.add(new UrlLoadingInterceptor() {
+            @Override
+            public boolean onInterceptUrlLoading(Chain chain) {
+                Uri uri = Uri.parse(url);
+                String scheme = uri.getScheme();
+                if ("http".equals(scheme) || "https".equals(scheme)) {
+                    return false;
+                } else {
+                    try {
+                        IntentUtils.openActivityByUri(view.getContext(), uri);
+                    } catch (Throwable e) {
+                        e.printStackTrace();
+                    }
+                    return true;
+                }
+            }
+        });
+        return new RealCallChain(url, interceptors, 0).proceed(url);
+    }
+
+    public void addUrlLoadingInterceptor(UrlLoadingInterceptor interceptor) {
+        if (urlLoadingInterceptors.contains(interceptor)) {
+            return;
+        }
+        urlLoadingInterceptors.add(interceptor);
+    }
+
+    public void removeUrlLoadingInterceptor(UrlLoadingInterceptor interceptor) {
+        urlLoadingInterceptors.remove(interceptor);
+    }
 }

@@ -37,6 +37,7 @@ public class BookMarkService {
         entity.setId(bookMarkBean.getId());
         entity.setTitle(bookMarkBean.getTitle());
         entity.setUrl(bookMarkBean.getUrl());
+        entity.setIconUrl(bookMarkBean.getIconUrl());
         if (parent != null) {
             entity.setParentId(parent.getId());
         }
@@ -60,6 +61,7 @@ public class BookMarkService {
         bookMarkBean.setId(entity.getId());
         bookMarkBean.setTitle(entity.getTitle());
         bookMarkBean.setUrl(entity.getUrl());
+        bookMarkBean.setIconUrl(entity.getIconUrl());
         String childIds = entity.getChildIds();
         if (!TextUtils.isEmpty(childIds)) {
             List<String> ids = Arrays.asList(childIds.split(","));

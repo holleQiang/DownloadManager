@@ -1,7 +1,6 @@
 package com.zhangqiang.sample;
 
 import android.content.Intent;
-import android.os.Environment;
 
 import androidx.multidex.MultiDexApplication;
 
@@ -10,6 +9,7 @@ import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.ftp.FtpDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.http.HttpDownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.limit.ActiveTaskCountLimitPlugin;
+import com.zhangqiang.downloadmanager.plugin.m3u8.M3u8DownloadPlugin;
 import com.zhangqiang.downloadmanager.plugin.restart.RestartWhenNetworkAvailablePlugin;
 import com.zhangqiang.sample.business.container.ContainerProcessorManager;
 import com.zhangqiang.sample.business.container.processor.FtpProtocolProcessor;
@@ -20,12 +20,7 @@ import com.zhangqiang.sample.plugins.media.refresh.MediaRefreshPlugin;
 import com.zhangqiang.sample.service.DownloadService;
 import com.zhangqiang.sample.utils.ProcessUtils;
 import com.zhangqiang.sample.web.DownloadPlugin;
-import com.zhangqiang.downloadmanager.plugin.m3u8.M3u8DownloadPlugin;
-import com.zhangqiang.downloadmanager.plugin.m3u8.request.M3u8DownloadRequest;
-import com.zhangqiang.web.hybrid.plugins.M3u8PickPlugin;
 import com.zhangqiang.web.manager.WebManager;
-
-import java.io.File;
 
 public class DMApplication extends MultiDexApplication {
 

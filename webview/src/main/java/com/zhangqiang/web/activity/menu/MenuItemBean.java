@@ -1,5 +1,7 @@
 package com.zhangqiang.web.activity.menu;
 
+import android.graphics.drawable.Drawable;
+
 import java.util.List;
 
 public class MenuItemBean {
@@ -10,6 +12,7 @@ public class MenuItemBean {
      * Sync to attrs.xml enum, values in MenuItem: - 0: never - 1: ifRoom - 2: always - -1: Safe sentinel for "no
      */
     private int showAsAction;
+    private Drawable icon;
     private List<MenuItemBean> subMenuItems;
 
     public int getId() {
@@ -45,6 +48,15 @@ public class MenuItemBean {
 
     public MenuItemBean setShowAsAction(int showAsAction) {
         this.showAsAction = showAsAction;
+        return this;
+    }
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public MenuItemBean setIcon(Drawable icon) {
+        this.icon = icon;
         return this;
     }
 }

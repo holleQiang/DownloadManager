@@ -26,12 +26,9 @@ public class JavaScriptInterface {
             JSONObject jsonObject = new JSONObject(args);
             callId = jsonObject.optString(CALL_ID);
             if (TextUtils.isEmpty(callId)) {
-                throw new RuntimeException("method name cannot be empty!!");
+                throw new RuntimeException("CALL_ID cannot be empty!!");
             }
             callBody = jsonObject.optString(CALL_BODY);
-            if (TextUtils.isEmpty(callBody)) {
-                throw new RuntimeException("method name cannot be empty!!");
-            }
             for (int i = jsCallHandlers.size() - 1; i >= 0; i--) {
                 jsCallHandlers.get(i).handleJSCall(callId, callBody);
             }

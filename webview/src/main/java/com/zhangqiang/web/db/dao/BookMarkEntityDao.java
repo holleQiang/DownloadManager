@@ -27,8 +27,9 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
         public final static Property Id = new Property(0, String.class, "id", true, "ID");
         public final static Property Title = new Property(1, String.class, "title", false, "TITLE");
         public final static Property Url = new Property(2, String.class, "url", false, "URL");
-        public final static Property ChildIds = new Property(3, String.class, "childIds", false, "CHILD_IDS");
-        public final static Property ParentId = new Property(4, String.class, "parentId", false, "PARENT_ID");
+        public final static Property IconUrl = new Property(3, String.class, "iconUrl", false, "ICON_URL");
+        public final static Property ChildIds = new Property(4, String.class, "childIds", false, "CHILD_IDS");
+        public final static Property ParentId = new Property(5, String.class, "parentId", false, "PARENT_ID");
     }
 
 
@@ -47,8 +48,9 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
                 "\"ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: id
                 "\"TITLE\" TEXT," + // 1: title
                 "\"URL\" TEXT," + // 2: url
-                "\"CHILD_IDS\" TEXT," + // 3: childIds
-                "\"PARENT_ID\" TEXT);"); // 4: parentId
+                "\"ICON_URL\" TEXT," + // 3: iconUrl
+                "\"CHILD_IDS\" TEXT," + // 4: childIds
+                "\"PARENT_ID\" TEXT);"); // 5: parentId
     }
 
     /** Drops the underlying database table. */
@@ -76,14 +78,19 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
             stmt.bindString(3, url);
         }
  
+        String iconUrl = entity.getIconUrl();
+        if (iconUrl != null) {
+            stmt.bindString(4, iconUrl);
+        }
+ 
         String childIds = entity.getChildIds();
         if (childIds != null) {
-            stmt.bindString(4, childIds);
+            stmt.bindString(5, childIds);
         }
  
         String parentId = entity.getParentId();
         if (parentId != null) {
-            stmt.bindString(5, parentId);
+            stmt.bindString(6, parentId);
         }
     }
 
@@ -106,14 +113,19 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
             stmt.bindString(3, url);
         }
  
+        String iconUrl = entity.getIconUrl();
+        if (iconUrl != null) {
+            stmt.bindString(4, iconUrl);
+        }
+ 
         String childIds = entity.getChildIds();
         if (childIds != null) {
-            stmt.bindString(4, childIds);
+            stmt.bindString(5, childIds);
         }
  
         String parentId = entity.getParentId();
         if (parentId != null) {
-            stmt.bindString(5, parentId);
+            stmt.bindString(6, parentId);
         }
     }
 
@@ -128,8 +140,9 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
             cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // title
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // url
-            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // childIds
-            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4) // parentId
+            cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3), // iconUrl
+            cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4), // childIds
+            cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5) // parentId
         );
         return entity;
     }
@@ -139,8 +152,9 @@ public class BookMarkEntityDao extends AbstractDao<BookMarkEntity, String> {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
         entity.setTitle(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setUrl(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
-        entity.setChildIds(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
-        entity.setParentId(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setIconUrl(cursor.isNull(offset + 3) ? null : cursor.getString(offset + 3));
+        entity.setChildIds(cursor.isNull(offset + 4) ? null : cursor.getString(offset + 4));
+        entity.setParentId(cursor.isNull(offset + 5) ? null : cursor.getString(offset + 5));
      }
     
     @Override

@@ -13,6 +13,8 @@ import androidx.annotation.RequiresApi;
 
 import com.zhangqiang.common.utils.IntentUtils;
 import com.zhangqiang.web.context.WebContext;
+import com.zhangqiang.web.context.interceptors.Chain;
+import com.zhangqiang.web.context.interceptors.UrlLoadingInterceptor;
 import com.zhangqiang.web.history.service.VisitRecordService;
 import com.zhangqiang.web.log.WebLogger;
 import com.zhangqiang.web.manager.OpenOptions;
@@ -46,27 +48,11 @@ public class WebViewClientImpl extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
-        Uri uri = Uri.parse(url);
-        String scheme = uri.getScheme();
-        if ("http".equals(scheme) || "https".equals(scheme)) {
-            return false;
-        } else {
-            try {
-                IntentUtils.openActivityByUri(view.getContext(), uri);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-            return true;
-        }
+        return webContext.interceptUrlLoading(view, url);
     }
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (request.isRedirect()) {
-                return false;
-            }
-        }
         return super.shouldOverrideUrlLoading(view, request);
     }
 

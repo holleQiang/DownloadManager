@@ -14,16 +14,19 @@ public class BookMarkEntity {
 
     private String url;
 
+    private String iconUrl;
+
     private String childIds;
 
     private String parentId;
 
-    @Generated(hash = 1545954862)
-    public BookMarkEntity(String id, String title, String url, String childIds,
-            String parentId) {
+    @Generated(hash = 1258364236)
+    public BookMarkEntity(String id, String title, String url, String iconUrl,
+            String childIds, String parentId) {
         this.id = id;
         this.title = title;
         this.url = url;
+        this.iconUrl = iconUrl;
         this.childIds = childIds;
         this.parentId = parentId;
     }
@@ -70,6 +73,14 @@ public class BookMarkEntity {
 
     public void setChildIds(String childIds) {
         this.childIds = childIds;
+    }
+
+    public String getIconUrl() {
+        return this.iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 
 

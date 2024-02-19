@@ -143,6 +143,7 @@ public class WebViewActivity extends BaseActivity {
         for (MenuItemBean menuItemBean : menuItemBeans) {
             MenuItem menuItem = menu.add(0, menuItemBean.getId(), order++, menuItemBean.getTitle());
             menuItem.setShowAsAction(menuItemBean.getShowAsAction());
+            menuItem.setIcon(menuItemBean.getIcon());
             List<MenuItemBean> subMenuItems = menuItemBean.getSubMenuItems();
             checkMenuItemId(subMenuItems);
             if (subMenuItems != null) {
@@ -150,6 +151,7 @@ public class WebViewActivity extends BaseActivity {
                     MenuItemBean subMenuItem = subMenuItems.get(i);
                     SubMenu subMenu = menu.addSubMenu(menuItemBean.getId(), subMenuItem.getId(), Menu.NONE, subMenuItem.getTitle());
                     subMenuItem.setId(subMenu.getItem().getItemId());
+                    subMenuItem.setIcon(subMenu.getItem().getIcon());
                 }
             }
         }
@@ -229,7 +231,6 @@ public class WebViewActivity extends BaseActivity {
         }
         if (historyFragment == null) {
             mActivityWebViewBinding.etTitle.setText(null);
-            mActivityWebViewBinding.mWebView.loadUrl(null);
             initHistoryFragment();
             return;
         }
