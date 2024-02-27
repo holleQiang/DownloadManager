@@ -22,12 +22,16 @@ public class VisitRecordService {
         dbManager = new DBManager(context.getApplicationContext());
     }
 
-    public void add(String url) {
-        VisitRecordEntityDao entityDao = getVisitRecordEntityDao();
-        VisitRecordEntity recordEntity = entityDao.queryBuilder().where(VisitRecordEntityDao.Properties.Url.eq(url)).unique();
-        if (recordEntity != null) {
+    public void save(String url) {
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().where(VisitRecordEntityDao.Properties.Url.eq(url)).list();
+        if(recordEntities != null && recordEntities.size() > 0){
+            for (VisitRecordEntity recordEntity : recordEntities) {
+                recordEntity.setVisitDate(System.currentTimeMillis());
+            }
+            getVisitRecordEntityDao().updateInTx(recordEntities);
             return;
         }
+        VisitRecordEntityDao entityDao = getVisitRecordEntityDao();
         VisitRecordEntity entity = new VisitRecordEntity();
         entity.setId(UUID.randomUUID().toString());
         entity.setUrl(url);
@@ -43,7 +47,9 @@ public class VisitRecordService {
     }
 
     public List<VisitRecordBean> getVisitRecords() {
-        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().list();
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
+                .orderDesc(VisitRecordEntityDao.Properties.VisitDate)
+                .list();
         if (recordEntities != null) {
             List<VisitRecordBean> visitRecordBeans = new ArrayList<>();
             for (VisitRecordEntity recordEntity : recordEntities) {
@@ -51,7 +57,28 @@ public class VisitRecordService {
                 visitRecordBean.setId(recordEntity.getId());
                 visitRecordBean.setUrl(recordEntity.getUrl());
                 visitRecordBean.setTitle(recordEntity.getTitle());
-                visitRecordBean.setIcon(BitmapUtils.byteArrayToBitmap(recordEntity.getIcon()));
+                visitRecordBean.setIconUrl(recordEntity.getIconUrl());
+                visitRecordBean.setVisitDate(recordEntity.getVisitDate());
+                visitRecordBeans.add(visitRecordBean);
+            }
+            return visitRecordBeans;
+        }
+        return null;
+    }
+
+    public List<VisitRecordBean> getVisitRecords2() {
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
+                .orderDesc(VisitRecordEntityDao.Properties.VisitDate)
+                .list();
+        if (recordEntities != null) {
+            List<VisitRecordBean> visitRecordBeans = new ArrayList<>();
+            for (VisitRecordEntity recordEntity : recordEntities) {
+                VisitRecordBean visitRecordBean = new VisitRecordBean();
+                visitRecordBean.setId(recordEntity.getId());
+                visitRecordBean.setUrl(recordEntity.getUrl());
+                visitRecordBean.setTitle(recordEntity.getTitle());
+                visitRecordBean.setIconUrl(recordEntity.getIconUrl());
+                visitRecordBean.setVisitDate(recordEntity.getVisitDate());
                 visitRecordBeans.add(visitRecordBean);
             }
             return visitRecordBeans;
@@ -71,14 +98,13 @@ public class VisitRecordService {
         }
     }
 
-    public void updateIcon(String url, Bitmap bitmap) {
+    public void updateIcon(String url, String iconUrl) {
         List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
                 .where(VisitRecordEntityDao.Properties.Url.like("%" + getHost(url) + "%"))
                 .list();
         if (recordEntities != null && recordEntities.size() > 0) {
-            byte[] iconData = BitmapUtils.bitmapToByteArray(bitmap);
             for (VisitRecordEntity recordEntity : recordEntities) {
-                recordEntity.setIcon(iconData);
+                recordEntity.setIconUrl(iconUrl);
             }
             getVisitRecordEntityDao().updateInTx(recordEntities);
         }

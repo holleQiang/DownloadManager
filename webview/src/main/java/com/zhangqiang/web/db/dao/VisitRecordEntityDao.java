@@ -25,9 +25,10 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
      */
     public static class Properties {
         public final static Property Id = new Property(0, String.class, "id", true, "ID");
-        public final static Property Icon = new Property(1, byte[].class, "icon", false, "ICON");
+        public final static Property IconUrl = new Property(1, String.class, "iconUrl", false, "ICON_URL");
         public final static Property Title = new Property(2, String.class, "title", false, "TITLE");
         public final static Property Url = new Property(3, String.class, "url", false, "URL");
+        public final static Property VisitDate = new Property(4, long.class, "visitDate", false, "VISIT_DATE");
     }
 
 
@@ -44,9 +45,10 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
         String constraint = ifNotExists? "IF NOT EXISTS ": "";
         db.execSQL("CREATE TABLE " + constraint + "\"VISIT_RECORD_ENTITY\" (" + //
                 "\"ID\" TEXT PRIMARY KEY NOT NULL ," + // 0: id
-                "\"ICON\" BLOB," + // 1: icon
+                "\"ICON_URL\" TEXT," + // 1: iconUrl
                 "\"TITLE\" TEXT," + // 2: title
-                "\"URL\" TEXT NOT NULL );"); // 3: url
+                "\"URL\" TEXT NOT NULL ," + // 3: url
+                "\"VISIT_DATE\" INTEGER NOT NULL );"); // 4: visitDate
     }
 
     /** Drops the underlying database table. */
@@ -64,9 +66,9 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
             stmt.bindString(1, id);
         }
  
-        byte[] icon = entity.getIcon();
-        if (icon != null) {
-            stmt.bindBlob(2, icon);
+        String iconUrl = entity.getIconUrl();
+        if (iconUrl != null) {
+            stmt.bindString(2, iconUrl);
         }
  
         String title = entity.getTitle();
@@ -74,6 +76,7 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
             stmt.bindString(3, title);
         }
         stmt.bindString(4, entity.getUrl());
+        stmt.bindLong(5, entity.getVisitDate());
     }
 
     @Override
@@ -85,9 +88,9 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
             stmt.bindString(1, id);
         }
  
-        byte[] icon = entity.getIcon();
-        if (icon != null) {
-            stmt.bindBlob(2, icon);
+        String iconUrl = entity.getIconUrl();
+        if (iconUrl != null) {
+            stmt.bindString(2, iconUrl);
         }
  
         String title = entity.getTitle();
@@ -95,6 +98,7 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
             stmt.bindString(3, title);
         }
         stmt.bindString(4, entity.getUrl());
+        stmt.bindLong(5, entity.getVisitDate());
     }
 
     @Override
@@ -106,9 +110,10 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
     public VisitRecordEntity readEntity(Cursor cursor, int offset) {
         VisitRecordEntity entity = new VisitRecordEntity( //
             cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0), // id
-            cursor.isNull(offset + 1) ? null : cursor.getBlob(offset + 1), // icon
+            cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1), // iconUrl
             cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2), // title
-            cursor.getString(offset + 3) // url
+            cursor.getString(offset + 3), // url
+            cursor.getLong(offset + 4) // visitDate
         );
         return entity;
     }
@@ -116,9 +121,10 @@ public class VisitRecordEntityDao extends AbstractDao<VisitRecordEntity, String>
     @Override
     public void readEntity(Cursor cursor, VisitRecordEntity entity, int offset) {
         entity.setId(cursor.isNull(offset + 0) ? null : cursor.getString(offset + 0));
-        entity.setIcon(cursor.isNull(offset + 1) ? null : cursor.getBlob(offset + 1));
+        entity.setIconUrl(cursor.isNull(offset + 1) ? null : cursor.getString(offset + 1));
         entity.setTitle(cursor.isNull(offset + 2) ? null : cursor.getString(offset + 2));
         entity.setUrl(cursor.getString(offset + 3));
+        entity.setVisitDate(cursor.getLong(offset + 4));
      }
     
     @Override

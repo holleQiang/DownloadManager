@@ -26,4 +26,8 @@
     <string name="add">添加</string>
     <string name="please_input_bookmark_title">请输入标签标题</string>
     <string name="doc">文档</string>
+    <string name="last_one_hour">过去一小时内</string>
+    <string name="last_one_day">过去一天内</string>
+    <string name="last_one_month">过去一个月内</string>
+    <string name="one_month_before">一个月以前</string>
 </resources>

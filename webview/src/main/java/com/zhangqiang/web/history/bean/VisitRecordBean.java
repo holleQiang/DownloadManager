@@ -1,19 +1,19 @@
 package com.zhangqiang.web.history.bean;
 
-import android.graphics.Bitmap;
 
 public class VisitRecordBean {
     private String id;
-    private Bitmap icon;
+    private String iconUrl;
     private String url;
     private String title;
+    private long visitDate;
 
-    public Bitmap getIcon() {
-        return icon;
+    public String getIconUrl() {
+        return iconUrl;
     }
 
-    public VisitRecordBean setIcon(Bitmap icon) {
-        this.icon = icon;
+    public VisitRecordBean setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
         return this;
     }
 
@@ -41,6 +41,15 @@ public class VisitRecordBean {
 
     public VisitRecordBean setId(String id) {
         this.id = id;
+        return this;
+    }
+
+    public long getVisitDate() {
+        return visitDate;
+    }
+
+    public VisitRecordBean setVisitDate(long visitDate) {
+        this.visitDate = visitDate;
         return this;
     }
 }

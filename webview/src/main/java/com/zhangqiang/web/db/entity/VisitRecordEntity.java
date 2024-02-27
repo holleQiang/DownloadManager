@@ -10,17 +10,20 @@ public class VisitRecordEntity {
 
     @Id
     String id;
-    private byte[] icon;
+    private String iconUrl;
     private String title;
     @NotNull
     private String url;
-    @Generated(hash = 384446102)
-    public VisitRecordEntity(String id, byte[] icon, String title,
-            @NotNull String url) {
+    private long visitDate;
+
+    @Generated(hash = 1469410847)
+    public VisitRecordEntity(String id, String iconUrl, String title,
+            @NotNull String url, long visitDate) {
         this.id = id;
-        this.icon = icon;
+        this.iconUrl = iconUrl;
         this.title = title;
         this.url = url;
+        this.visitDate = visitDate;
     }
     @Generated(hash = 933744019)
     public VisitRecordEntity() {
@@ -30,12 +33,6 @@ public class VisitRecordEntity {
     }
     public void setId(String id) {
         this.id = id;
-    }
-    public byte[] getIcon() {
-        return this.icon;
-    }
-    public void setIcon(byte[] icon) {
-        this.icon = icon;
     }
     public String getUrl() {
         return this.url;
@@ -48,5 +45,17 @@ public class VisitRecordEntity {
     }
     public void setTitle(String title) {
         this.title = title;
+    }
+    public long getVisitDate() {
+        return this.visitDate;
+    }
+    public void setVisitDate(long visitDate) {
+        this.visitDate = visitDate;
+    }
+    public String getIconUrl() {
+        return this.iconUrl;
+    }
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
     }
 }
