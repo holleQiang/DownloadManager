@@ -24,7 +24,7 @@ public class VisitRecordService {
 
     public void save(String url) {
         List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().where(VisitRecordEntityDao.Properties.Url.eq(url)).list();
-        if(recordEntities != null && recordEntities.size() > 0){
+        if (recordEntities != null && recordEntities.size() > 0) {
             for (VisitRecordEntity recordEntity : recordEntities) {
                 recordEntity.setVisitDate(System.currentTimeMillis());
             }
@@ -35,6 +35,7 @@ public class VisitRecordService {
         VisitRecordEntity entity = new VisitRecordEntity();
         entity.setId(UUID.randomUUID().toString());
         entity.setUrl(url);
+        entity.setVisitDate(System.currentTimeMillis());
         entityDao.insert(entity);
     }
 

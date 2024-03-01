@@ -18,6 +18,7 @@ import com.zhangqiang.web.hybrid.plugins.HybridPlugin;
 import com.zhangqiang.web.hybrid.plugins.JSCallPlugin;
 import com.zhangqiang.web.plugin.PluginContext;
 import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.plugins.copy.CopyLinkPlugin;
 import com.zhangqiang.web.plugins.refresh.RefreshPlugin;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 
@@ -43,6 +44,7 @@ public class WebManager {
         registerPlugin(new ResourceCollectPlugin());
         registerPlugin(new RefreshPlugin());
         registerPlugin(new BookMarkPlugin());
+        registerPlugin(new CopyLinkPlugin());
     }
 
     public void applyPlugins() {

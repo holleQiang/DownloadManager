@@ -92,7 +92,7 @@ public class VisitRecordPlugin implements WebPlugin {
                     public boolean onInterceptUrlLoading(Chain chain) {
                         String url = chain.getUrl();
                         visitRecordService.save(url);
-                        return false;
+                        return chain.proceed(url);
                     }
                 });
                 webContext.addMenuProvider(new MenuProvider() {
