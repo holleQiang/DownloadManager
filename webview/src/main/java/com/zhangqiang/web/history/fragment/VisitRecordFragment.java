@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,6 +23,8 @@ import com.zhangqiang.web.history.bean.VisitRecordBean;
 import com.zhangqiang.web.history.cell.VisitDateCell;
 import com.zhangqiang.web.history.cell.VisitRecordCell;
 import com.zhangqiang.web.history.service.VisitRecordService;
+import com.zhangqiang.web.manager.OpenOptions;
+import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
@@ -33,15 +35,28 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Function;
 
-public class HistoryFragment extends BaseFragment {
+public class VisitRecordFragment extends BaseFragment {
 
+    private static final String KEY_SESSION_ID = "session_id";
     private CellRVAdapter cellRVAdapter;
+    private String sessionId;
 
-    public interface OnVisitRecordClickListener {
-        void onVisitRecordClick(VisitRecordBean visitRecordBean);
+    public static Fragment newInstance(String sessionId) {
+        VisitRecordFragment visitRecordFragment = new VisitRecordFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY_SESSION_ID, sessionId);
+        visitRecordFragment.setArguments(bundle);
+        return visitRecordFragment;
     }
 
-    private OnVisitRecordClickListener onVisitRecordClickListener;
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            sessionId = arguments.getString(KEY_SESSION_ID);
+        }
+    }
 
     @Nullable
     @Override
@@ -114,9 +129,16 @@ public class HistoryFragment extends BaseFragment {
                             cells.add(new VisitRecordCell(visitRecordBean, new View.OnClickListener() {
                                 @Override
                                 public void onClick(View v) {
-                                    if (onVisitRecordClickListener != null) {
-                                        onVisitRecordClickListener.onVisitRecordClick(visitRecordBean);
+                                    FragmentActivity activity = getActivity();
+                                    if (activity == null) {
+                                        return;
                                     }
+                                    WebManager.getInstance().openWebViewActivity(activity,
+                                            visitRecordBean.getUrl(),
+                                            new OpenOptions.Builder()
+                                                    .setSessionId(sessionId)
+                                                    .build());
+                                    activity.finish();
                                 }
                             }, new VisitRecordCell.OnVisitRecordLongClickListener() {
                                 @Override
@@ -154,10 +176,5 @@ public class HistoryFragment extends BaseFragment {
                         cellRVAdapter.setDataList(cells);
                     }
                 });
-    }
-
-    public HistoryFragment setOnVisitRecordClickListener(OnVisitRecordClickListener onVisitRecordClickListener) {
-        this.onVisitRecordClickListener = onVisitRecordClickListener;
-        return this;
     }
 }

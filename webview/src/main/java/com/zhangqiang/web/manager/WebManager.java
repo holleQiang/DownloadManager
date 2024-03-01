@@ -22,9 +22,7 @@ import com.zhangqiang.web.plugins.refresh.RefreshPlugin;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class WebManager {
@@ -81,21 +79,32 @@ public class WebManager {
     }
 
     public void openWebViewActivity(Context context, String url, OpenOptions options) {
+        if (options != null) {
+            String sessionId = options.getSessionId();
+            if (!TextUtils.isEmpty(sessionId)) {
+                WebContext webContext = getWebContext(sessionId);
+                if (webContext != null) {
+                    Intent intent = WebViewActivity.newSearchIntent(context, url);
+                    context.startActivity(intent);
+                } else {
+                    throw new IllegalArgumentException("web context not exists with session id" + sessionId);
+                }
+                return;
+            }
+        }
         WebActivityContext webContext = createWebActivityContext(url);
         dispatchOpenWebViewActivity(webContext);
         webContext.dispatchOpenStart();
         try {
             String id = webContext.getSessionId();
             Intent intent = WebViewActivity.newIntent(context, id);
-            if (options != null && options.isNewTask()) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            }
             context.startActivity(intent);
             webContext.dispatchOpenSuccess();
         } catch (Throwable e) {
             webContext.dispatchOpenFail(e);
         }
     }
+
 
     public WebContext getWebContext(String sessionId) {
         if (TextUtils.isEmpty(sessionId)) {
@@ -139,12 +148,12 @@ public class WebManager {
         }
     }
 
-    private String generateWebId() {
+    private String generateSessionId() {
         return UUID.randomUUID().toString();
     }
 
     private WebActivityContext createWebActivityContext(String url) {
-        return createWebActivityContext(generateWebId(), url);
+        return createWebActivityContext(generateSessionId(), url);
     }
 
     private WebActivityContext createWebActivityContext(String sessionId, String url) {

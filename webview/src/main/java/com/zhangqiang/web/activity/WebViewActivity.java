@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,7 +25,7 @@ import androidx.annotation.Nullable;
 import com.zhangqiang.common.activity.BaseActivity;
 import com.zhangqiang.web.activity.menu.MenuItemBean;
 import com.zhangqiang.web.history.bean.VisitRecordBean;
-import com.zhangqiang.web.history.fragment.HistoryFragment;
+import com.zhangqiang.web.history.fragment.VisitRecordFragment;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.utils.URLEncodeUtils;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
@@ -35,9 +34,8 @@ import com.zhangqiang.webview.BuildConfig;
 import com.zhangqiang.webview.R;
 import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -58,12 +56,17 @@ public class WebViewActivity extends BaseActivity {
     private static final String INTENT_KEY_URL = "url";
     private static final String INTENT_KEY_SESSION_ID = "session_id";
     private ActivityWebViewBinding mActivityWebViewBinding;
-    private HistoryFragment historyFragment;
     private List<MenuItemBean> currentMenuItems;
 
     public static Intent newIntent(Context context, String sessionId) {
         Intent intent = new Intent(context, WebViewActivity.class);
         intent.putExtra(INTENT_KEY_SESSION_ID, sessionId);
+        return intent;
+    }
+
+    public static Intent newSearchIntent(Context context, String url) {
+        Intent intent = new Intent(context, WebViewActivity.class);
+        intent.putExtra(INTENT_KEY_URL, url);
         return intent;
     }
 
@@ -123,8 +126,9 @@ public class WebViewActivity extends BaseActivity {
                 return false;
             }
         });
-        mActivityWebViewBinding.etTitle.clearFocus();
-        initHistoryFragment();
+        mActivityWebViewBinding.etTitle.setText(mWebContext.getUrl());
+
+        performSearch();
     }
 
     @Override
@@ -159,18 +163,7 @@ public class WebViewActivity extends BaseActivity {
         return super.onPrepareOptionsMenu(menu);
     }
 
-    private static void checkMenuItemId(List<MenuItemBean> menuItemBeans) {
-        if (menuItemBeans == null) {
-            return;
-        }
-        SparseArray<MenuItemBean> sparseArray = new SparseArray<>();
-        for (MenuItemBean menuItemBean : menuItemBeans) {
-            if (sparseArray.get(menuItemBean.getId()) != null) {
-                throw new IllegalStateException("duplicate menu item id");
-            }
-            sparseArray.put(menuItemBean.getId(), menuItemBean);
-        }
-    }
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
@@ -216,6 +209,15 @@ public class WebViewActivity extends BaseActivity {
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String url = intent.getStringExtra(INTENT_KEY_URL);
+        if (!TextUtils.isEmpty(url)) {
+            performSearch(url);
+        }
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mActivityWebViewBinding.mWebView.destroy();
@@ -229,31 +231,12 @@ public class WebViewActivity extends BaseActivity {
             mActivityWebViewBinding.mWebView.goBack();
             return;
         }
-        if (historyFragment == null) {
-            mActivityWebViewBinding.etTitle.setText(null);
-            initHistoryFragment();
-            return;
-        }
         super.onBackPressed();
     }
 
     private void performSearch() {
         String input = mActivityWebViewBinding.etTitle.getText().toString().trim();
         performSearch(input);
-    }
-
-    private void initHistoryFragment() {
-        historyFragment = new HistoryFragment();
-        historyFragment.setOnVisitRecordClickListener(new HistoryFragment.OnVisitRecordClickListener() {
-            @Override
-            public void onVisitRecordClick(VisitRecordBean visitRecordBean) {
-                mActivityWebViewBinding.etTitle.setText(visitRecordBean.getUrl());
-                performSearch();
-            }
-        });
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fl_fragment_container, historyFragment)
-                .commit();
     }
 
     public void performSearch(String input) {
@@ -283,17 +266,24 @@ public class WebViewActivity extends BaseActivity {
         mActivityWebViewBinding.mWebView.loadUrl(loadUrl);
         mWebContext.dispatchLoadUrl(loadUrl);
 
-        if (historyFragment != null) {
-            getSupportFragmentManager().beginTransaction()
-                    .remove(historyFragment)
-                    .commit();
-            historyFragment = null;
-        }
         mActivityWebViewBinding.etTitle.clearFocus();
 
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(mActivityWebViewBinding.etTitle.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
+
+    private static void checkMenuItemId(List<MenuItemBean> menuItemBeans) {
+        if (menuItemBeans == null) {
+            return;
+        }
+        SparseArray<MenuItemBean> sparseArray = new SparseArray<>();
+        for (MenuItemBean menuItemBean : menuItemBeans) {
+            if (sparseArray.get(menuItemBean.getId()) != null) {
+                throw new IllegalStateException("duplicate menu item id");
+            }
+            sparseArray.put(menuItemBean.getId(), menuItemBean);
         }
     }
 }

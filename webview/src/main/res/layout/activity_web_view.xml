@@ -57,6 +57,7 @@
                 style="@style/Widget.AppCompat.ProgressBar.Horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:minHeight="0dp"
                 app:layout_constraintTop_toTopOf="@id/m_web_view" />
 

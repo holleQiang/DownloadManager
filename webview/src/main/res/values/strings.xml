@@ -30,4 +30,5 @@
     <string name="last_one_day">过去一天内</string>
     <string name="last_one_month">过去一个月内</string>
     <string name="one_month_before">一个月以前</string>
+    <string name="visit_record">浏览历史</string>
 </resources>

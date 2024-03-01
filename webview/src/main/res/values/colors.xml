@@ -6,4 +6,5 @@
     <color name="resource_item_double">#CCF4F1</color>
     <color name="dialog_background">#ffffff</color>
     <color name="divider">#999999</color>
+    <color name="et_border">#FFFFFF</color>
 </resources>
