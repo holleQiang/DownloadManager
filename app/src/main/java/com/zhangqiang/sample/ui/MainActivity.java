@@ -7,6 +7,7 @@ import android.os.Environment;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import androidx.lifecycle.Lifecycle;
 
 import com.zhangqiang.downloadmanager.manager.DownloadManager;
 import com.zhangqiang.downloadmanager.plugin.m3u8.request.M3u8DownloadRequest;
+import com.zhangqiang.downloadmanager.utils.LogUtils;
 import com.zhangqiang.qrcodescan.HttpProcessor;
 import com.zhangqiang.qrcodescan.Processor;
 import com.zhangqiang.qrcodescan.QRCodeScanActivity;
@@ -56,10 +58,8 @@ public class MainActivity extends BaseActivity {
         QRCodeScanManager.Companion.getInstance().addProcessor(mHttpProcessor);
         QRCodeScanManager.Companion.getInstance().addProcessor(fallbackProcessor);
 
-//        String url = "https://apd-vlive.apdcdn.tc.qq.com/moviets.tc.qq.com/ATR0oKrDvp8aIf__kFIy1vRMKHDMqefVfabtx9oLPWBo/B_JxNyiJmktHRgresXhfyMeiPuA0wY43h1I2PFC1KJnlXkSxwXGiFA1I6yEHv4Ldq2/svp_50112/FadshfCRx5ophABxb3UJ7Xsy8OhKUQzGwFVcG8BCYyKjvzZg1-GQI2N-8r3XVswQmlip8tAjpPlMTutqdbCPcF4MYHETZiw-3i4-Agd2lHjCgBYvWQNJpWNAO3BD-eKxztcABUx_vBJkLw23MxiBvVpZRGIxpKsuu1kYN5j9koIB32c6RZuT4AOrTTWQCHeX55lMqFOsrzDGI32_pRjKaNGCvO0zsepQxkacDEjxszYjxseQsGj2lg5OJ-bKImsw/0205_gzc_1000102_0b53suaggaaanaah7wu4pfs4bfodmomqaz2a.f321002.ts.m3u8?ver=4";
-//        String url = "https://13k4ivgg.fortuneculture.com/20210611/WcZJAvCi/index.m3u8";
-//        File dir = new File(Environment.getExternalStorageDirectory(), SettingsManager.getInstance().getSaveDir());
-//        DownloadManager.getInstance().enqueue(new M3u8DownloadRequest(dir.getAbsolutePath(),null,url));
+        int scaledTouchSlop = ViewConfiguration.get(this).getScaledTouchSlop();
+        LogUtils.i("Test","------------"+scaledTouchSlop);
     }
 
     @Override

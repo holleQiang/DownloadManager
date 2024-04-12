@@ -10,6 +10,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         multiDexEnabled true
+        ndk {
+            //noinspection ChromeOsAbiSupport
+            abiFilters 'armeabi-v7a'
+        }
     }
     buildTypes {
         release {
@@ -27,6 +31,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${rootProject.ext.versions.appcompat}"
     implementation "com.google.android.material:material:${rootProject.ext.versions.material}"
     implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.versions.constraintlayout}"
+    implementation 'androidx.multidex:multidex:2.0.1'
     implementation project(path: ':qrcode-core')
     implementation project(path: ':webview')
     implementation project(path: ':common')
