@@ -24,8 +24,6 @@ import androidx.annotation.Nullable;
 
 import com.zhangqiang.common.activity.BaseActivity;
 import com.zhangqiang.web.activity.menu.MenuItemBean;
-import com.zhangqiang.web.history.bean.VisitRecordBean;
-import com.zhangqiang.web.history.fragment.VisitRecordFragment;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.utils.URLEncodeUtils;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
@@ -35,7 +33,6 @@ import com.zhangqiang.webview.R;
 import com.zhangqiang.webview.databinding.ActivityWebViewBinding;
 
 import java.util.List;
-import java.util.Objects;
 
 
 /**
@@ -108,6 +105,9 @@ public class WebViewActivity extends BaseActivity {
         settings.setGeolocationEnabled(true);
         settings.setSupportZoom(true);
         settings.setAllowFileAccessFromFileURLs(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
+        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
         mWebContext.dispatchWebViewCreate(mActivityWebViewBinding.mWebView);
 
         mActivityWebViewBinding.etTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -162,7 +162,6 @@ public class WebViewActivity extends BaseActivity {
         currentMenuItems = menuItemBeans;
         return super.onPrepareOptionsMenu(menu);
     }
-
 
 
     @Override
