@@ -1,6 +1,7 @@
 package com.zhangqiang.web.history;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.webkit.WebView;
 
 import androidx.fragment.app.FragmentActivity;
@@ -9,12 +10,16 @@ import com.zhangqiang.web.activity.OnActivityCreatedListener;
 import com.zhangqiang.web.activity.OnActivityDestroyListener;
 import com.zhangqiang.web.activity.OnLoadUrlListener;
 import com.zhangqiang.web.activity.WebActivityContext;
+import com.zhangqiang.web.activity.WebViewActivity;
 import com.zhangqiang.web.activity.menu.MenuItemBean;
 import com.zhangqiang.web.activity.menu.MenuProvider;
 import com.zhangqiang.web.context.OnReceiveTitleListener;
+import com.zhangqiang.web.context.OnStateChangeListener;
 import com.zhangqiang.web.context.PageLoadListener;
+import com.zhangqiang.web.context.State;
 import com.zhangqiang.web.context.interceptors.Chain;
 import com.zhangqiang.web.context.interceptors.UrlLoadingInterceptor;
+import com.zhangqiang.web.history.bean.VisitRecordBean;
 import com.zhangqiang.web.history.dialog.VisitRecordDialog;
 import com.zhangqiang.web.history.service.VisitRecordService;
 import com.zhangqiang.web.hybrid.methods.GetIconMethod;
@@ -111,7 +116,24 @@ public class VisitRecordPlugin implements WebPlugin {
                         if (menuItemBean.getId() == MENU_ID_VISIT_RECORD) {
 
                             VisitRecordDialog dialog = VisitRecordDialog.newInstance(webContext.getSessionId());
-                            dialog.show(webContext.getActivity().getSupportFragmentManager(),"visit_record_dialog");
+                            dialog.show(webContext.getActivity().getSupportFragmentManager(), "visit_record_dialog");
+                        }
+                    }
+                });
+                webContext.addOnStateChangeListener(new OnStateChangeListener() {
+                    @Override
+                    public void onStateChange(State state, State oldState) {
+                        if (state == State.WEB_VIEW_CREATE) {
+
+                            String url = webContext.getUrl();
+                            if (TextUtils.isEmpty(url)) {
+
+                                VisitRecordBean lastVisitRecord = visitRecordService.getLastVisitRecord();
+                                WebViewActivity activity = webContext.getActivity();
+                                if (activity != null) {
+                                    activity.performSearch(lastVisitRecord.getUrl());
+                                }
+                            }
                         }
                     }
                 });

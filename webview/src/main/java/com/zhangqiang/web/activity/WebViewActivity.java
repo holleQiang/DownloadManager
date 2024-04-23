@@ -251,19 +251,19 @@ public class WebViewActivity extends BaseActivity {
                 isLink = true;
             }
         }
-        String loadUrl;
+        String loadUrl = null;
         if (isLink) {
             loadUrl = input;
         } else {
             String params = URLUtils.encodeUrl(input);
             if (!TextUtils.isEmpty(params)) {
                 loadUrl = "https://www.baidu.com/s?wd=" + params;
-            } else {
-                loadUrl = "https://www.baidu.com";
             }
         }
-        mActivityWebViewBinding.mWebView.loadUrl(loadUrl);
-        mWebContext.dispatchLoadUrl(loadUrl);
+        if(loadUrl != null && !TextUtils.isEmpty(loadUrl)){
+            mActivityWebViewBinding.mWebView.loadUrl(loadUrl);
+            mWebContext.dispatchLoadUrl(loadUrl);
+        }
 
         mActivityWebViewBinding.etTitle.clearFocus();
 

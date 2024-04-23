@@ -48,9 +48,7 @@ public class VisitRecordService {
     }
 
     public List<VisitRecordBean> getVisitRecords() {
-        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
-                .orderDesc(VisitRecordEntityDao.Properties.VisitDate)
-                .list();
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().orderDesc(VisitRecordEntityDao.Properties.VisitDate).list();
         if (recordEntities != null) {
             List<VisitRecordBean> visitRecordBeans = new ArrayList<>();
             for (VisitRecordEntity recordEntity : recordEntities) {
@@ -68,29 +66,30 @@ public class VisitRecordService {
     }
 
     public List<VisitRecordBean> getVisitRecords2() {
-        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
-                .orderDesc(VisitRecordEntityDao.Properties.VisitDate)
-                .list();
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().orderDesc(VisitRecordEntityDao.Properties.VisitDate).list();
         if (recordEntities != null) {
             List<VisitRecordBean> visitRecordBeans = new ArrayList<>();
             for (VisitRecordEntity recordEntity : recordEntities) {
-                VisitRecordBean visitRecordBean = new VisitRecordBean();
-                visitRecordBean.setId(recordEntity.getId());
-                visitRecordBean.setUrl(recordEntity.getUrl());
-                visitRecordBean.setTitle(recordEntity.getTitle());
-                visitRecordBean.setIconUrl(recordEntity.getIconUrl());
-                visitRecordBean.setVisitDate(recordEntity.getVisitDate());
-                visitRecordBeans.add(visitRecordBean);
+
+                visitRecordBeans.add(entityToBean(recordEntity));
             }
             return visitRecordBeans;
         }
         return null;
     }
 
+    private VisitRecordBean entityToBean(VisitRecordEntity recordEntity) {
+        VisitRecordBean visitRecordBean = new VisitRecordBean();
+        visitRecordBean.setId(recordEntity.getId());
+        visitRecordBean.setUrl(recordEntity.getUrl());
+        visitRecordBean.setTitle(recordEntity.getTitle());
+        visitRecordBean.setIconUrl(recordEntity.getIconUrl());
+        visitRecordBean.setVisitDate(recordEntity.getVisitDate());
+        return visitRecordBean;
+    }
+
     public void updateTitle(String url, String title) {
-        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
-                .where(VisitRecordEntityDao.Properties.Url.eq(url))
-                .list();
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().where(VisitRecordEntityDao.Properties.Url.eq(url)).list();
         if (recordEntities != null && recordEntities.size() > 0) {
             for (VisitRecordEntity recordEntity : recordEntities) {
                 recordEntity.setTitle(title);
@@ -100,9 +99,7 @@ public class VisitRecordService {
     }
 
     public void updateIcon(String url, String iconUrl) {
-        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder()
-                .where(VisitRecordEntityDao.Properties.Url.like("%" + getHost(url) + "%"))
-                .list();
+        List<VisitRecordEntity> recordEntities = getVisitRecordEntityDao().queryBuilder().where(VisitRecordEntityDao.Properties.Url.like("%" + getHost(url) + "%")).list();
         if (recordEntities != null && recordEntities.size() > 0) {
             for (VisitRecordEntity recordEntity : recordEntities) {
                 recordEntity.setIconUrl(iconUrl);
@@ -113,5 +110,13 @@ public class VisitRecordService {
 
     private String getHost(String url) {
         return Uri.parse(url).getHost();
+    }
+
+    public VisitRecordBean getLastVisitRecord() {
+        VisitRecordEntity entity = getVisitRecordEntityDao().queryBuilder().orderDesc(VisitRecordEntityDao.Properties.VisitDate).limit(1).unique();
+        if (entity != null) {
+            return entityToBean(entity);
+        }
+        return null;
     }
 }
