@@ -3,14 +3,17 @@ package com.zhangqiang.common.dialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.zhangqiang.visiblehelper.FragmentVisibleHelper;
 import com.zhangqiang.visiblehelper.VisibleHelper;
@@ -28,7 +31,6 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
             return super.onCreateDialog(savedInstanceState);
         }
         return useBottomSheet() ? new BottomSheetDialog(getActivity(), getTheme()) : new Dialog(getActivity(), getTheme());
-//        return useBottomSheet() ? new BottomSheetDialog(getActivity(),getTheme()) : super.onCreateDialog(savedInstanceState);
     }
 
     protected boolean useBottomSheet() {
@@ -42,14 +44,29 @@ public abstract class BaseDialogFragment extends DialogFragment implements Visib
     @Nullable
     @Override
     public final View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(getLayoutResId(), container, false);
+        View view = getLayoutView(inflater, container, savedInstanceState);
         float heightRatio = getHeightRatio();
         if (heightRatio != -1) {
-            view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    (int) (getResources().getDisplayMetrics().heightPixels * heightRatio)));
+            if (useBottomSheet()) {
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, getResources().getDisplayMetrics().heightPixels));
+                BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+                if (dialog != null) {
+                    BottomSheetBehavior<FrameLayout> behavior = dialog.getBehavior();
+                    behavior.setFitToContents(false);
+                    behavior.setHalfExpandedRatio(heightRatio);
+                    behavior.setSkipCollapsed(true);
+                }
+            } else {
+                int height = (int) (getResources().getDisplayMetrics().heightPixels * heightRatio);
+                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, height));
+            }
         }
         initView(view);
         return view;
+    }
+
+    protected View getLayoutView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(getLayoutResId(), container, false);
     }
 
     protected abstract int getLayoutResId();

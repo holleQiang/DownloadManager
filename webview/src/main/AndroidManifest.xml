@@ -7,10 +7,6 @@
             android:name="com.zhangqiang.web.activity.WebViewActivity"
             android:launchMode="singleInstance"
             android:taskAffinity="${applicationId}.web" />
-
-        <activity
-            android:name="com.zhangqiang.web.history.activity.VisitRecordActivity"
-            android:taskAffinity="${applicationId}.web" />
     </application>
 
 </manifest>

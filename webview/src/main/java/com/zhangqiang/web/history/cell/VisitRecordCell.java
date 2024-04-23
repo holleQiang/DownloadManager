@@ -16,11 +16,11 @@ public class VisitRecordCell extends MultiCell<VisitRecordBean> {
         void onVisitRecordLongClick(VisitRecordBean data, int position);
     }
 
-    private final View.OnClickListener onClickListener;
+    private final OnVisitRecordClickListener onClickListener;
     private final OnVisitRecordLongClickListener onVisitRecordLongClickListener;
 
 
-    public VisitRecordCell(VisitRecordBean data, View.OnClickListener onClickListener, OnVisitRecordLongClickListener onVisitRecordLongClickListener) {
+    public VisitRecordCell(VisitRecordBean data, OnVisitRecordClickListener onClickListener, OnVisitRecordLongClickListener onVisitRecordLongClickListener) {
         super(R.layout.item_visit_record, data, null);
         this.onClickListener = onClickListener;
         this.onVisitRecordLongClickListener = onVisitRecordLongClickListener;
@@ -36,7 +36,12 @@ public class VisitRecordCell extends MultiCell<VisitRecordBean> {
             title = data.getUrl();
         }
         vh.setText(R.id.tv_title, title);
-        vh.getView().setOnClickListener(onClickListener);
+        vh.getView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickListener.onVisitRecordClick(data,vh.getAdapterPosition());
+            }
+        });
         vh.getView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
