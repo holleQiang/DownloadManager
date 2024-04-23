@@ -25,6 +25,7 @@ import com.zhangqiang.web.manager.OnOpenWebViewActivityListener;
 import com.zhangqiang.web.manager.WebManager;
 import com.zhangqiang.web.plugin.PluginContext;
 import com.zhangqiang.web.plugin.WebPlugin;
+import com.zhangqiang.web.utils.URLUtils;
 import com.zhangqiang.webview.R;
 
 import java.util.ArrayList;
@@ -55,7 +56,9 @@ public class VisitRecordPlugin implements WebPlugin {
                 webContext.addOnLoadUrlListener(new OnLoadUrlListener() {
                     @Override
                     public void onLoadUrl(String url) {
-                        visitRecordService.save(url);
+                        if (URLUtils.isHttpUrl(url)) {
+                            visitRecordService.save(url);
+                        }
                     }
                 });
                 webContext.addOnReceiveTitleListener(new OnReceiveTitleListener() {
@@ -91,7 +94,9 @@ public class VisitRecordPlugin implements WebPlugin {
                     @Override
                     public boolean onInterceptUrlLoading(Chain chain) {
                         String url = chain.getUrl();
-                        visitRecordService.save(url);
+                        if (URLUtils.isHttpUrl(url)) {
+                            visitRecordService.save(url);
+                        }
                         return chain.proceed(url);
                     }
                 });
@@ -99,9 +104,7 @@ public class VisitRecordPlugin implements WebPlugin {
                     @Override
                     public List<MenuItemBean> provideMenuItems() {
                         ArrayList<MenuItemBean> menuItemBeans = new ArrayList<>();
-                        menuItemBeans.add(new MenuItemBean()
-                                .setId(MENU_ID_VISIT_RECORD)
-                                .setTitle(webContext.getActivity().getString(R.string.visit_record)));
+                        menuItemBeans.add(new MenuItemBean().setId(MENU_ID_VISIT_RECORD).setTitle(webContext.getActivity().getString(R.string.visit_record)));
                         return menuItemBeans;
                     }
 

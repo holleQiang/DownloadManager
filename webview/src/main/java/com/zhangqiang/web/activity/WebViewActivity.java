@@ -25,7 +25,7 @@ import androidx.annotation.Nullable;
 import com.zhangqiang.common.activity.BaseActivity;
 import com.zhangqiang.web.activity.menu.MenuItemBean;
 import com.zhangqiang.web.manager.WebManager;
-import com.zhangqiang.web.utils.URLEncodeUtils;
+import com.zhangqiang.web.utils.URLUtils;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
 import com.zhangqiang.web.webviewclient.WebViewClientImpl;
 import com.zhangqiang.webview.BuildConfig;
@@ -255,7 +255,7 @@ public class WebViewActivity extends BaseActivity {
         if (isLink) {
             loadUrl = input;
         } else {
-            String params = URLEncodeUtils.encodeUrl(input);
+            String params = URLUtils.encodeUrl(input);
             if (!TextUtils.isEmpty(params)) {
                 loadUrl = "https://www.baidu.com/s?wd=" + params;
             } else {
