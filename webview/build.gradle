@@ -49,4 +49,5 @@ dependencies {
     implementation "org.greenrobot:greendao:${rootProject.ext.versions.greendao}"
     implementation "io.github.yuweiguocn:GreenDaoUpgradeHelper:${rootProject.ext.versions.GreenDaoUpgradeHelper}"
     implementation "com.github.bumptech.glide:glide:${rootProject.ext.versions.glide}"
+    implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
 }

@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 import com.zhangqiang.common.activity.BaseActivity;
 import com.zhangqiang.web.activity.menu.MenuItemBean;
 import com.zhangqiang.web.manager.WebManager;
+import com.zhangqiang.web.settings.WebViewSettings;
 import com.zhangqiang.web.utils.URLUtils;
 import com.zhangqiang.web.webchromeclient.WebChromeClientImpl;
 import com.zhangqiang.web.webviewclient.WebViewClientImpl;
@@ -108,6 +109,12 @@ public class WebViewActivity extends BaseActivity {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.TEXT_AUTOSIZING);
+
+        int userAgentType = WebViewSettings.get(this).getUserAgentType();
+        if (userAgentType == WebViewSettings.USER_AGENT_TYPE_PC) {
+            settings.setUserAgentString(WebViewSettings.USER_AGENT_CHROME_MACOS);
+        }
+
         mWebContext.dispatchWebViewCreate(mActivityWebViewBinding.mWebView);
 
         mActivityWebViewBinding.etTitle.setOnFocusChangeListener(new View.OnFocusChangeListener() {

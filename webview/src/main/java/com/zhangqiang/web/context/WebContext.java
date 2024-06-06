@@ -25,6 +25,7 @@ public class WebContext {
     private WebView webView;
     private final String sessionId;
     private final String url;
+    private boolean isPageLoading = false;
 
     public WebContext(String sessionId, String url) {
         this.sessionId = sessionId;
@@ -91,12 +92,14 @@ public class WebContext {
     }
 
     public void dispatchPageStarted(WebView view, String url, Bitmap favicon) {
+        isPageLoading = true;
         for (int i = pageLoadListeners.size() - 1; i >= 0; i--) {
             pageLoadListeners.get(i).onPageStarted(view, url, favicon);
         }
     }
 
     public void dispatchPageFinished(WebView view, String url) {
+        isPageLoading = false;
         for (int i = pageLoadListeners.size() - 1; i >= 0; i--) {
             pageLoadListeners.get(i).onPageFinished(view, url);
         }
@@ -201,5 +204,9 @@ public class WebContext {
 
     public void removeUrlLoadingInterceptor(UrlLoadingInterceptor interceptor) {
         urlLoadingInterceptors.remove(interceptor);
+    }
+
+    public boolean isPageLoading() {
+        return isPageLoading;
     }
 }

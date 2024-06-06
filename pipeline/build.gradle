@@ -1,0 +1,38 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.ext.versions.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.versions.minSdkVersion
+        targetSdkVersion rootProject.ext.versions.targetSdkVersion
+
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.versions.appcompat}"
+    implementation "com.google.android.material:material:${rootProject.ext.versions.material}"
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    implementation "com.github.holleQiang:CellAdapter:${rootProject.ext.versions.CellAdapter}"
+    implementation "com.github.holleQiang:PermissionRequestHelper:${rootProject.ext.versions.PermissionRequestHelper}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.versions.constraintlayout}"
+    implementation "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
+    implementation project(path: ':common')
+}

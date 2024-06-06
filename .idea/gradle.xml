@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/common" />
             <option value="$PROJECT_DIR$/filechooser" />
             <option value="$PROJECT_DIR$/library" />
+            <option value="$PROJECT_DIR$/pipeline" />
             <option value="$PROJECT_DIR$/qrcode-core" />
             <option value="$PROJECT_DIR$/qrcode-scan" />
             <option value="$PROJECT_DIR$/template" />

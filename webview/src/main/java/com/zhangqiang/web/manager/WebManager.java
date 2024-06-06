@@ -21,6 +21,8 @@ import com.zhangqiang.web.plugin.WebPlugin;
 import com.zhangqiang.web.plugins.copy.CopyLinkPlugin;
 import com.zhangqiang.web.plugins.refresh.RefreshPlugin;
 import com.zhangqiang.web.resource.collect.ResourceCollectPlugin;
+import com.zhangqiang.web.settings.SettingsPlugin;
+import com.zhangqiang.web.spider.SpiderPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,8 @@ public class WebManager {
         registerPlugin(new RefreshPlugin());
         registerPlugin(new BookMarkPlugin());
         registerPlugin(new CopyLinkPlugin());
+        registerPlugin(new SpiderPlugin());
+        registerPlugin(new SettingsPlugin());
     }
 
     public void applyPlugins() {

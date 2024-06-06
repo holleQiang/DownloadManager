@@ -40,4 +40,5 @@ dependencies {
     api "io.reactivex.rxjava2:rxandroid:${rootProject.ext.versions.rxandroid}"
     api "com.tencent:mmkv-static:${rootProject.ext.versions['mmkv-static']}"
     api "com.github.holleQiang:Options:${rootProject.ext.versions.Options}"
+    implementation "com.google.code.gson:gson:${rootProject.ext.versions.gson}"
 }
